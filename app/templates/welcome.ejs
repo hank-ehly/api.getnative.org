@@ -1,0 +1,21 @@
+<!--
+Use HTML tables to control the design layout and some presentation.
+You may be used to using pure CSS layouts for your web pages,
+but that approach just won’t hold up in an email environment.
+-->
+<!DOCTYPE html>
+<html lang="<%= __('lang') %>">
+<head>
+	<meta charset="UTF-8">
+	<title><%= __('welcome.title') %></title>
+</head>
+<body>
+<h1><%= __('welcome.title') %></h1>
+<p><%= __('welcome.instructions') %></p>
+<a href="<%= confirmationURL %>"><%= __('welcome.confirmationLinkLabel') %></a>
+<footer><%= __('welcome.footer') %></footer>
+<!-- Unsubscribe -->
+<!-- Notice: If you reply to this we won't see it -->
+<!-- If you have questions, contact xxx@email.com -->
+</body>
+</html>

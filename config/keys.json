@@ -1,0 +1,98 @@
+{
+    "API": {
+        "Port": "API_PORT",
+        "Hostname": "API_HOSTNAME"
+    },
+    "Attr": {
+        "Answer": "answer",
+        "BrowserNotificationsEnabled": "browser_notifications_enabled",
+        "Code": "code",
+        "CurrentPassword": "current_password",
+        "CreatedAt": "created_at",
+        "DefaultStudyLanguageCode": "default_study_language_code",
+        "Description": "description",
+        "Email": "email",
+        "EmailNotificationsEnabled": "email_notifications_enabled",
+        "EmailVerified": "email_verified",
+        "ExampleAnswer": "example_answer",
+        "Id": "id",
+        "IsCompleted": "is_completed",
+        "IsSilhouettePicture": "is_silhouette_picture",
+        "LanguageCode": "language_code",
+        "Length": "length",
+        "LoopCount": "loop_count",
+        "Name": "name",
+        "NewPassword": "new_password",
+        "Password": "password",
+        "PictureUrl": "picture_url",
+        "StudySessionId": "study_session_id",
+        "StudyTime": "study_time",
+        "Text": "text",
+        "Token": "token",
+        "UpdatedAt": "updated_at",
+        "VideoId": "video_id",
+        "VideoUrl": "video_url",
+        "WordCount": "word_count",
+        "WordsPerMinute": "words_per_minute",
+        "WritingQuestionId": "writing_question_id"
+    },
+    "Client": {
+        "Host": "CLIENT_HOSTNAME",
+        "Protocol": "CLIENT_PROTOCOL"
+    },
+    "Debug": "DEBUG",
+    "DefaultLocale": "DefaultLocale",
+    "Email": {
+        "Welcome": "Welcome",
+        "ResetPassword": "ResetPassword"
+    },
+    "Error": {
+        "JWT": "JWT",
+        "RequestParam": "RequestParam",
+        "Auth": "Auth",
+        "UserNamePasswordIncorrect": "UserNamePasswordIncorrect",
+        "AccountAlreadyExists": "AccountAlreadyExists",
+        "PasswordIncorrect": "PasswordIncorrect",
+        "TokenExpired": "TokenExpired",
+        "AccountMissing": "AccountMissing",
+        "AccountAlreadyVerified": "AccountAlreadyVerified"
+    },
+    "ENVIRONMENT": "ENVIRONMENT",
+    "Env": {
+        "Development": "development",
+        "Test": "test",
+        "CircleCI": "circle_ci",
+        "Production": "production"
+    },
+    "Header": {
+        "AccessControlAllowOrigin": "allow-origin",
+        "AuthExpire": "x-gn-auth-expire",
+        "AuthToken": "x-gn-auth-token"
+    },
+    "Model": {
+        "WritingAnswer": "WritingAnswer",
+        "WritingQuestion": "WritingQuestion",
+        "CuedVideo": "CuedVideo",
+        "StudySession": "StudySession",
+        "Account": "Account",
+        "Video": "Video",
+        "Transcript": "Transcript",
+        "Collocation": "Collocation",
+        "UsageExample": "UsageExample",
+        "VerificationToken": "VerificationToken"
+    },
+    "NODE_ENV": "NODE_ENV",
+    "NoReply": "",
+    "PrivateKey": "private_key",
+    "PublicKey": "public_key",
+    "DKIMPrivateKey": "DKIM_PRIVATE_KEY",
+    "SMTP": {
+        "Port": "smtp:port",
+        "Host": "smtp:host"
+    },
+    "Templates": {
+        "EmailVerified": "email-verified",
+        "PasswordUpdated": "password-updated",
+        "Welcome": "welcome"
+    }
+}

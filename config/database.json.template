@@ -1,0 +1,37 @@
+{
+    "development": {
+        "username": "get_native",
+        "password": "get_native",
+        "database": "get_native_development",
+        "host": "127.0.0.1",
+        "dialect": "mysql"
+    },
+    "staging": {
+        "username": "get_native",
+        "password": "",
+        "database": "get_native_staging",
+        "host": "127.0.0.1",
+        "dialect": "mysql"
+    },
+    "test": {
+        "username": "get_native",
+        "password": "get_native",
+        "database": "get_native_test",
+        "host": "127.0.0.1",
+        "dialect": "mysql",
+        "logging": false
+    },
+    "circle_ci": {
+        "username": "ubuntu",
+        "database": "circle_test",
+        "dialect": "mysql",
+        "logging": false
+    },
+    "production": {
+        "username": "",
+        "password": "",
+        "database": "",
+        "host": "127.0.0.1",
+        "dialect": "mysql"
+    }
+}
