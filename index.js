@@ -5,13 +5,13 @@
  * Created by henryehly on 2017/01/15.
  */
 
-const k       = require('config/keys.json');
-const config  = require('config');
+const k       = require('./config/keys.json');
+const config  = require('./config');
 
-const db      = require('app/models');
-const logger  = require('config/logger');
-const server  = require('config/initializers/server');
-const mailer  = require('config/initializers/mailer');
+const db      = require('./app/models');
+const logger  = require('./config/logger');
+const server  = require('./config/initializers/server');
+const mailer  = require('./config/initializers/mailer');
 const Promise = require('bluebird');
 const _       = require('lodash');
 

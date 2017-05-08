@@ -5,7 +5,7 @@
  * Created by henryehly on 2017/03/16.
  */
 
-const Speaker  = require('../../../app/models').Speaker;
+const Speaker  = require('../../../app/models')['Speaker'];
 const SpecUtil = require('../../spec-util');
 
 const request  = require('supertest');
