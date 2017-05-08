@@ -14,7 +14,7 @@
         "url": "git://github.com/hank-ehly/api.get-native.com.git"
     },
     "keywords": [],
-    "author": "hank-ehly <henry.ehly@gmail.com>",
+    "author": "Hank Ehly <henry.ehly@gmail.com>",
     "license": "UNLICENSED",
     "private": true,
     "dependencies": {
