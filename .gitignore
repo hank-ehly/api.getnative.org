@@ -4,3 +4,4 @@ config/secrets/*
 npm-debug.log*
 config/database.json
 node_modules
+logs
