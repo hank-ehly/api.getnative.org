@@ -1,0 +1,33 @@
+machine:
+  environment:
+    NODE_ENV: circle_ci
+  node:
+    version: 6.10.2
+
+general:
+  branches:
+    only:
+      - master
+      - develop
+
+#deployment:
+#  staging:
+#    branch: develop
+#    commands:
+#      - cd deploy && bundle install --path vendor/bundle && bundle exec cap staging deploy
+
+dependencies:
+  cache_directories:
+    - "node_modules"
+
+database:
+  override:
+    - cp config/database.json.template config/database.json
+    - npm run sequelize db:migrate
+
+test:
+  pre:
+    - ssh-keygen -t rsa -N "" -f config/secrets/id_rsa -q
+    - ssh-keygen -f config/secrets/id_rsa.pub -e -m pem > config/secrets/id_rsa.pem
+  override:
+    - npm run tests.all

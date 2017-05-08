@@ -3,3 +3,4 @@ config/secrets/*
 !**/.gitkeep
 npm-debug.log*
 config/database.json
+node_modules

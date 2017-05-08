@@ -1,0 +1,35 @@
+{
+    "apps": [
+        {
+            "name": "development",
+            "script": "index.js",
+            "error_file": "logs/api.dev.err.log",
+            "out_file": "logs/api.dev.out.log",
+            "exec_mode": "cluster",
+            "merge_logs": true,
+            "watch": [
+                "app",
+                "config",
+                "ecosystem.config.js"
+            ],
+            "interpreter": "/Users/henryehly/.nvm/versions/node/v6.10.2/bin/node",
+            "env": {
+                "NODE_ENV": "development"
+            }
+        },
+        {
+            "name": "staging",
+            "script": "/var/www/api.stg.get-native.com/current/index.js",
+            "cwd": "/var/www/get-native.com/current",
+            "error_file": "/var/log/pm2/api.stg.err.log",
+            "out_file": "/var/log/pm2/api.stg.out.log",
+            "pid_file": "/run/pm2/api.stg.pid",
+            "exec_mode": "cluster",
+            "combine_logs": true,
+            "interpreter": "/usr/local/nodejs-binary/bin/node",
+            "env": {
+                "NODE_ENV": "staging"
+            }
+        }
+    ]
+}
