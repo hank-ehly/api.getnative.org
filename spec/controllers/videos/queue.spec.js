@@ -6,6 +6,7 @@
  */
 
 const SpecUtil = require('../../spec-util');
+const k        = require('../../../config/keys.json');
 
 const Promise = require('bluebird');
 const request = require('supertest');
@@ -78,7 +79,7 @@ describe('POST /videos/:id/queue', function() {
 
         it(`should add the appropriate video to the appropriate queue`, function() {
             return request(server).post(`/videos/${sampleVideo.id}/queue`).set('authorization', authorization).then(function(response) {
-                return db.CuedVideo.findOne({
+                return db[k.Model.CuedVideo].findOne({
                     where: {
                         account_id: account.id,
                         video_id: sampleVideo.id
