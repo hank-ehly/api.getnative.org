@@ -23,9 +23,9 @@ describe('GET /account', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(_) {
-            authorization = _.authorization;
-            server        = _.server;
+        return SpecUtil.login().then(function(result) {
+            authorization = result.authorization;
+            server        = result.server;
         });
     });
 
