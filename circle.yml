@@ -10,11 +10,12 @@ general:
       - master
       - develop
 
-#deployment:
-#  staging:
-#    branch: develop
-#    commands:
-#      - cd deploy && bundle install --path vendor/bundle && bundle exec cap staging deploy
+deployment:
+  staging:
+    branch: develop
+    commands:
+      - git clone git@github.com:hank-ehly/get-native.com-devops.git
+      - cd get-native.com-devops/deploy && bundle install -j4 --path vendor/bundle && bundle exec cap client:staging deploy
 
 dependencies:
   cache_directories:
