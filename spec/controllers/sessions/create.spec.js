@@ -5,7 +5,7 @@
  * Created by henryehly on 2017/03/08.
  */
 
-const Utility  = require('../../../app/services').Utility;
+const Utility  = require('../../../app/services')['Utility'];
 const SpecUtil = require('../../spec-util');
 
 const Promise  = require('bluebird');
@@ -13,7 +13,7 @@ const assert   = require('assert');
 const request  = require('supertest');
 const _        = require('lodash');
 
-describe('POST /login', function() {
+describe('POST /sessions', function() {
     let server   = null;
     let response = null;
 
@@ -50,14 +50,14 @@ describe('POST /login', function() {
 
     describe('response.failure', function() {
         it('should respond with a 404 Not Found response if the user is not found', function(done) {
-            request(server).post('/login').send({
+            request(server).post('/sessions').send({
                 email: 'bad@email.com',
                 password: SpecUtil.credentials.password
             }).expect(404, done);
         });
 
         it(`should respond with a 404 Not Found if the provided login password is incorrect`, function(done) {
-            request(server).post('/login').send({
+            request(server).post('/sessions').send({
                 email: SpecUtil.credentials.email,
                 password: 'incorrect'
             }).expect(404, done);
@@ -66,7 +66,7 @@ describe('POST /login', function() {
 
     describe('response.success', function() {
         it('should respond with 200 OK', function(done) {
-            request(server).post('/login').send(SpecUtil.credentials).expect(200, done);
+            request(server).post('/sessions').send(SpecUtil.credentials).expect(200, done);
         });
 
         it('should respond with an object containing the user\'s ID', function() {

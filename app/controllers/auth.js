@@ -19,36 +19,6 @@ const Promise           = require('bluebird');
 const mailer            = require('../../config/initializers/mailer');
 const i18n              = require('i18n');
 
-module.exports.login = (req, res, next) => {
-    const attributes = [
-        k.Attr.Id,
-        k.Attr.Email,
-        k.Attr.BrowserNotificationsEnabled,
-        k.Attr.EmailNotificationsEnabled,
-        k.Attr.EmailVerified,
-        k.Attr.DefaultStudyLanguageCode,
-        k.Attr.PictureUrl,
-        k.Attr.IsSilhouettePicture,
-        k.Attr.Password
-    ];
-
-    User.find({where: {email: req.body[k.Attr.Email]}, attributes: attributes}).then(user => {
-        if (!user || !Auth.verifyPassword(user.password, req.body[k.Attr.Password])) {
-            throw new GetNativeError(k.Error.UserNamePasswordIncorrect);
-        }
-
-        return [user, Auth.generateTokenForUserId(user.id)];
-    }).spread((user, token) => {
-        Auth.setAuthHeadersOnResponseWithToken(res, token);
-        const userAsJson = user.get({plain: true});
-        delete userAsJson.password;
-        res.send(userAsJson);
-    }).catch(GetNativeError, e => {
-        res.status(404);
-        next(e);
-    }).catch(next);
-};
-
 module.exports.register = (req, res, next) => {
     let user = null;
 

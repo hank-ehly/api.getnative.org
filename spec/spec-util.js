@@ -65,7 +65,7 @@ module.exports.startServer = function() {
 module.exports.login = function() {
     return new Promise(function(resolve, reject) {
         return module.exports.startServer().then(function(initGroup) {
-            return request(initGroup.server).post('/login').send(module.exports.credentials).then(function(response) {
+            return request(initGroup.server).post('/sessions').send(module.exports.credentials).then(function(response) {
                 const retObj         = initGroup;
                 retObj.authorization = 'Bearer: ' + response.headers['x-gn-auth-token'];
                 retObj.response      = response;

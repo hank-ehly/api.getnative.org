@@ -14,13 +14,13 @@ const ValidateParams = middleware.ValidateRequestParameters;
 const SetUserId   = middleware.SetUserId;
 const Authenticate   = ctrl.auth.authenticate;
 
-router.get(  '/user',                     ValidateParams(pv.users.index),               SetUserId, Authenticate, ctrl.users.index);
-router.patch('/user',                     ValidateParams(pv.users.update),              SetUserId, Authenticate, ctrl.users.update);
-router.post( '/user/password',            ValidateParams(pv.users.updatePassword),      SetUserId, Authenticate, ctrl.users.updatePassword);
-router.post( '/user/email',               ValidateParams(pv.users.updateEmail),         SetUserId, Authenticate, ctrl.users.updateEmail);
+router.post('/sessions', ValidateParams(pv.sessions.create), ctrl.sessions.create);
+
+router.patch('/users',                     ValidateParams(pv.users.update),              SetUserId, Authenticate, ctrl.users.update);
+router.post( '/users/password',            ValidateParams(pv.users.updatePassword),      SetUserId, Authenticate, ctrl.users.updatePassword);
+router.post( '/users/email',               ValidateParams(pv.users.updateEmail),         SetUserId, Authenticate, ctrl.users.updateEmail);
 router.get(  '/categories',                  ValidateParams(pv.categories.index),             SetUserId, Authenticate, ctrl.categories.index);
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                                        ctrl.auth.confirmEmail);
-router.post( '/login',                       ValidateParams(pv.auth.login),                                               ctrl.auth.login);
 router.post( '/register',                    ValidateParams(pv.auth.register),                                            ctrl.auth.register);
 router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                             ctrl.auth.resendConfirmationEmail);
 router.post( '/study',                       ValidateParams(pv.study.createStudySession),     SetUserId, Authenticate, ctrl.study.createStudySession);
