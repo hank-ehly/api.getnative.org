@@ -5,13 +5,13 @@
  * Created by henryehly on 2017/01/18.
  */
 
-const ctrl     = require('../app/controllers');
-const router   = require('express').Router();
-const pv       = require('./param-validation');
+const ctrl           = require('../app/controllers');
+const router         = require('express').Router();
+const pv             = require('./param-validation');
 
 const middleware     = require('../app/middleware');
 const ValidateParams = middleware['ValidateRequestParameters'];
-const SetUserId   = middleware['SetUserId'];
+const SetUserId      = middleware['SetUserId'];
 const Authenticate   = ctrl.auth.authenticate;
 
 router.post('/sessions', ValidateParams(pv.sessions.create), ctrl.sessions.create);
@@ -19,6 +19,8 @@ router.post('/users', ValidateParams(pv.users.create), ctrl.users.create);
 
 // todo: Combine with /users/password
 router.patch('/users', ValidateParams(pv.users.update), SetUserId, Authenticate, ctrl.users.update);
+
+// todo: Rest-ify all
 
 router.post( '/users/password',            ValidateParams(pv.users.updatePassword),      SetUserId, Authenticate, ctrl.users.updatePassword);
 router.post( '/users/email',               ValidateParams(pv.users.updateEmail),         SetUserId, Authenticate, ctrl.users.updateEmail);
