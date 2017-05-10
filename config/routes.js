@@ -17,7 +17,9 @@ const Authenticate   = ctrl.auth.authenticate;
 router.post('/sessions', ValidateParams(pv.sessions.create), ctrl.sessions.create);
 router.post('/users', ValidateParams(pv.users.create), ctrl.users.create);
 
-router.patch('/users',                     ValidateParams(pv.users.update),              SetUserId, Authenticate, ctrl.users.update);
+// todo: Combine with /users/password
+router.patch('/users', ValidateParams(pv.users.update), SetUserId, Authenticate, ctrl.users.update);
+
 router.post( '/users/password',            ValidateParams(pv.users.updatePassword),      SetUserId, Authenticate, ctrl.users.updatePassword);
 router.post( '/users/email',               ValidateParams(pv.users.updateEmail),         SetUserId, Authenticate, ctrl.users.updateEmail);
 router.get(  '/categories',                  ValidateParams(pv.categories.index),             SetUserId, Authenticate, ctrl.categories.index);

@@ -78,14 +78,6 @@ module.exports.create = (req, res, next) => {
     }).catch(next);
 };
 
-module.exports.index = (req, res, next) => {
-    User.findById(req.userId, {
-        attributes: {exclude: [k.Attr.Password, k.Attr.CreatedAt, k.Attr.UpdatedAt]}
-    }).then(user => {
-        res.send(user.get({plain: true}));
-    }).catch(next);
-};
-
 module.exports.update = (req, res, next) => {
     const attr = _.transform(req.body, function(result, value, key) {
         if ([k.Attr.EmailNotificationsEnabled, k.Attr.BrowserNotificationsEnabled, k.Attr.DefaultStudyLanguageCode].includes(key)) {
