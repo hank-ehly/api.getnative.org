@@ -18,7 +18,7 @@ describe('GET /categories', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
     });
 
     beforeEach(function() {
@@ -35,7 +35,7 @@ describe('GET /categories', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
+        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
     });
 
     describe('response.headers', function() {

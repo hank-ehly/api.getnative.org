@@ -77,6 +77,8 @@
         "Follower": "Follower",
         "StudySession": "StudySession",
         "User": "User",
+        "Subcategory": "Subcategory",
+        "Category": "Category",
         "Video": "Video",
         "Transcript": "Transcript",
         "Collocation": "Collocation",

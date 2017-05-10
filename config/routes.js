@@ -24,7 +24,9 @@ router.patch('/users', ValidateParams(pv.users.update), SetUserId, Authenticate,
 
 router.post( '/users/password',            ValidateParams(pv.users.updatePassword),      SetUserId, Authenticate, ctrl.users.updatePassword);
 router.post( '/users/email',               ValidateParams(pv.users.updateEmail),         SetUserId, Authenticate, ctrl.users.updateEmail);
+
 router.get(  '/categories',                  ValidateParams(pv.categories.index),             SetUserId, Authenticate, ctrl.categories.index);
+
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                                        ctrl.auth.confirmEmail);
 router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                             ctrl.auth.resendConfirmationEmail);
 router.post( '/study',                       ValidateParams(pv.study.createStudySession),     SetUserId, Authenticate, ctrl.study.createStudySession);
