@@ -73,13 +73,16 @@
         "WritingAnswer": "WritingAnswer",
         "WritingQuestion": "WritingQuestion",
         "CuedVideo": "CuedVideo",
+        "Like": "Like",
+        "Follower": "Follower",
         "StudySession": "StudySession",
         "User": "User",
         "Video": "Video",
         "Transcript": "Transcript",
         "Collocation": "Collocation",
         "UsageExample": "UsageExample",
-        "VerificationToken": "VerificationToken"
+        "VerificationToken": "VerificationToken",
+        "Notification": "Notification"
     },
     "NODE_ENV": "NODE_ENV",
     "NoReply": "",

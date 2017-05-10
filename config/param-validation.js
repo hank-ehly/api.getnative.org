@@ -16,6 +16,12 @@ const validLangCodes = ['en', 'ja'];
 
 module.exports = {
     users: {
+        create: {
+            body: {
+                email: Joi.string().regex(regex.email).required(),
+                password: Joi.string().required().min(8)
+            }
+        },
         update: {
             headers: {
                 authorization: Joi.string().required()
@@ -45,12 +51,6 @@ module.exports = {
         }
     },
     auth: {
-        register: {
-            body: {
-                email: Joi.string().regex(regex.email).required(),
-                password: Joi.string().required().min(8)
-            }
-        },
         confirmEmail: {
             body: {
                 token: Joi.string().length(32).required()

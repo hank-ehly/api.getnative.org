@@ -1,3 +1,6 @@
+const db = require('../models');
+const require2 = db;
+const services = require('../services');
 /**
  * users
  * get-native.com
@@ -5,17 +8,75 @@
  * Created by henryehly on 2017/02/03.
  */
 
-const GetNativeError = require('../services').GetNativeError;
-const Utility        = require('../services').Utility;
-const User        = require('../models').User;
-const config         = require('../../config');
-const Auth           = require('../services').Auth;
-const k              = require('../../config/keys.json');
+const GetNativeError = services['GetNativeError'];
+const Utility = services['Utility'];
+const config = require('../../config');
+const Auth = services['Auth'];
+const k = require('../../config/keys.json');
+const User = db[k.Model.User];
+const VerificationToken = db[k.Model.VerificationToken];
 
-const Promise        = require('bluebird');
-const mailer         = require('../../config/initializers/mailer');
-const i18n           = require('i18n');
-const _              = require('lodash');
+const Promise = require('bluebird');
+const mailer = require('../../config/initializers/mailer');
+const i18n = require('i18n');
+const _ = require('lodash');
+
+module.exports.create = (req, res, next) => {
+    let user = null;
+
+    // todo: Use DB unique key constraint to throw error
+    return User.existsForEmail(req.body[k.Attr.Email]).then(exists => {
+        if (exists) {
+            throw new GetNativeError(k.Error.UserAlreadyExists);
+        }
+        return User.create({
+            email: req.body[k.Attr.Email],
+            password: Auth.hashPassword(req.body[k.Attr.Password])
+        });
+    }).then(_user => {
+        user = _user;
+        if (!user) {
+            throw new Error('Failed to create new user');
+        }
+        return VerificationToken.create({
+            user_id: user.id,
+            token: Auth.generateVerificationToken(),
+            expiration_date: Utility.tomorrow()
+        });
+    }).then(verificationToken => {
+        return new Promise((resolve, reject) => {
+            res.app.render('welcome', {
+                confirmationURL: Auth.generateConfirmationURLForToken(verificationToken.get(k.Attr.Token)),
+                __: i18n.__
+            }, (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
+        });
+    }).then(html => {
+        return mailer.sendMail({
+            subject: i18n.__('welcome.title'),
+            from:    config.get(k.NoReply),
+            to:      req.body[k.Attr.Email],
+            html:    html
+        });
+    }).then(() => {
+        return Auth.generateTokenForUserId(user.id);
+    }).then(token => {
+        Auth.setAuthHeadersOnResponseWithToken(res, token);
+        const userAsJson = user.get({plain: true});
+        delete userAsJson.password;
+        res.send(userAsJson);
+    }).catch(GetNativeError, e => {
+        if (e.code === k.Error.UserAlreadyExists) {
+            res.status(422);
+        }
+        next(e);
+    }).catch(next);
+};
 
 module.exports.index = (req, res, next) => {
     User.findById(req.userId, {

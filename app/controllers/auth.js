@@ -19,63 +19,6 @@ const Promise           = require('bluebird');
 const mailer            = require('../../config/initializers/mailer');
 const i18n              = require('i18n');
 
-module.exports.register = (req, res, next) => {
-    let user = null;
-
-    // todo: Use DB unique key constraint to throw error
-    return User.existsForEmail(req.body[k.Attr.Email]).then(exists => {
-        if (exists) {
-            throw new GetNativeError(k.Error.UserAlreadyExists);
-        }
-        return User.create({
-            email: req.body[k.Attr.Email],
-            password: Auth.hashPassword(req.body[k.Attr.Password])
-        });
-    }).then(_user => {
-        user = _user;
-        if (!user) {
-            throw new Error('Failed to create new user');
-        }
-        return VerificationToken.create({
-            user_id: user.id,
-            token: Auth.generateVerificationToken(),
-            expiration_date: Utility.tomorrow()
-        });
-    }).then(verificationToken => {
-        return new Promise((resolve, reject) => {
-            res.app.render('welcome', {
-                confirmationURL: Auth.generateConfirmationURLForToken(verificationToken.get(k.Attr.Token)),
-                __: i18n.__
-            }, (err, html) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(html);
-                }
-            });
-        });
-    }).then(html => {
-        return mailer.sendMail({
-            subject: i18n.__('welcome.title'),
-            from:    config.get(k.NoReply),
-            to:      req.body[k.Attr.Email],
-            html:    html
-        });
-    }).then(() => {
-        return Auth.generateTokenForUserId(user.id);
-    }).then(token => {
-        Auth.setAuthHeadersOnResponseWithToken(res, token);
-        const userAsJson = user.get({plain: true});
-        delete userAsJson.password;
-        res.send(userAsJson);
-    }).catch(GetNativeError, e => {
-        if (e.code === k.Error.UserAlreadyExists) {
-            res.status(422);
-        }
-        next(e);
-    }).catch(next);
-};
-
 module.exports.confirmEmail = (req, res, next) => {
     return VerificationToken.findOne({where: {token: req.body.token}}).then(token => {
         if (!token) {

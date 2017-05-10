@@ -10,18 +10,18 @@ const router   = require('express').Router();
 const pv       = require('./param-validation');
 
 const middleware     = require('../app/middleware');
-const ValidateParams = middleware.ValidateRequestParameters;
-const SetUserId   = middleware.SetUserId;
+const ValidateParams = middleware['ValidateRequestParameters'];
+const SetUserId   = middleware['SetUserId'];
 const Authenticate   = ctrl.auth.authenticate;
 
 router.post('/sessions', ValidateParams(pv.sessions.create), ctrl.sessions.create);
+router.post('/users', ValidateParams(pv.users.create), ctrl.users.create);
 
 router.patch('/users',                     ValidateParams(pv.users.update),              SetUserId, Authenticate, ctrl.users.update);
 router.post( '/users/password',            ValidateParams(pv.users.updatePassword),      SetUserId, Authenticate, ctrl.users.updatePassword);
 router.post( '/users/email',               ValidateParams(pv.users.updateEmail),         SetUserId, Authenticate, ctrl.users.updateEmail);
 router.get(  '/categories',                  ValidateParams(pv.categories.index),             SetUserId, Authenticate, ctrl.categories.index);
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                                        ctrl.auth.confirmEmail);
-router.post( '/register',                    ValidateParams(pv.auth.register),                                            ctrl.auth.register);
 router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                             ctrl.auth.resendConfirmationEmail);
 router.post( '/study',                       ValidateParams(pv.study.createStudySession),     SetUserId, Authenticate, ctrl.study.createStudySession);
 router.post( '/study/complete',              ValidateParams(pv.study.complete),               SetUserId, Authenticate, ctrl.study.complete);
