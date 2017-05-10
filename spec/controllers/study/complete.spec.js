@@ -34,7 +34,7 @@ describe('POST /study/complete', function() {
             return db.Video.findOne().then(function(video) {
                 return db.StudySession.create({
                     video_id: video.get(k.Attr.Id),
-                    account_id: initGroup.response.body.id,
+                    user_id: initGroup.response.body.id,
                     study_time: 300,
                     is_completed: false
                 });

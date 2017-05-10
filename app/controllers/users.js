@@ -1,5 +1,5 @@
 /**
- * accounts
+ * users
  * get-native.com
  *
  * Created by henryehly on 2017/02/03.
@@ -7,7 +7,7 @@
 
 const GetNativeError = require('../services').GetNativeError;
 const Utility        = require('../services').Utility;
-const Account        = require('../models').Account;
+const User        = require('../models').User;
 const config         = require('../../config');
 const Auth           = require('../services').Auth;
 const k              = require('../../config/keys.json');
@@ -18,10 +18,10 @@ const i18n           = require('i18n');
 const _              = require('lodash');
 
 module.exports.index = (req, res, next) => {
-    Account.findById(req.accountId, {
+    User.findById(req.userId, {
         attributes: {exclude: [k.Attr.Password, k.Attr.CreatedAt, k.Attr.UpdatedAt]}
-    }).then(account => {
-        res.send(account.get({plain: true}));
+    }).then(user => {
+        res.send(user.get({plain: true}));
     }).catch(next);
 };
 
@@ -36,21 +36,21 @@ module.exports.update = (req, res, next) => {
         return res.sendStatus(304);
     }
 
-    return Account.update(attr, {where: {id: req.accountId}}).then(() => {
+    return User.update(attr, {where: {id: req.userId}}).then(() => {
         res.sendStatus(204);
     }).catch(next);
 };
 
 module.exports.updatePassword = (req, res, next) => {
-    Account.findById(req.accountId).then(account => {
-        if (!Auth.verifyPassword(account.password, req.body[k.Attr.CurrentPassword])) {
+    User.findById(req.userId).then(user => {
+        if (!Auth.verifyPassword(user.password, req.body[k.Attr.CurrentPassword])) {
             throw new GetNativeError(k.Error.PasswordIncorrect);
         }
 
         const hashPassword = Auth.hashPassword(req.body[k.Attr.NewPassword]);
-        return [account, Account.update({password: hashPassword}, {where: {id: req.accountId}})];
-    }).spread((account) => {
-        return [account, new Promise((resolve, reject) => {
+        return [user, User.update({password: hashPassword}, {where: {id: req.userId}})];
+    }).spread((user) => {
+        return [user, new Promise((resolve, reject) => {
             res.app.render(k.Templates.PasswordUpdated, {__: i18n.__}, (err, html) => {
                 if (err) {
                     reject(err);
@@ -59,11 +59,11 @@ module.exports.updatePassword = (req, res, next) => {
                 }
             });
         })];
-    }).spread((account, html) => {
+    }).spread((user, html) => {
         return mailer.sendMail({
             subject: i18n.__('password-updated.title'),
             from:    config.get(k.NoReply),
-            to:      account.get(k.Attr.Email),
+            to:      user.get(k.Attr.Email),
             html:    html
         });
     }).then(() => {

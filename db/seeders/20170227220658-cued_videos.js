@@ -6,7 +6,7 @@
  */
 
 const models  = require('../../app/models');
-const Account = models.Account;
+const User = models.User;
 const Video   = models.Video;
 
 const Promise = require('bluebird');
@@ -15,12 +15,12 @@ const _       = require('lodash');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        const promises = [Video.min('id'), Video.max('id'), Account.min('id'), Account.max('id')];
+        const promises = [Video.min('id'), Video.max('id'), User.min('id'), User.max('id')];
 
-        return Promise.all(promises).spread((minVideoId, maxVideoId, minAccountId, maxAccountId) => {
+        return Promise.all(promises).spread((minVideoId, maxVideoId, minUserId, maxUserId) => {
             const cuedVideos = [];
 
-            for (let i = minAccountId; i <= maxAccountId; i++) {
+            for (let i = minUserId; i <= maxUserId; i++) {
                 let numCuedVideos = chance.integer({
                     min: 1,
                     max: 10
@@ -32,7 +32,7 @@ module.exports = {
                             min: minVideoId,
                             max: maxVideoId
                         }),
-                        account_id: i
+                        user_id: i
                     });
                 }
             }

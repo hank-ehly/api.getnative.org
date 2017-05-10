@@ -9,16 +9,16 @@ const models  = require('../../app/models');
 const chance  = require('chance').Chance();
 const Promise = require('bluebird');
 const Video   = models.Video;
-const Account = models.Account;
+const User = models.User;
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        const promises = [Video.min('id'), Video.max('id'), Account.min('id'), Account.max('id')];
+        const promises = [Video.min('id'), Video.max('id'), User.min('id'), User.max('id')];
 
-        return Promise.all(promises).spread((minVideoId, maxVideoId, minAccountId, maxAccountId) => {
+        return Promise.all(promises).spread((minVideoId, maxVideoId, minUserId, maxUserId) => {
             const likes = [];
 
-            for (let i = minAccountId; i <= maxAccountId; i++) {
+            for (let i = minUserId; i <= maxUserId; i++) {
                 let numVideoIds = chance.integer({
                     min: 5,
                     max: 20
@@ -31,7 +31,7 @@ module.exports = {
 
                 for (let j = 0; j < videoIds.length; j++) {
                     likes.push({
-                        account_id: i,
+                        user_id: i,
                         video_id: videoIds[j]
                     });
                 }

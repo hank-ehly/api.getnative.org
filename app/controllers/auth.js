@@ -11,7 +11,7 @@ const Utility           = services.Utility;
 const Auth              = services.Auth;
 const config            = require('../../config');
 const db                = require('../models');
-const Account           = db.Account;
+const User           = db.User;
 const VerificationToken = db.VerificationToken;
 const k                 = require('../../config/keys.json');
 
@@ -32,17 +32,17 @@ module.exports.login = (req, res, next) => {
         k.Attr.Password
     ];
 
-    Account.find({where: {email: req.body[k.Attr.Email]}, attributes: attributes}).then(account => {
-        if (!account || !Auth.verifyPassword(account.password, req.body[k.Attr.Password])) {
+    User.find({where: {email: req.body[k.Attr.Email]}, attributes: attributes}).then(user => {
+        if (!user || !Auth.verifyPassword(user.password, req.body[k.Attr.Password])) {
             throw new GetNativeError(k.Error.UserNamePasswordIncorrect);
         }
 
-        return [account, Auth.generateTokenForAccountId(account.id)];
-    }).spread((account, token) => {
+        return [user, Auth.generateTokenForUserId(user.id)];
+    }).spread((user, token) => {
         Auth.setAuthHeadersOnResponseWithToken(res, token);
-        const accountAsJson = account.get({plain: true});
-        delete accountAsJson.password;
-        res.send(accountAsJson);
+        const userAsJson = user.get({plain: true});
+        delete userAsJson.password;
+        res.send(userAsJson);
     }).catch(GetNativeError, e => {
         res.status(404);
         next(e);
@@ -50,24 +50,24 @@ module.exports.login = (req, res, next) => {
 };
 
 module.exports.register = (req, res, next) => {
-    let account = null;
+    let user = null;
 
     // todo: Use DB unique key constraint to throw error
-    return Account.existsForEmail(req.body[k.Attr.Email]).then(exists => {
+    return User.existsForEmail(req.body[k.Attr.Email]).then(exists => {
         if (exists) {
-            throw new GetNativeError(k.Error.AccountAlreadyExists);
+            throw new GetNativeError(k.Error.UserAlreadyExists);
         }
-        return Account.create({
+        return User.create({
             email: req.body[k.Attr.Email],
             password: Auth.hashPassword(req.body[k.Attr.Password])
         });
-    }).then(_account => {
-        account = _account;
-        if (!account) {
-            throw new Error('Failed to create new account');
+    }).then(_user => {
+        user = _user;
+        if (!user) {
+            throw new Error('Failed to create new user');
         }
         return VerificationToken.create({
-            account_id: account.id,
+            user_id: user.id,
             token: Auth.generateVerificationToken(),
             expiration_date: Utility.tomorrow()
         });
@@ -92,14 +92,14 @@ module.exports.register = (req, res, next) => {
             html:    html
         });
     }).then(() => {
-        return Auth.generateTokenForAccountId(account.id);
+        return Auth.generateTokenForUserId(user.id);
     }).then(token => {
         Auth.setAuthHeadersOnResponseWithToken(res, token);
-        const accountAsJson = account.get({plain: true});
-        delete accountAsJson.password;
-        res.send(accountAsJson);
+        const userAsJson = user.get({plain: true});
+        delete userAsJson.password;
+        res.send(userAsJson);
     }).catch(GetNativeError, e => {
-        if (e.code === k.Error.AccountAlreadyExists) {
+        if (e.code === k.Error.UserAlreadyExists) {
             res.status(422);
         }
         next(e);
@@ -120,7 +120,7 @@ module.exports.confirmEmail = (req, res, next) => {
         changes[k.Attr.EmailVerified] = true;
         changes[k.Attr.EmailNotificationsEnabled] = true;
 
-        return [token, Account.update(changes, {where: {id: token.account_id}})];
+        return [token, User.update(changes, {where: {id: token.user_id}})];
     }).spread(token => {
         const attributes = [
             k.Attr.Id,
@@ -133,12 +133,12 @@ module.exports.confirmEmail = (req, res, next) => {
             k.Attr.IsSilhouettePicture
         ];
 
-        return Account.findOne({attributes: attributes, where: {id: token.account_id}});
-    }).then(account => {
-        return [account, Auth.generateTokenForAccountId(account.id)];
-    }).spread((account, token) => {
+        return User.findOne({attributes: attributes, where: {id: token.user_id}});
+    }).then(user => {
+        return [user, Auth.generateTokenForUserId(user.id)];
+    }).spread((user, token) => {
         Auth.setAuthHeadersOnResponseWithToken(res, token);
-        res.status(200).send(account.get({plain: true}));
+        res.status(200).send(user.get({plain: true}));
     }).catch(GetNativeError, e => {
         if (e.code === k.Error.TokenExpired) {
             res.status(404);
@@ -148,22 +148,22 @@ module.exports.confirmEmail = (req, res, next) => {
 };
 
 module.exports.resendConfirmationEmail = (req, res, next) => {
-    Account.existsForEmail(req.body[k.Attr.Email]).then(exists => {
+    User.existsForEmail(req.body[k.Attr.Email]).then(exists => {
         if (!exists) {
-            throw new GetNativeError(k.Error.AccountMissing);
+            throw new GetNativeError(k.Error.UserMissing);
         }
 
-        return Account.findOne({where: {email: req.body[k.Attr.Email]}});
-    }).then(function(account) {
-        if (account.get(k.Attr.EmailVerified)) {
-            throw new GetNativeError(k.Error.AccountAlreadyVerified);
+        return User.findOne({where: {email: req.body[k.Attr.Email]}});
+    }).then(function(user) {
+        if (user.get(k.Attr.EmailVerified)) {
+            throw new GetNativeError(k.Error.UserAlreadyVerified);
         }
 
         const token = Auth.generateVerificationToken();
         const expirationDate = Utility.tomorrow();
 
         return VerificationToken.create({
-            account_id: account.get(k.Attr.Id),
+            user_id: user.get(k.Attr.Id),
             token: token,
             expiration_date: expirationDate
         });
@@ -190,9 +190,9 @@ module.exports.resendConfirmationEmail = (req, res, next) => {
     }).then(() => {
         res.sendStatus(204);
     }).catch(GetNativeError, e => {
-        if (e.code === k.Error.AccountMissing) {
+        if (e.code === k.Error.UserMissing) {
             res.status(404);
-        } else if (e.code === k.Error.AccountAlreadyVerified) {
+        } else if (e.code === k.Error.UserAlreadyVerified) {
             res.status(422);
         }
         next(e);

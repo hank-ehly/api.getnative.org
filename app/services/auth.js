@@ -50,10 +50,10 @@ module.exports.refreshToken = token => {
     return Promise.promisify(jwt.sign)(cloneToken, config.get(k.PrivateKey), args);
 };
 
-module.exports.generateTokenForAccountId = accountId => {
+module.exports.generateTokenForUserId = userId => {
     const token = {
         iss: config.get(k.API.Hostname),
-        sub: accountId,
+        sub: userId,
         aud: ''
     };
 
@@ -70,7 +70,7 @@ module.exports.setAuthHeadersOnResponseWithToken = (res, token) => {
     res.set('X-GN-Auth-Token', token);
 };
 
-module.exports.extractAccountIdFromRequest = req => {
+module.exports.extractUserIdFromRequest = req => {
     return jwt.decode(Utility.extractAuthTokenFromRequest(req)).sub;
 };
 

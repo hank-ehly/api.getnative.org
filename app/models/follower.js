@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
         underscored: true,
         associations: function(models) {
             models.Follower.belongsTo(models.Speaker);
-            models.Follower.belongsTo(models.Account);
+            models.Follower.belongsTo(models.User);
         }
     });
 

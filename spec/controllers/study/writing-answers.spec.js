@@ -109,7 +109,7 @@ describe('GET /study/writing_answers', function() {
         });
 
         // The study_session_id value is not used in the client application,
-        // but is necessary to confirm the relationship between Account and WritingAnswer.
+        // but is necessary to confirm the relationship between User and WritingAnswer.
         it(`should have an non-null 'study_session_id' number for each record`, function() {
             return request(server).get('/study/en/writing_answers').set('authorization', authorization).then(function(response) {
                 assert(_.isNumber(_.first(response.body.records).study_session_id));
@@ -166,9 +166,9 @@ describe('GET /study/writing_answers', function() {
         it(`should only return answers that belong to the authenticated user`, function() {
             return request(server).get('/study/en/writing_answers').set('authorization', authorization).then(function(response) {
                 const firstStudySessionId = _.first(response.body.records).study_session_id;
-                return db.sequelize.query(`SELECT account_id FROM study_sessions WHERE id = ${firstStudySessionId}`).then(function(result) {
-                    const responseAccountId = _.first(_.flattenDeep(result)).account_id;
-                    assert.equal(responseAccountId, user.id);
+                return db.sequelize.query(`SELECT user_id FROM study_sessions WHERE id = ${firstStudySessionId}`).then(function(result) {
+                    const responseUserId = _.first(_.flattenDeep(result)).user_id;
+                    assert.equal(responseUserId, user.id);
                 });
             });
         });
@@ -180,7 +180,7 @@ describe('GET /study/writing_answers', function() {
                 WHERE study_session_id IN (
                     SELECT id 
                     FROM study_sessions 
-                    WHERE account_id = ${user.id}
+                    WHERE user_id = ${user.id}
                 );
             `;
 

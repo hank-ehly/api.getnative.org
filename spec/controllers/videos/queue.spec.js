@@ -16,7 +16,7 @@ const _       = require('lodash');
 describe('POST /videos/:id/queue', function() {
     let authorization  = null;
     let sampleVideo    = null;
-    let account        = null;
+    let user        = null;
     let server         = null;
     let db             = null;
 
@@ -29,15 +29,15 @@ describe('POST /videos/:id/queue', function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.login().then(function(initGroup) {
             authorization = initGroup.authorization;
-            account       = initGroup.response.body;
+            user       = initGroup.response.body;
             server        = initGroup.server;
             db            = initGroup.db;
 
             return db.sequelize.query(`
                 SELECT * FROM videos WHERE id NOT IN (
-                    SELECT video_id FROM cued_videos WHERE account_id = ?
+                    SELECT video_id FROM cued_videos WHERE user_id = ?
                 ) LIMIT 1;
-            `, {replacements: [account.id]}).spread(function(video) {
+            `, {replacements: [user.id]}).spread(function(video) {
                 sampleVideo = _.first(video);
             });
         });
@@ -81,7 +81,7 @@ describe('POST /videos/:id/queue', function() {
             return request(server).post(`/videos/${sampleVideo.id}/queue`).set('authorization', authorization).then(function(response) {
                 return db[k.Model.CuedVideo].findOne({
                     where: {
-                        account_id: account.id,
+                        user_id: user.id,
                         video_id: sampleVideo.id
                     }
                 });

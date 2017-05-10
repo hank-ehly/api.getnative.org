@@ -5,7 +5,7 @@
  * Created by henryehly on 2017/02/27.
  */
 
-const Account = require('../../app/models').Account;
+const User = require('../../app/models').User;
 const chance  = require('chance').Chance();
 const Promise = require('bluebird');
 

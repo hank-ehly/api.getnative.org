@@ -16,14 +16,14 @@ const assert   = require('assert');
 const i18n     = require('i18n');
 const _        = require('lodash');
 
-// todo: You don't want to allow someone to make 10,000 accounts via the commandline <- Use rate-limiting
+// todo: You don't want to allow someone to make 10,000 users via the commandline <- Use rate-limiting
 // todo: Should User-Agents like 'curl' be allowed to use the API at all?
 describe('POST /register', function() {
     let server  = null;
     let db      = null;
     let maildev = null;
 
-    const account = {
+    const user = {
         email: 'test123@email.com',
         password: 'test_password'
     };
@@ -43,25 +43,25 @@ describe('POST /register', function() {
     });
 
     afterEach(function(done) {
-        db.Account.findOne({where: {email: account.email}}).then(function(account) {
-            if (!account) {
+        db.User.findOne({where: {email: user.email}}).then(function(user) {
+            if (!user) {
                 return server.close(done);
             }
 
-            db.StudySession.findAll({where: {account_id: account.id}, attributes: ['id']}).then(studySessions => {
+            db.StudySession.findAll({where: {user_id: user.id}, attributes: ['id']}).then(studySessions => {
                 return db.WritingAnswer.destroy({where: {study_session_id: {$in: studySessions.map(x => x.id)}}});
             }).then(() => {
-                const forAccount = {where: {account_id: account.id}};
+                const forUser = {where: {user_id: user.id}};
                 return Promise.all([
-                    db.Follower.destroy(forAccount),
-                    db.Like.destroy(forAccount),
-                    db.CuedVideo.destroy(forAccount),
-                    db.Notification.destroy(forAccount),
-                    db.StudySession.destroy(forAccount),
-                    db.VerificationToken.destroy(forAccount)
+                    db.Follower.destroy(forUser),
+                    db.Like.destroy(forUser),
+                    db.CuedVideo.destroy(forUser),
+                    db.Notification.destroy(forUser),
+                    db.StudySession.destroy(forUser),
+                    db.VerificationToken.destroy(forUser)
                 ]);
             }).then(() => {
-                return db.Account.destroy({where: {email: account.email}});
+                return db.User.destroy({where: {email: user.email}});
             }).then(() => {
                 server.close(done);
             });
@@ -75,13 +75,13 @@ describe('POST /register', function() {
 
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 assert(response.header['x-gn-auth-token'].length > 0);
             });
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 assert(SpecUtil.isParsableTimestamp(+response.header['x-gn-auth-expire']));
             });
         });
@@ -89,89 +89,89 @@ describe('POST /register', function() {
 
     describe('response.failure', function() {
         it(`should respond with a 400 Bad Request response the 'email' field is missing`, function(done) {
-            request(server).post('/register').send({password: account.password}).expect(400, done);
+            request(server).post('/register').send({password: user.password}).expect(400, done);
         });
 
         it(`should respond with 400 Bad Request if the 'email' field is not an email`, function(done) {
-            request(server).post('/register').send({password: account.password, email: 'not_an_email'}).expect(400, done);
+            request(server).post('/register').send({password: user.password, email: 'not_an_email'}).expect(400, done);
         });
 
         it(`should respond with a 400 Bad Request response the 'password' field is missing`, function(done) {
-            request(server).post('/register').send({email: account.email}).expect(400, done);
+            request(server).post('/register').send({email: user.email}).expect(400, done);
         });
 
         it(`should respond with a 400 Bad Request response the 'password' is less than 8 characters`, function(done) {
-            request(server).post('/register').send({email: account.email, password: 'lt8char'}).expect(400, done);
+            request(server).post('/register').send({email: user.email, password: 'lt8char'}).expect(400, done);
         });
 
         it(`should send a 422 Unprocessable Entity response if the registration email is already in use`, function(done) {
-            request(server).post('/register').send(account).then(function() {
-                request(server).post('/register').send(account).expect(422, done);
+            request(server).post('/register').send(user).then(function() {
+                request(server).post('/register').send(user).expect(422, done);
             });
         });
     });
 
     describe('response.success', function() {
         it('should respond with 200 OK for a successful request', function(done) {
-            request(server).post('/register').send(account).expect(200, done);
+            request(server).post('/register').send(user).expect(200, done);
         });
 
         it(`should respond with an object containing the user's ID`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 assert(_.isNumber(response.body.id));
             });
         });
 
-        it(`should not include the account password in the response`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+        it(`should not include the user password in the response`, function() {
+            return request(server).post('/register').send(user).then(function(response) {
                 assert(!response.body.password);
             });
         });
 
         it(`should create a new user whose email is the same as specified in the request`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
-                assert.equal(response.body.email, account.email);
+            return request(server).post('/register').send(user).then(function(response) {
+                assert.equal(response.body.email, user.email);
             });
         });
 
         it(`should respond with an object containing the user's email address`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 assert(SpecUtil.isValidEmail(response.body.email));
             });
         });
 
         it(`should respond with an object containing the user's preference for receiving browser notifications`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 assert(_.isBoolean(response.body.browser_notifications_enabled));
             });
         });
 
         it(`should respond with an object containing the user's preference for receiving email notifications`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 assert(_.isBoolean(response.body.email_notifications_enabled));
             });
         });
 
         it(`should respond with an object containing the user's email validity status`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 assert(_.isBoolean(response.body.email_verified));
             });
         });
 
         it(`should respond with an object containing the user's default study language code`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 assert(new RegExp(/[a-z]+/).test(response.body.default_study_language_code));
             });
         });
 
         it(`should respond with an object containing the user's blank profile picture URL`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 assert.equal(response.body.picture_url, '');
             });
         });
 
         it(`should respond with the user's profile picture preference set to silhouette image`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 assert.equal(response.body.is_silhouette_picture, true);
             });
         });
@@ -179,16 +179,16 @@ describe('POST /register', function() {
 
     describe('other', function() {
         it(`should send a confirmation email to the newly registered user after successful registration`, function() {
-            return request(server).post('/register').send(account).then(function() {
+            return request(server).post('/register').send(user).then(function() {
                 return SpecUtil.getAllEmail().then(function(emails) {
                     const recipientEmailAddress = _.first(_.last(emails).envelope.to).address;
-                    assert.equal(recipientEmailAddress, account.email);
+                    assert.equal(recipientEmailAddress, user.email);
                 });
             });
         });
 
-        it(`should send a confirmation email from the get-native noreply account after successful registration`, function() {
-            return request(server).post('/register').send(account).then(function() {
+        it(`should send a confirmation email from the get-native noreply user after successful registration`, function() {
+            return request(server).post('/register').send(user).then(function() {
                 return SpecUtil.getAllEmail().then(function(emails) {
                     const senderEmailAddress = _.last(emails).envelope.from.address;
                     const noreplyEmailAddress = config.get(k.NoReply);
@@ -198,18 +198,18 @@ describe('POST /register', function() {
         });
 
         it(`should store the new users' password in an encrypted format that is not equal to the request`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
-                return db.Account.findOne({where: {email: account.email}}).then(function(accountFromDB) {
-                    assert.notEqual(accountFromDB.password, account.password);
+            return request(server).post('/register').send(user).then(function(response) {
+                return db.User.findOne({where: {email: user.email}}).then(function(userFromDB) {
+                    assert.notEqual(userFromDB.password, user.password);
                 });
             });
         });
 
         it(`should create a new VerificationToken record pointing to the newly registered user`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 return db.VerificationToken.findAll({
                     where: {
-                        account_id: response.body.id
+                        user_id: response.body.id
                     }
                 }).then(function(tokens) {
                     assert.equal(tokens.length, 1);
@@ -218,10 +218,10 @@ describe('POST /register', function() {
         });
 
         it(`should send an email containing the confirmation URL (with the correct VerificationToken token)`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 return db.VerificationToken.findOne({
                     where: {
-                        account_id: response.body.id
+                        user_id: response.body.id
                     }
                 }).then(function(token) {
                     return SpecUtil.getAllEmail().then(function(emails) {
@@ -233,10 +233,10 @@ describe('POST /register', function() {
         });
 
         it(`should send an email from the noreply user`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 return db.VerificationToken.findOne({
                     where: {
-                        account_id: response.body.id
+                        user_id: response.body.id
                     }
                 }).then(function(token) {
                     return SpecUtil.getAllEmail().then(function(emails) {
@@ -247,24 +247,24 @@ describe('POST /register', function() {
         });
 
         it(`should send an email to the newly registered user`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 return db.VerificationToken.findOne({
                     where: {
-                        account_id: response.body.id
+                        user_id: response.body.id
                     }
                 }).then(function(token) {
                     return SpecUtil.getAllEmail().then(function(emails) {
-                        assert.equal(_.first(_.last(emails).envelope.to).address, account.email);
+                        assert.equal(_.first(_.last(emails).envelope.to).address, user.email);
                     });
                 });
             });
         });
 
         it(`should send an email with the appropriate subject`, function() {
-            return request(server).post('/register').send(account).then(function(response) {
+            return request(server).post('/register').send(user).then(function(response) {
                 return db.VerificationToken.findOne({
                     where: {
-                        account_id: response.body.id
+                        user_id: response.body.id
                     }
                 }).then(function(token) {
                     return SpecUtil.getAllEmail().then(function(emails) {

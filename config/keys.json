@@ -51,11 +51,11 @@
         "RequestParam": "RequestParam",
         "Auth": "Auth",
         "UserNamePasswordIncorrect": "UserNamePasswordIncorrect",
-        "AccountAlreadyExists": "AccountAlreadyExists",
+        "UserAlreadyExists": "UserAlreadyExists",
         "PasswordIncorrect": "PasswordIncorrect",
         "TokenExpired": "TokenExpired",
-        "AccountMissing": "AccountMissing",
-        "AccountAlreadyVerified": "AccountAlreadyVerified"
+        "UserMissing": "UserMissing",
+        "UserAlreadyVerified": "UserAlreadyVerified"
     },
     "ENVIRONMENT": "ENVIRONMENT",
     "Env": {
@@ -74,7 +74,7 @@
         "WritingQuestion": "WritingQuestion",
         "CuedVideo": "CuedVideo",
         "StudySession": "StudySession",
-        "Account": "Account",
+        "User": "User",
         "Video": "Video",
         "Transcript": "Transcript",
         "Collocation": "Collocation",

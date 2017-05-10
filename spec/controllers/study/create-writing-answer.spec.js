@@ -35,7 +35,7 @@ describe('POST /study/writing_answers', function() {
             return db.Video.findOne().then(function(video) {
                 return Promise.all([
                     db.StudySession.create({
-                        account_id: result.response.body[k.Attr.Id],
+                        user_id: result.response.body[k.Attr.Id],
                         video_id: video.get(k.Attr.Id),
                         study_time: 300
                     }), db.WritingQuestion.findOne({plain: true})

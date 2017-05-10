@@ -1,11 +1,11 @@
 /**
- * set-account-id
+ * set-user-id
  * get-native.com
  *
  * Created by henryehly on 2017/04/21.
  */
 
-const SetAccountId = require('../../app/middleware').SetAccountId;
+const SetUserId = require('../../app/middleware').SetUserId;
 const SpecUtil     = require('../spec-util');
 
 const request      = require('supertest');
@@ -14,27 +14,27 @@ const assert       = require('assert');
 const jwt          = require('jsonwebtoken');
 const app          = require('express')();
 
-describe('SetAccountId', function() {
+describe('SetUserId', function() {
     before(function() {
-        app.get('/', SetAccountId, function(req, res) {
+        app.get('/', SetUserId, function(req, res) {
             //noinspection JSUnresolvedVariable
-            res.send({accountId: req.accountId});
+            res.send({userId: req.userId});
         });
     });
 
-    it(`should set the accountId on the request object`, function() {
+    it(`should set the userId on the request object`, function() {
         let expectedId = 212578;
         return SpecUtil.createJWTWithSubject(expectedId).then(function(token) {
             return request(app).get('/').set('authorization', `Bearer ${token}`);
         }).then(function(response) {
             //noinspection JSUnresolvedVariable
-            assert(response.body.accountId, expectedId);
+            assert(response.body.userId, expectedId);
         });
     });
 
-    it(`should not set req.accountId if not authorization header is present`, function() {
+    it(`should not set req.userId if not authorization header is present`, function() {
         return request(app).get('/').then(function(response) {
-            assert(!response.body.accountId);
+            assert(!response.body.userId);
         });
     });
 });

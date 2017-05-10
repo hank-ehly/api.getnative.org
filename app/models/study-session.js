@@ -22,7 +22,7 @@ module.exports = function(sequelize, DataTypes) {
         underscored: true,
         updatedAt: false,
         associations: function(models) {
-            models.StudySession.belongsTo(models.Account);
+            models.StudySession.belongsTo(models.User);
             models.StudySession.belongsTo(models.Video);
             models.StudySession.hasOne(models.WritingAnswer);
         }

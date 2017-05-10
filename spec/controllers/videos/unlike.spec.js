@@ -34,9 +34,9 @@ describe('POST /videos/:id/unlike', function() {
             const query = `
                 SELECT video_id 
                 FROM likes 
-                WHERE account_id = (
+                WHERE user_id = (
                     SELECT id 
-                    FROM accounts 
+                    FROM users 
                     WHERE email = ?
                 ) LIMIT 1;
             `;

@@ -6,7 +6,7 @@
  */
 
 const db                = require('../../app/models');
-const Account           = db.Account;
+const User           = db.User;
 const VerificationToken = db.VerificationToken;
 const Auth              = require('../../app/services').Auth;
 const SpecUtil          = require('../spec-util');
@@ -17,22 +17,22 @@ const moment  = require('moment');
 const crypto  = require('crypto');
 
 describe('VerificationToken', function() {
-    let account = null;
+    let user = null;
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Account.create({
+        return User.create({
             email: 'test-' + crypto.randomBytes(8).toString('hex') + '@email.com',
             password: Auth.hashPassword('12345678')
         }).then(function(_) {
-            account = _;
+            user = _;
         });
     });
 
     describe('isExpired', function() {
         it(`should return true if the tokens' expiration_date is less than the current date`, function() {
             return VerificationToken.create({
-                account_id: account.id,
+                user_id: user.id,
                 token: Auth.generateVerificationToken(),
                 expiration_date: moment().subtract(1, 'days').toDate()
             }).then(function(token) {
@@ -42,7 +42,7 @@ describe('VerificationToken', function() {
 
         it(`should return false if the tokens' expiration_date is greater than the current date`, function() {
             return VerificationToken.create({
-                account_id: account.id,
+                user_id: user.id,
                 token: Auth.generateVerificationToken(),
                 expiration_date: moment().add(1, 'days').toDate()
             }).then(function(token) {

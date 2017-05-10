@@ -1,13 +1,15 @@
 /**
- * 20170224002008-create-account
+ * 20170224002008-create-users
  * get-native.com
  *
  * Created by henryehly on 2017/02/24.
  */
 
+// Todo: Move data relevant to 1 login mechanism to separate table
+// email, password, (email_notifications_enabled?)
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('accounts', {
+        return queryInterface.createTable('users', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -65,6 +67,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('accounts');
+        return queryInterface.dropTable('users');
     }
 };

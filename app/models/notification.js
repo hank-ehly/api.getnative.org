@@ -20,7 +20,7 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'notifications',
         underscored: true,
         associations: function(models) {
-            models.Notification.belongsTo(models.Account);
+            models.Notification.belongsTo(models.User);
         }
     });
 };

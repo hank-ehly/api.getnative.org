@@ -26,16 +26,16 @@ module.exports = function(sequelize, DataTypes) {
             newestFirst: {
                 order: [[k.Attr.CreatedAt, 'DESC']]
             },
-            forAccount: function(accountId) {
+            forUser: function(userId) {
                 return {
                     where: {
                         study_session_id: {
-                            $in: sequelize.literal(`(SELECT \`id\` FROM \`study_sessions\` WHERE \`account_id\` = ${accountId})`)
+                            $in: sequelize.literal(`(SELECT \`id\` FROM \`study_sessions\` WHERE \`user_id\` = ${userId})`)
                         }
                     }
                 };
             },
-            forAccountWithLang: function(accountId, lang) {
+            forUserWithLang: function(userId, lang) {
                 return {
                     where: {
                         study_session_id: {
@@ -46,7 +46,7 @@ module.exports = function(sequelize, DataTypes) {
                                     SELECT \`id\`
                                     FROM \`videos\`
                                     WHERE \`language_code\` = '${lang}'
-                                ) AND \`account_id\` = '${accountId}'
+                                ) AND \`user_id\` = '${userId}'
                             )`)
                         }
                     }

@@ -15,7 +15,7 @@ const _       = require('lodash');
 
 describe('POST /study', function() {
     let authorization = null;
-    let account       = null;
+    let user       = null;
     let reqBody       = null;
     let server        = null;
     let db            = null;
@@ -29,17 +29,17 @@ describe('POST /study', function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.login().then(function(initGroup) {
             authorization = initGroup.authorization;
-            account       = initGroup.response.body;
+            user       = initGroup.response.body;
             server        = initGroup.server;
             db            = initGroup.db;
 
-            const byAccountId = {
+            const byUserId = {
                 where: {
-                    account_id: account.id
+                    user_id: user.id
                 }
             };
 
-            return db.StudySession.findAll(byAccountId).then(function(studySessions) {
+            return db.StudySession.findAll(byUserId).then(function(studySessions) {
                 return db.WritingAnswer.destroy({
                     where: {
                         study_session_id: {
@@ -48,7 +48,7 @@ describe('POST /study', function() {
                     }
                 });
             }).then(function() {
-                return Promise.join(db.CuedVideo.destroy(byAccountId), db.StudySession.destroy(byAccountId));
+                return Promise.join(db.CuedVideo.destroy(byUserId), db.StudySession.destroy(byUserId));
             }).then(function() {
                 return db.Video.findOne();
             }).then(function(video) {
@@ -163,7 +163,7 @@ describe('POST /study', function() {
             return request(server).post('/study').set('authorization', authorization).send(reqBody).then(function(response) {
                 db.StudySession.findOne({
                     where: {
-                        account_id: account.id,
+                        user_id: user.id,
                         video_id: reqBody.video_id
                     }
                 }).then(function(studySession) {
@@ -172,11 +172,11 @@ describe('POST /study', function() {
             });
         });
 
-        it(`should instantiate a new queued video record linking the current account and video being studied`, function() {
+        it(`should instantiate a new queued video record linking the current user and video being studied`, function() {
             return request(server).post('/study').set('authorization', authorization).send(reqBody).then(function(response) {
                 db.CuedVideo.findOne({
                     where: {
-                        account_id: account.id,
+                        user_id: user.id,
                         video_id: reqBody.video_id
                     }
                 }).then(function(queuedVideo) {

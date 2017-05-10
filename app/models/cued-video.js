@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
         underscored: true,
         updatedAt: false,
         associations: function(models) {
-            models.CuedVideo.belongsTo(models.Account);
+            models.CuedVideo.belongsTo(models.User);
             models.CuedVideo.belongsTo(models.Video);
         }
     });

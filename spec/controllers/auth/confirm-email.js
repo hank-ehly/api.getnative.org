@@ -17,7 +17,7 @@ const _        = require('lodash');
 
 // todo: Change to use json request body -- the query parameter thing is only for the client
 describe('POST /confirm_email', function() {
-    let account = null;
+    let user = null;
     let server  = null;
     let db      = null;
 
@@ -32,11 +32,11 @@ describe('POST /confirm_email', function() {
             server = initGroup.server;
             db     = initGroup.db;
 
-            return db.Account.create({
+            return db.User.create({
                 email: 'test-' + crypto.randomBytes(8).toString('hex') + '@email.com',
                 password: Auth.hashPassword('12345678')
             }).then(function(_) {
-                account = _;
+                user = _;
             });
         });
     });
@@ -53,7 +53,7 @@ describe('POST /confirm_email', function() {
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return db.VerificationToken.create({
-                account_id: account.id,
+                user_id: user.id,
                 token: Auth.generateVerificationToken(),
                 expiration_date: moment().add(1, 'days').toDate()
             }).then(function(token) {
@@ -65,7 +65,7 @@ describe('POST /confirm_email', function() {
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
             return db.VerificationToken.create({
-                account_id: account.id,
+                user_id: user.id,
                 token: Auth.generateVerificationToken(),
                 expiration_date: moment().add(1, 'days').toDate()
             }).then(function(token) {
@@ -95,7 +95,7 @@ describe('POST /confirm_email', function() {
 
         it(`should respond with 404 Not Found if the verification token is expired`, function(done) {
             db.VerificationToken.create({
-                account_id: account.id,
+                user_id: user.id,
                 token: Auth.generateVerificationToken(),
                 expiration_date: moment().subtract(1, 'days').toDate()
             }).then(function(token) {
@@ -107,7 +107,7 @@ describe('POST /confirm_email', function() {
     describe('response.success', function() {
         it(`should respond with 200 OK if the verification succeeds`, function(done) {
             db.VerificationToken.create({
-                account_id: account.id,
+                user_id: user.id,
                 token: Auth.generateVerificationToken(),
                 expiration_date: moment().add(1, 'days').toDate()
             }).then(function(token) {
@@ -115,29 +115,29 @@ describe('POST /confirm_email', function() {
             });
         });
 
-        it(`should change the account email_verified value to true if verification succeeds`, function() {
+        it(`should change the user email_verified value to true if verification succeeds`, function() {
             return db.VerificationToken.create({
-                account_id: account.id,
+                user_id: user.id,
                 token: Auth.generateVerificationToken(),
                 expiration_date: moment().add(1, 'days').toDate()
             }).then(function(token) {
                 return request(server).post(`/confirm_email`).send({token: token.get('token')});
             }).then(function() {
-                return db.Account.findById(account.id);
+                return db.User.findById(user.id);
             }).then(function(a) {
                 assert.equal(a.get('email_verified'), true);
             });
         });
 
-        it(`should change the account email_notifications_enabled value to true if verification succeeds`, function() {
+        it(`should change the user email_notifications_enabled value to true if verification succeeds`, function() {
             return db.VerificationToken.create({
-                account_id: account.id,
+                user_id: user.id,
                 token: Auth.generateVerificationToken(),
                 expiration_date: moment().add(1, 'days').toDate()
             }).then(function(token) {
                 return request(server).post(`/confirm_email`).send({token: token.get('token')});
             }).then(function() {
-                return db.Account.findById(account.id);
+                return db.User.findById(user.id);
             }).then(function(a) {
                 assert.equal(a.get('email_notifications_enabled'), true);
             });

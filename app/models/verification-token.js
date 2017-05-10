@@ -29,7 +29,7 @@ module.exports = function(sequelize, DataTypes) {
         timestamps: false,
         underscored: true,
         associations: function(models) {
-            models.VerificationToken.belongsTo(models.Account);
+            models.VerificationToken.belongsTo(models.User);
         }
     });
 

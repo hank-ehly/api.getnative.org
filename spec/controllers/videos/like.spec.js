@@ -36,7 +36,7 @@ describe('POST /videos/:id/like', function() {
                 WHERE id NOT IN (
                     SELECT video_id
                     FROM likes
-                    WHERE account_id = ?
+                    WHERE user_id = ?
                 ) LIMIT 1
             `, {replacements: [initGroup.response.body.id]}).spread(r => requestVideoId = _.first(r).id);
         });

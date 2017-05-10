@@ -27,12 +27,12 @@ module.exports.index = (req, res, next) => {
         }
 
         const createdAt  = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
-        const cued       = Video.getCuedAttributeForAccountId(req.accountId);
+        const cued       = Video.getCuedAttributeForUserId(req.userId);
         const attributes = [createdAt, k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length, cued];
 
         const scopes = [
             'newestFirst',
-            {method: ['cuedAndMaxId', req.query.cued_only, req.accountId, req.query.max_id]},
+            {method: ['cuedAndMaxId', req.query.cued_only, req.userId, req.query.max_id]},
             {method: ['count', req.query.count]},
             {method: ['includeSubcategoryNameAndId', Subcategory]},
             {method: ['includeSpeakerName', Speaker]}
@@ -55,11 +55,11 @@ module.exports.index = (req, res, next) => {
 
 module.exports.show = (req, res, next) => {
     const likeCount = Video.getLikeCount(db, req.params.id);
-    const liked     = Video.isLikedByAccount(db, req.params.id, req.accountId);
-    const cued      = Video.isCuedByAccount(db, req.params.id, req.accountId);
+    const liked     = Video.isLikedByUser(db, req.params.id, req.userId);
+    const cued      = Video.isCuedByUser(db, req.params.id, req.userId);
 
     const relatedCreatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
-    const relatedCued      = Video.getCuedAttributeForAccountId(req.accountId);
+    const relatedCued      = Video.getCuedAttributeForUserId(req.userId);
 
     const relatedVideos = Video.scope([
         {method: ['includeSubcategoryNameAndId', Subcategory]},
@@ -105,7 +105,7 @@ module.exports.like = (req, res, next) => {
     return Video.findById(+req.params.id).then(video => {
         return Like.create({
             video_id: video.id,
-            account_id: req.accountId
+            user_id: req.userId
         });
     }).then(() => {
         res.sendStatus(204);
@@ -120,7 +120,7 @@ module.exports.unlike = (req, res, next) => {
         return Like.destroy({
             where: {
                 video_id: video.id,
-                account_id: req.accountId
+                user_id: req.userId
             },
             limit: 1
         });
@@ -135,7 +135,7 @@ module.exports.unlike = (req, res, next) => {
 module.exports.queue = (req, res, next) => {
     return CuedVideo.create({
         video_id: req.params.id,
-        account_id: req.accountId
+        user_id: req.userId
     }).then(() => {
         res.sendStatus(204);
     }).catch(next);
@@ -145,7 +145,7 @@ module.exports.dequeue = (req, res, next) => {
     return CuedVideo.destroy({
         where: {
             video_id: req.params.id,
-            account_id: req.accountId
+            user_id: req.userId
         },
         limit: 1
     }).then(() => {

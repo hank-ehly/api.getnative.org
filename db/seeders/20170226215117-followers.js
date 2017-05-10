@@ -8,7 +8,7 @@
 const chance  = require('chance').Chance();
 const models  = require('../../app/models');
 const Speaker = models.Speaker;
-const Account = models.Account;
+const User = models.User;
 const Promise = require('bluebird');
 
 module.exports = {

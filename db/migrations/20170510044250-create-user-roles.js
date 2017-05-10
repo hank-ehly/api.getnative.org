@@ -1,5 +1,5 @@
 /**
- * 20170510044250-create-account-roles
+ * 20170510044250-create-user-roles
  * get-native.com
  *
  * Created by henryehly on 2017/05/10.
@@ -7,12 +7,12 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('account_roles', {
-            account_id: {
+        return queryInterface.createTable('user_roles', {
+            user_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'accounts',
+                    model: 'users',
                     key: 'id'
                 },
                 onUpdate: 'restrict',
@@ -47,6 +47,6 @@ module.exports = {
     },
 
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('account_roles');
+        return queryInterface.dropTable('user_roles');
     }
 };

@@ -5,7 +5,7 @@
  * Created by henryehly on 2017/01/18.
  */
 
-const accounts      = require('./accounts');
+const users      = require('./users');
 const auth          = require('./auth');
 const categories    = require('./categories');
 const speakers      = require('./speakers');
@@ -14,7 +14,7 @@ const subcategories = require('./subcategories');
 const videos        = require('./videos');
 
 module.exports = {
-    accounts: accounts,
+    users: users,
     auth: auth,
     categories: categories,
     speakers: speakers,

@@ -17,11 +17,11 @@ module.exports = {
                 onUpdate: 'restrict',
                 onDelete: 'restrict'
             },
-            account_id: {
+            user_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'accounts'
+                    model: 'users'
                 },
                 onUpdate: 'restrict',
                 onDelete: 'restrict'

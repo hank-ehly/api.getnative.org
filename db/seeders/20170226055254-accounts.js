@@ -1,5 +1,5 @@
 /**
- * 20170226055254-accounts
+ * 20170226055254-users
  * get-native.com
  *
  * Created by henryehly on 2017/02/26.
@@ -11,14 +11,14 @@ const k          = require('../../config/keys.json');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        const accounts = [];
+        const users = [];
 
-        let numAccounts = 500;
+        let numUsers = 500;
 
         if ([k.Env.Test, k.Env.CircleCI].includes(process.env.NODE_ENV)) {
-            numAccounts = 5;
+            numUsers = 5;
 
-            accounts.push({
+            users.push({
                 email: 'test@email.com',
                 password: AuthHelper.hashPassword('test_password'),
                 browser_notifications_enabled: false,
@@ -30,8 +30,8 @@ module.exports = {
             });
         }
 
-        for (let i = 0; i < numAccounts; i++) {
-            accounts.push({
+        for (let i = 0; i < numUsers; i++) {
+            users.push({
                 email: chance.email(),
                 password: AuthHelper.hashPassword('password'),
                 browser_notifications_enabled: chance.bool(),
@@ -43,10 +43,10 @@ module.exports = {
             });
         }
 
-        return queryInterface.bulkInsert('accounts', accounts);
+        return queryInterface.bulkInsert('users', users);
     },
 
     down: function(queryInterface, Sequelize) {
-        return queryInterface.bulkDelete('accounts');
+        return queryInterface.bulkDelete('users');
     }
 };

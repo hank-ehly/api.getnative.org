@@ -7,11 +7,11 @@
         "RequestParam": "Request param is invalid",
         "Auth": "Auth",
         "UserNamePasswordIncorrect": "Username or password is incorrect",
-        "AccountAlreadyExists": "Account already exists",
+        "UserAlreadyExists": "User already exists",
         "PasswordIncorrect": "That username/password is incorrect",
         "TokenExpired": "Token has expired",
-        "AccountMissing": "No account with this email exists",
-        "AccountAlreadyVerified": "This account is already verified"
+        "UserMissing": "No user with this email exists",
+        "UserAlreadyVerified": "This user is already verified"
     },
     "lang": "en",
     "password-updated": {

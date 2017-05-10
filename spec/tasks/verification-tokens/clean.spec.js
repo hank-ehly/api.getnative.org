@@ -9,7 +9,7 @@ const SpecUtil = require('../../spec-util');
 const db = require('../../../app/models');
 const k = require('../../../config/keys.json');
 const VerificationToken = db[k.Model.VerificationToken];
-const Account = db[k.Model.Account];
+const User = db[k.Model.User];
 const Auth = require('../../../app/services')['Auth'];
 
 const assert = require('assert');
@@ -53,11 +53,11 @@ describe('clean (VerificationToken)', function() {
     it(`should not delete VerificationToken records whose expiration date is in the future`, function(done) {
         this.timeout(SpecUtil.defaultTimeout);
 
-        Account.findOne().then(function(account) {
-            let accountId = account.get(k.Attr.Id);
+        User.findOne().then(function(user) {
+            let userId = user.get(k.Attr.Id);
 
             return VerificationToken.create({
-                account_id: accountId,
+                user_id: userId,
                 token: Auth.generateVerificationToken(),
                 expiration_date: moment().add(1, 'days').toDate()
             });

@@ -15,7 +15,7 @@ const regex = {
 const validLangCodes = ['en', 'ja'];
 
 module.exports = {
-    accounts: {
+    users: {
         index: {
             headers: {
                 authorization: Joi.string().required()

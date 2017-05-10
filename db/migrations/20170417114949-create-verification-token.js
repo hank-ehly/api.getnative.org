@@ -23,11 +23,11 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.DATE
             },
-            account_id: {
+            user_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'accounts',
+                    model: 'users',
                     key: 'id'
                 },
                 onUpdate: 'restrict',

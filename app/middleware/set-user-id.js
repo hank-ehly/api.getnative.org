@@ -1,5 +1,5 @@
 /**
- * set-account-id
+ * set-user-id
  * get-native.com
  *
  * Created by henryehly on 2017/04/21.
@@ -15,17 +15,17 @@ const _    = require('lodash');
 
 module.exports = (req, res, next) => {
     if (req.headers && req.headers.authorization) {
-        const accountId = Auth.extractAccountIdFromRequest(req);
+        const userId = Auth.extractUserIdFromRequest(req);
 
-        logger.info('Account ID:', accountId);
+        logger.info('User ID:', userId);
 
-        if (!accountId) {
+        if (!userId) {
             res.status(422);
             next(new GetNativeError(k.Error.JWT));
         }
 
         _.assign(req, {
-            accountId: accountId
+            userId: userId
         });
     }
     next();

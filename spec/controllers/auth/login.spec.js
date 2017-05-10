@@ -81,7 +81,7 @@ describe('POST /login', function() {
             assert(_.isBoolean(response.body.browser_notifications_enabled));
         });
 
-        it(`should not include the account password in the response`, function() {
+        it(`should not include the user password in the response`, function() {
             assert(!response.body.password);
         });
 

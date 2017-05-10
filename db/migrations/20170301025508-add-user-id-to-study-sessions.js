@@ -1,5 +1,5 @@
 /**
- * 20170301025508-add-account-id-to-study-sessions
+ * 20170301025508-add-user-id-to-study-sessions
  * get-native.com
  *
  * Created by henryehly on 2017/03/01.
@@ -7,11 +7,11 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.addColumn('study_sessions', 'account_id', {
+        return queryInterface.addColumn('study_sessions', 'user_id', {
             type: Sequelize.INTEGER,
             allowNull: false,
             references: {
-                model: 'accounts',
+                model: 'users',
                 key: 'id'
             },
             onUpdate: 'restrict',
@@ -20,6 +20,6 @@ module.exports = {
     },
 
     down: function(queryInterface, Sequelize) {
-        return queryInterface.removeColumn('study_sessions', 'account_id');
+        return queryInterface.removeColumn('study_sessions', 'user_id');
     }
 };

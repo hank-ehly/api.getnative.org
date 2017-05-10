@@ -1,5 +1,5 @@
 /**
- * account
+ * user
  * get-native.com
  *
  * Created by henryehly on 2017/03/26.
@@ -10,15 +10,15 @@ const SpecUtil        = require('../spec-util');
 const Promise         = require('bluebird');
 const db              = require('../../app/models');
 const _               = require('lodash');
-const Account         = db.Account;
+const User         = db.User;
 const Video           = db.Video;
 const WritingAnswer   = db.WritingAnswer;
 const WritingQuestion = db.WritingQuestion;
 const StudySession    = db.StudySession;
 
-describe('Account', function() {
+describe('User', function() {
     const credentials = {email: '', password: '12345678'};
-    let account       = null;
+    let user       = null;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -28,8 +28,8 @@ describe('Account', function() {
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
         credentials.email = 'test-' + Math.floor(Math.random() * 10000000) + '@email.com';
-        return Account.create(credentials).then(function(_) {
-            account = _;
+        return User.create(credentials).then(function(_) {
+            user = _;
         });
     });
 
@@ -40,29 +40,29 @@ describe('Account', function() {
 
     describe('existsForEmail', function() {
         it(`should return true if a user exists for a given email address`, function() {
-            return Account.existsForEmail(account.email).then(assert);
+            return User.existsForEmail(user.email).then(assert);
         });
 
         it(`should return false if a user does not exist for a given email address`, function() {
-            return Account.existsForEmail('nonexistent@email.com').then(function(exists) {
+            return User.existsForEmail('nonexistent@email.com').then(function(exists) {
                 assert(!exists);
             });
         });
 
         it(`should throw a TypeError if the first argument is not an email address`, function() {
             assert.throws(function() {
-                Account.existsForEmail(123)
+                User.existsForEmail(123)
             }, TypeError);
         });
     });
 
     describe('calculateStudySessionStatsForLanguage', function() {
         it(`should throw a ReferenceError if no 'lang' is provided`, function() {
-            assert.throws(() => account.calculateStudySessionStatsForLanguage(), ReferenceError);
+            assert.throws(() => user.calculateStudySessionStatsForLanguage(), ReferenceError);
         });
 
         it(`should throw a TypeError if the 'lang' argument is not a valid lang code`, function() {
-            assert.throws(() => account.calculateStudySessionStatsForLanguage('invalid'), TypeError);
+            assert.throws(() => user.calculateStudySessionStatsForLanguage('invalid'), TypeError);
         });
 
         it(`should return the total study time for the specified language`, function() {
@@ -84,7 +84,7 @@ describe('Account', function() {
                 const englishRecords = _.times(numberOfStudySessions, function(i) {
                     return {
                         video_id: englishVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: englishStudyTime,
                         is_completed: true
                     }
@@ -93,7 +93,7 @@ describe('Account', function() {
                 const japaneseRecords = _.times(numberOfStudySessions, function(i) {
                     return {
                         video_id: japaneseVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: japaneseStudyTime,
                         is_completed: true
                     }
@@ -106,7 +106,7 @@ describe('Account', function() {
 
                 return Promise.all([createEnglishStudySessions, createJapaneseStudySessions]);
             }).then(function() {
-                return Promise.all([account.calculateStudySessionStatsForLanguage('en'), account.calculateStudySessionStatsForLanguage('ja')]);
+                return Promise.all([user.calculateStudySessionStatsForLanguage('en'), user.calculateStudySessionStatsForLanguage('ja')]);
             }).spread(function(e, j) {
                 assert.equal(e.total_time_studied, englishStudyTime * numberOfStudySessions);
                 assert.equal(j.total_time_studied, (japaneseStudyTime * numberOfStudySessions) - japaneseStudyTime);
@@ -133,7 +133,7 @@ describe('Account', function() {
                 const englishRecords = _.times(numberOfEnglishStudySessions, function(i) {
                     return {
                         video_id: englishVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: englishStudyTime,
                         is_completed: true
                     }
@@ -142,7 +142,7 @@ describe('Account', function() {
                 const japaneseRecords = _.times(numberOfJapaneseStudySessions, function(i) {
                     return {
                         video_id: japaneseVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: japaneseStudyTime,
                         is_completed: true
                     }
@@ -155,7 +155,7 @@ describe('Account', function() {
 
                 return Promise.all([createEnglishStudySessions, createJapaneseStudySessions]);
             }).then(function() {
-                return Promise.all([account.calculateStudySessionStatsForLanguage('en'), account.calculateStudySessionStatsForLanguage('ja')]);
+                return Promise.all([user.calculateStudySessionStatsForLanguage('en'), user.calculateStudySessionStatsForLanguage('ja')]);
             }).spread(function(e, j) {
                 assert.equal(e.total_study_sessions, numberOfEnglishStudySessions - 1);
                 assert.equal(j.total_study_sessions, numberOfJapaneseStudySessions);
@@ -163,13 +163,13 @@ describe('Account', function() {
         });
 
         it(`should return 0 if the user has not studied before`, function() {
-            return account.calculateStudySessionStatsForLanguage('en').then(function(stats) {
+            return user.calculateStudySessionStatsForLanguage('en').then(function(stats) {
                 assert.equal(stats.total_time_studied, 0);
             });
         });
 
         it(`should return 0 if the user has not studied before`, function() {
-            return account.calculateStudySessionStatsForLanguage('ja').then(function(stats) {
+            return user.calculateStudySessionStatsForLanguage('ja').then(function(stats) {
                 assert.equal(stats.total_study_sessions, 0);
             });
         });
@@ -177,11 +177,11 @@ describe('Account', function() {
 
     describe('calculateWritingStatsForLanguage', function() {
         it(`should throw a ReferenceError if no 'lang' is provided`, function() {
-            assert.throws(() => account.calculateWritingStatsForLanguage(), ReferenceError);
+            assert.throws(() => user.calculateWritingStatsForLanguage(), ReferenceError);
         });
 
         it(`should throw a TypeError if the 'lang' argument is not a valid lang code`, function() {
-            assert.throws(() => account.calculateWritingStatsForLanguage('invalid'), TypeError);
+            assert.throws(() => user.calculateWritingStatsForLanguage('invalid'), TypeError);
         });
 
         it(`should return the maximum number of words the user has written in a single study session for the specified language`, function() {
@@ -195,7 +195,7 @@ describe('Account', function() {
                 const englishRecords = _.times(numberOfStudySessions, function(i) {
                     return {
                         video_id: englishVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: 300,
                         is_completed: true
                     }
@@ -204,7 +204,7 @@ describe('Account', function() {
                 const japaneseRecords = _.times(numberOfStudySessions, function(i) {
                     return {
                         video_id: japaneseVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: 300,
                         is_completed: true
                     }
@@ -254,7 +254,7 @@ describe('Account', function() {
                     englishAnswer_1, englishAnswer_2, japaneseAnswer_1, japaneseAnswer_2
                 ]);
             }).then(function() {
-                return Promise.all([account.calculateWritingStatsForLanguage('en'), account.calculateWritingStatsForLanguage('ja')]);
+                return Promise.all([user.calculateWritingStatsForLanguage('en'), user.calculateWritingStatsForLanguage('ja')]);
             }).spread(function(e, j) {
                 assert.equal(e.maximum_words, 200, 'English');
                 assert.equal(j.maximum_words, 300, 'Japanese');
@@ -276,7 +276,7 @@ describe('Account', function() {
                 const englishRecords = _.times(2, function(i) {
                     return {
                         video_id: englishVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: 300,
                         is_completed: true
                     }
@@ -285,7 +285,7 @@ describe('Account', function() {
                 const japaneseRecords = _.times(2, function(i) {
                     return {
                         video_id: japaneseVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: 300,
                         is_completed: true
                     }
@@ -333,7 +333,7 @@ describe('Account', function() {
 
                 return WritingAnswer.bulkCreate([englishAnswer_1, englishAnswer_2, japaneseAnswer_1, japaneseAnswer_2]);
             }).then(function() {
-                return Promise.all([account.calculateWritingStatsForLanguage('en'), account.calculateWritingStatsForLanguage('ja')]);
+                return Promise.all([user.calculateWritingStatsForLanguage('en'), user.calculateWritingStatsForLanguage('ja')]);
             }).spread(function(e, j) {
                 assert.equal(e.maximum_wpm, 20, 'English');
                 assert.equal(j.maximum_wpm, 80, 'Japanese');
@@ -341,13 +341,13 @@ describe('Account', function() {
         });
 
         it(`should return 0 WPM if the user has not studied before`, function() {
-            return account.calculateWritingStatsForLanguage('en').then(function(stats) {
+            return user.calculateWritingStatsForLanguage('en').then(function(stats) {
                 assert.equal(stats.maximum_wpm, 0);
             });
         });
 
         it(`should return 0 as the maximum number of words if the user has not studied before`, function() {
-            return account.calculateWritingStatsForLanguage('en').then(function(stats) {
+            return user.calculateWritingStatsForLanguage('en').then(function(stats) {
                 assert.equal(stats.maximum_words, 0);
             });
         });
@@ -355,11 +355,11 @@ describe('Account', function() {
 
     describe('calculateStudyStreaks', function() {
         it(`should throw a ReferenceError if no 'lang' is provided`, function() {
-            assert.throws(() => account.calculateStudyStreaksForLanguage(), ReferenceError);
+            assert.throws(() => user.calculateStudyStreaksForLanguage(), ReferenceError);
         });
 
         it(`should throw a TypeError if the 'lang' argument is not a valid lang code`, function() {
-            assert.throws(() => account.calculateStudyStreaksForLanguage('invalid'), TypeError);
+            assert.throws(() => user.calculateStudyStreaksForLanguage('invalid'), TypeError);
         });
 
         it(`should return the longest number of consecutive days the user has studied for the specified language`, function() {
@@ -392,7 +392,7 @@ describe('Account', function() {
                 const englishStudySessions = _.times(englishStudyDates.length, function(i) {
                     return {
                         video_id: englishVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: 300,
                         created_at: englishStudyDates[i],
                         is_completed: true
@@ -402,7 +402,7 @@ describe('Account', function() {
                 const japaneseStudySessions = _.times(japaneseStudyDates.length, function(i) {
                     return {
                         video_id: japaneseVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: 300,
                         created_at: japaneseStudyDates[i],
                         is_completed: true
@@ -413,7 +413,7 @@ describe('Account', function() {
 
                 return StudySession.bulkCreate(_.concat(englishStudySessions, japaneseStudySessions));
             }).then(function() {
-                return Promise.all([account.calculateStudyStreaksForLanguage('en'), account.calculateStudyStreaksForLanguage('ja')]);
+                return Promise.all([user.calculateStudyStreaksForLanguage('en'), user.calculateStudyStreaksForLanguage('ja')]);
             }).spread(function(englishStats, japaneseStats) {
                 assert.equal(englishStats.longest_consecutive_days, 4, '(English)');
                 assert.equal(japaneseStats.longest_consecutive_days, 6, '(Japanese)');
@@ -441,7 +441,7 @@ describe('Account', function() {
                 const englishStudySessions = _.times(englishStudyDates.length, function(i) {
                     return {
                         video_id: englishVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: 300,
                         created_at: englishStudyDates[i],
                         is_completed: true
@@ -453,7 +453,7 @@ describe('Account', function() {
                 const japaneseStudySessions = _.times(japaneseStudyDates.length, function(i) {
                     return {
                         video_id: japaneseVideo.id,
-                        account_id: account.id,
+                        user_id: user.id,
                         study_time: 300,
                         created_at: japaneseStudyDates[i],
                         is_completed: true
@@ -462,7 +462,7 @@ describe('Account', function() {
 
                 return StudySession.bulkCreate(_.concat(englishStudySessions, japaneseStudySessions));
             }).then(function() {
-                return Promise.all([account.calculateStudyStreaksForLanguage('en'), account.calculateStudyStreaksForLanguage('ja')]);
+                return Promise.all([user.calculateStudyStreaksForLanguage('en'), user.calculateStudyStreaksForLanguage('ja')]);
             }).spread(function(englishStats, japaneseStats) {
                 assert.equal(englishStats.consecutive_days, 2, '(English)');
                 assert.equal(japaneseStats.consecutive_days, 1, '(Japanese)');
@@ -470,13 +470,13 @@ describe('Account', function() {
         });
 
         it(`should return 0 as the current streak if the user has not studied before`, function() {
-            return account.calculateStudyStreaksForLanguage('en').then(function(stats) {
+            return user.calculateStudyStreaksForLanguage('en').then(function(stats) {
                 assert.equal(stats.consecutive_days, 0);
             });
         });
 
         it(`should return 0 as the longest streak if the user has not studied before`, function() {
-            return account.calculateStudyStreaksForLanguage('en').then(function(stats) {
+            return user.calculateStudyStreaksForLanguage('en').then(function(stats) {
                 assert.equal(stats.longest_consecutive_days, 0);
             });
         });

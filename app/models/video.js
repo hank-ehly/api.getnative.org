@@ -45,13 +45,13 @@ module.exports = function(sequelize, DataTypes) {
             count: function(count) {
                 return {limit: count ? +count : 9};
             },
-            cuedAndMaxId: function(cuedOnly, accountId, maxId) {
+            cuedAndMaxId: function(cuedOnly, userId, maxId) {
                 const conditions = {};
 
-                if (cuedOnly && accountId) {
+                if (cuedOnly && userId) {
                     conditions.where = {
                         id: {
-                            $in: [sequelize.literal('SELECT `video_id` FROM `cued_videos` WHERE `account_id` = ' + accountId)]
+                            $in: [sequelize.literal('SELECT `video_id` FROM `cued_videos` WHERE `user_id` = ' + userId)]
                         }
                     };
                 }
@@ -131,19 +131,19 @@ module.exports = function(sequelize, DataTypes) {
         }
     });
 
-    Video.getCuedAttributeForAccountId = function(accountId) {
-        const query = 'EXISTS(SELECT `video_id` FROM `cued_videos` WHERE `video_id` = `Video`.`id` AND `account_id` = ' + accountId + ')';
+    Video.getCuedAttributeForUserId = function(userId) {
+        const query = 'EXISTS(SELECT `video_id` FROM `cued_videos` WHERE `video_id` = `Video`.`id` AND `user_id` = ' + userId + ')';
         return [sequelize.literal(query), 'cued'];
     };
 
-    Video.isLikedByAccount = function(db, videoId, accountId) {
+    Video.isLikedByUser = function(db, videoId, userId) {
         // todo: use EXISTS
-        return db.Like.count({where: ['video_id = ? AND account_id = ?', videoId, accountId]}).then(c => c === 1);
+        return db.Like.count({where: ['video_id = ? AND user_id = ?', videoId, userId]}).then(c => c === 1);
     };
 
-    Video.isCuedByAccount = function(db, videoId, accountId) {
+    Video.isCuedByUser = function(db, videoId, userId) {
         // todo: use EXISTS
-        return db.CuedVideo.count({where: ['video_id = ? AND account_id = ?', videoId, accountId]}).then(c => c === 1);
+        return db.CuedVideo.count({where: ['video_id = ? AND user_id = ?', videoId, userId]}).then(c => c === 1);
     };
 
     Video.getLikeCount = function(db, videoId) {

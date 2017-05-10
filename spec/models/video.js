@@ -7,7 +7,7 @@
 
 const SpecUtil = require('../spec-util');
 const db       = require('../../app/models');
-const Account  = db.Account;
+const User  = db.User;
 const Video    = db.Video;
 const k        = require('../../config/keys.json');
 
@@ -16,7 +16,7 @@ const assert   = require('assert');
 const _        = require('lodash');
 
 describe('Video', function() {
-    let account = null;
+    let user = null;
     let server = null;
 
     before(function() {
@@ -28,7 +28,7 @@ describe('Video', function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.login().then(function(initGroup) {
             server  = initGroup.server;
-            account = initGroup.response.body;
+            user = initGroup.response.body;
         });
     });
 
@@ -45,8 +45,8 @@ describe('Video', function() {
         it(`should only return cued videos whose ids are less than the max id`, function() {
             return Video.findAll({attributes: ['id']}).then(function(videos) {
                 const midVideoId = videos[Math.floor(videos.length / 2)].id;
-                const cued = Video.getCuedAttributeForAccountId(account.id);
-                return Video.scope({method: ['cuedAndMaxId', true, account.id, midVideoId]}).findAll({attributes: {include: [cued]}})
+                const cued = Video.getCuedAttributeForUserId(user.id);
+                return Video.scope({method: ['cuedAndMaxId', true, user.id, midVideoId]}).findAll({attributes: {include: [cued]}})
                     .then(function(videos) {
                         _.each(videos, function(video) {
                             assert(_.lt(video.get('id'), midVideoId));
@@ -59,8 +59,8 @@ describe('Video', function() {
         it(`should return videos whose ids are less than the max id`, function() {
             return Video.findAll({attributes: ['id']}).then(function(videos) {
                 const midVideoId = videos[Math.floor(videos.length / 2)].id;
-                const cued = Video.getCuedAttributeForAccountId(account.id);
-                return Video.scope({method: ['cuedAndMaxId', false, account.id, midVideoId]}).findAll({attributes: {include: [cued]}})
+                const cued = Video.getCuedAttributeForUserId(user.id);
+                return Video.scope({method: ['cuedAndMaxId', false, user.id, midVideoId]}).findAll({attributes: {include: [cued]}})
                     .then(function(videos) {
                         assert(_.lt(_.first(videos).id, midVideoId));
                     });
@@ -68,16 +68,16 @@ describe('Video', function() {
         });
 
         it(`should return videos`, function() {
-            const cued = Video.getCuedAttributeForAccountId(account.id);
-            return Video.scope({method: ['cuedAndMaxId', false, account.id]}).findAll({attributes: {include: [cued]}})
+            const cued = Video.getCuedAttributeForUserId(user.id);
+            return Video.scope({method: ['cuedAndMaxId', false, user.id]}).findAll({attributes: {include: [cued]}})
                 .then(function(videos) {
                     assert(_.gt(videos.length, 0));
                 });
         });
 
         it(`should only return cued videos`, function() {
-            const cued = Video.getCuedAttributeForAccountId(account.id);
-            return Video.scope({method: ['cuedAndMaxId', true, account.id]}).findAll({attributes: {include: [cued]}})
+            const cued = Video.getCuedAttributeForUserId(user.id);
+            return Video.scope({method: ['cuedAndMaxId', true, user.id]}).findAll({attributes: {include: [cued]}})
                 .then(function(videos) {
                     _.each(videos, function(video) {
                         assert.equal(video.get('cued'), true);

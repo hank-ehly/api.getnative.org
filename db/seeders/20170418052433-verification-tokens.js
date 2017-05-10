@@ -8,7 +8,7 @@
 const db = require('../../app/models');
 const k = require('../../config/keys.json');
 const VerificationToken = db[k.Model.VerificationToken];
-const Account = db[k.Model.Account];
+const User = db[k.Model.User];
 const Auth = require('../../app/services')['Auth'];
 
 const Promise = require('bluebird');
@@ -17,20 +17,20 @@ const _ = require('lodash');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return Account.findAll().then(accounts => {
+        return User.findAll().then(users => {
             const verificationTokens = [];
 
-            _(accounts).each(account => {
+            _(users).each(user => {
                 let expirationDate = null;
 
-                if (account.get([k.Attr.EmailVerified])) {
+                if (user.get([k.Attr.EmailVerified])) {
                     expirationDate = moment().subtract(_.random(1, 365, false), 'days').toDate();
                 } else {
                     expirationDate = moment().add(1, 'days').toDate();
                 }
 
                 verificationTokens.push({
-                    account_id: account.get(k.Attr.Id),
+                    user_id: user.get(k.Attr.Id),
                     token: Auth.generateVerificationToken(),
                     expiration_date: expirationDate
                 });

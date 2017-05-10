@@ -8,14 +8,14 @@
 const chance  = require('chance').Chance();
 const models  = require('../../app/models');
 const Promise = require('bluebird');
-const Account = models.Account;
+const User = models.User;
 const Video   = models.Video;
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        const promises = [Account.min('id'), Account.max('id'), Video.min('id'), Video.max('id')];
+        const promises = [User.min('id'), User.max('id'), Video.min('id'), Video.max('id')];
 
-        return Promise.all(promises).spread((minAccountId, maxAccountId, minVideoId, maxVideoId) => {
+        return Promise.all(promises).spread((minUserId, maxUserId, minVideoId, maxVideoId) => {
             const studySessions = [];
             const possibleStudyTimes = [];
 
@@ -26,7 +26,7 @@ module.exports = {
             const minDate = new Date(2016, 0, 0).valueOf();
             const maxDate = new Date().valueOf();
 
-            for (let i = minAccountId; i <= maxAccountId; i++) {
+            for (let i = minUserId; i <= maxUserId; i++) {
                 let numStudySessions = chance.integer({
                     min: 5,
                     max: 365
@@ -38,7 +38,7 @@ module.exports = {
                             min: minVideoId,
                             max: maxVideoId
                         }),
-                        account_id: i,
+                        user_id: i,
                         study_time: chance.pickone(possibleStudyTimes),
                         created_at: new Date(chance.integer({min: minDate, max: maxDate})),
                         is_completed: chance.bool()

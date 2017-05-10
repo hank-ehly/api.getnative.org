@@ -11,7 +11,7 @@ const WritingAnswer   = db[k.Model.WritingAnswer];
 const WritingQuestion = db[k.Model.WritingQuestion];
 const QueuedVideo     = db[k.Model.CuedVideo];
 const StudySession    = db[k.Model.StudySession];
-const Account         = db[k.Model.Account];
+const User         = db[k.Model.User];
 const Video           = db[k.Model.Video];
 const services        = require('../services');
 const ModelService    = services['Model'](db);
@@ -23,14 +23,14 @@ const Promise         = require('bluebird');
 const _               = require('lodash');
 
 module.exports.stats = (req, res, next) => {
-    Account.findById(req.accountId).then(account => {
-        if (!account) {
-            throw new GetNativeError(k.Error.AccountMissing);
+    User.findById(req.userId).then(user => {
+        if (!user) {
+            throw new GetNativeError(k.Error.UserMissing);
         }
 
-        const sessionStats = account.calculateStudySessionStatsForLanguage(req.params.lang);
-        const writingStats = account.calculateWritingStatsForLanguage(req.params.lang);
-        const studyStreaks = account.calculateStudyStreaksForLanguage(req.params.lang);
+        const sessionStats = user.calculateStudySessionStatsForLanguage(req.params.lang);
+        const writingStats = user.calculateWritingStatsForLanguage(req.params.lang);
+        const studyStreaks = user.calculateStudyStreaksForLanguage(req.params.lang);
 
         return Promise.join(sessionStats, writingStats, studyStreaks, (sessions, writing, streaks) => {
             res.status(200).send({
@@ -51,7 +51,7 @@ module.exports.writing_answers = (req, res, next) => {
 
     WritingAnswer.scope([
         'newestFirst',
-        {method: ['forAccountWithLang', req.accountId, req.params.lang]},
+        {method: ['forUserWithLang', req.userId, req.params.lang]},
         {method: ['since', req.query.since]},
         {method: ['maxId', req.query.max_id]}
     ]).findAll({
@@ -81,13 +81,13 @@ module.exports.createStudySession = (req, res, next) => {
 
     const queuedVideo = QueuedVideo.findOrCreate({
         where: {
-            account_id: req.accountId,
+            user_id: req.userId,
             video_id: videoId
         }
     });
 
     const studySession = StudySession.create({
-        account_id: req.accountId,
+        user_id: req.userId,
         video_id: videoId,
         study_time: studyTime
     });

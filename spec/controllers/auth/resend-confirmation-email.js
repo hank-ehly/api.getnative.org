@@ -17,7 +17,7 @@ const i18n          = require('i18n');
 const _             = require('lodash');
 
 describe('POST /resend_confirmation_email', function() {
-    let account = null;
+    let user = null;
     let server  = null;
     let db      = null;
 
@@ -33,11 +33,11 @@ describe('POST /resend_confirmation_email', function() {
             db     = initGroup.db;
 
 
-            return db.Account.create({
+            return db.User.create({
                 email: chance.email(),
                 password: Auth.hashPassword('12345678')
             }).then(function(_) {
-                account = _;
+                user = _;
             });
         });
     });
@@ -64,34 +64,34 @@ describe('POST /resend_confirmation_email', function() {
             request(server).post('/resend_confirmation_email').send({email: '@email.com'}).expect(400, done);
         });
 
-        it(`should respond with 404 Not Found if no account with the specified email address exists`, function(done) {
+        it(`should respond with 404 Not Found if no user with the specified email address exists`, function(done) {
             request(server).post('/resend_confirmation_email').send({email: 'unknown@email.com'}).expect(404, done);
         });
 
-        it(`should contain the appropriate error response object if the account does not exist`, function() {
+        it(`should contain the appropriate error response object if the user does not exist`, function() {
             return request(server).post('/resend_confirmation_email').send({email: 'unknown@email.com'}).then(function(response) {
                 const error = _.first(response.body);
                 assert.equal(error.message, i18n.__(`errors.${error.code}`));
             });
         });
 
-        it(`should respond with 422 Unprocessable Entity if the account linked to the specified email address is already confirmed`, function(done) {
-            db.Account.create({
+        it(`should respond with 422 Unprocessable Entity if the user linked to the specified email address is already confirmed`, function(done) {
+            db.User.create({
                 email_verified: true,
                 email: chance.email(),
                 password: Auth.hashPassword('12345678')
-            }).then(function(account) {
-                request(server).post('/resend_confirmation_email').send({email: account.email}).expect(422, done);
+            }).then(function(user) {
+                request(server).post('/resend_confirmation_email').send({email: user.email}).expect(422, done);
             });
         });
 
-        it(`should contains the appropriate error response object if the account is already confirmed`, function() {
-            return db.Account.create({
+        it(`should contains the appropriate error response object if the user is already confirmed`, function() {
+            return db.User.create({
                 email_verified: true,
                 email: chance.email(),
                 password: Auth.hashPassword('12345678')
-            }).then(function(account) {
-                return request(server).post('/resend_confirmation_email').send({email: account.email});
+            }).then(function(user) {
+                return request(server).post('/resend_confirmation_email').send({email: user.email});
             }).then(function(response) {
                 const error = _.first(response.body);
                 assert.equal(error.message, i18n.__(`errors.${error.code}`));
@@ -101,37 +101,37 @@ describe('POST /resend_confirmation_email', function() {
 
     describe('response.success', function() {
         it(`should respond with 204 No Content if the request succeeds`, function(done) {
-            request(server).post('/resend_confirmation_email').send({email: account.email}).expect(204, done);
+            request(server).post('/resend_confirmation_email').send({email: user.email}).expect(204, done);
         });
 
-        it(`should create a new VerificationToken linked to the account`, function() {
-            return request(server).post('/resend_confirmation_email').send({email: account.email}).then(function(response) {
-                return db.VerificationToken.findOne({where: {account_id: account.id}});
+        it(`should create a new VerificationToken linked to the user`, function() {
+            return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
+                return db.VerificationToken.findOne({where: {user_id: user.id}});
             }).then(function(token) {
                 assert(token);
             });
         });
 
-        it(`should send an email to the specified address if it is linked to an account`, function() {
-            return request(server).post('/resend_confirmation_email').send({email: account.email}).then(function(response) {
+        it(`should send an email to the specified address if it is linked to an user`, function() {
+            return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
                 return db.VerificationToken.findOne({
                     where: {
-                        account_id: account.id
+                        user_id: user.id
                     }
                 }).then(function(token) {
                     return SpecUtil.getAllEmail().then(function(emails) {
                         const recipientEmailAddress = _.first(_.last(emails).envelope.to).address;
-                        assert.equal(recipientEmailAddress, account.email);
+                        assert.equal(recipientEmailAddress, user.email);
                     });
                 });
             });
         });
 
         it(`should send an email containing the confirmation URL (with the correct VerificationToken token)`, function() {
-            return request(server).post('/resend_confirmation_email').send({email: account.email}).then(function(response) {
+            return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
                 return db.VerificationToken.findOne({
                     where: {
-                        account_id: account.id
+                        user_id: user.id
                     }
                 }).then(function(token) {
                     return SpecUtil.getAllEmail().then(function(emails) {

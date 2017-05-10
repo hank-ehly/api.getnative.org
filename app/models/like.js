@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
         underscored: true,
         updatedAt: false,
         associations: function(models) {
-            models.Like.belongsTo(models.Account);
+            models.Like.belongsTo(models.User);
             models.Like.belongsTo(models.Video);
         }
     });
