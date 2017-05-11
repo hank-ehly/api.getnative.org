@@ -111,15 +111,3 @@ module.exports.resendConfirmationEmail = (req, res, next) => {
         next(e);
     }).catch(next);
 };
-
-module.exports.authenticate = (req, res, next) => {
-    return Auth.validateRequest(req).then(token => {
-        return Auth.refreshToken(token);
-    }).then(token => {
-        Auth.setAuthHeadersOnResponseWithToken(res, token); // todo: make a separate middleware
-        next();
-    }).catch(e => {
-        res.status(401);
-        next(new GetNativeError(k.Error.JWT));
-    });
-};
