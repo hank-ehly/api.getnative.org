@@ -10,6 +10,7 @@ const router = require('express').Router();
 const pv = require('./param-validation');
 
 const middleware = require('../app/middleware');
+const passport = require('passport');
 const ValidateParams = middleware['ValidateRequestParameters'];
 const SetUserId = middleware['SetUserId'];
 const Authenticate = middleware['Authenticate'];
@@ -20,8 +21,9 @@ router.post('/users', ValidateParams(pv.users.create), ctrl.users.create);
 // todo: Combine with /users/password
 router.patch('/users', ValidateParams(pv.users.update), SetUserId, Authenticate, ctrl.users.update);
 
-// todo: Rest-ify all
+router.get('/oauth/facebook/callback', passport.authenticate('facebook', {failureRedirect: 'https://hankehly.com'}), ctrl.oauth.facebookCallback);
 
+// todo: Rest-ify all
 router.post( '/users/password',              ValidateParams(pv.users.updatePassword),         SetUserId, Authenticate, ctrl.users.updatePassword);
 router.post( '/users/email',                 ValidateParams(pv.users.updateEmail),            SetUserId, Authenticate, ctrl.users.updateEmail);
 router.get(  '/categories',                  ValidateParams(pv.categories.index),             SetUserId, Authenticate, ctrl.categories.index);

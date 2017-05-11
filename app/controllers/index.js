@@ -5,22 +5,18 @@
  * Created by henryehly on 2017/01/18.
  */
 
-const users = require('./users');
-const auth = require('./auth');
-const categories = require('./categories');
-const sessions = require('./sessions');
-const speakers = require('./speakers');
-const study = require('./study');
-const subcategories = require('./subcategories');
-const videos = require('./videos');
+const path = require('path');
+const fs   = require('fs');
+const _    = require('lodash');
 
-module.exports = {
-    users: users,
-    auth: auth,
-    categories: categories,
-    sessions: sessions,
-    speakers: speakers,
-    study: study,
-    subcategories: subcategories,
-    videos: videos
-};
+const controllers = {};
+
+fs.readdirSync(__dirname).filter((file) => {
+    return !_.startsWith(file, '.') && _.endsWith(file, '.js') && file !== path.basename(module.filename);
+}).forEach((file) => {
+    const moduleName = file.substring(0, file.length - 3);
+    const modulePath = path.join(__dirname, file);
+    controllers[moduleName] = require(modulePath);
+});
+
+module.exports = controllers;
