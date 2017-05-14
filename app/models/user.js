@@ -71,9 +71,10 @@ module.exports = function(sequelize, DataTypes) {
 
         const query = `
             SELECT EXISTS(
-                SELECT id
-                FROM users 
-                WHERE email = ?
+                SELECT U.id
+                FROM users U
+                LEFT JOIN credentials C ON U.id = C.user_id
+                WHERE C.email = ?
             ) AS does_exist
         `;
 

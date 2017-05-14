@@ -77,9 +77,16 @@ module.exports.resendConfirmationEmail = (req, res, next) => {
             throw new GetNativeError(k.Error.UserMissing);
         }
 
-        return User.findOne({where: {email: req.body[k.Attr.Email]}});
-    }).then(function(user) {
-        if (user.get(k.Attr.EmailVerified)) {
+        return Credential.findOne({
+            where: {email: req.body[k.Attr.Email]},
+            include: [User]
+        });
+    }).then(function(credential) {
+        credential = credential.get({plain: true});
+        const user = credential['User'];
+        user[k.Attr.Email] = credential[k.Attr.Email];
+
+        if (user[k.Attr.EmailVerified]) {
             throw new GetNativeError(k.Error.UserAlreadyVerified);
         }
 
@@ -87,7 +94,7 @@ module.exports.resendConfirmationEmail = (req, res, next) => {
         const expirationDate = Utility.tomorrow();
 
         return VerificationToken.create({
-            user_id: user.get(k.Attr.Id),
+            user_id: user[k.Attr.Id],
             token: token,
             expiration_date: expirationDate
         });

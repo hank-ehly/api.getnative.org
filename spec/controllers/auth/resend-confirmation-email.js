@@ -17,9 +17,9 @@ const i18n          = require('i18n');
 const _             = require('lodash');
 
 describe('POST /resend_confirmation_email', function() {
-    let user = null;
-    let server  = null;
-    let db      = null;
+    let server = null;
+    let user   = null;
+    let db     = null;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -32,12 +32,19 @@ describe('POST /resend_confirmation_email', function() {
             server = initGroup.server;
             db     = initGroup.db;
 
-
-            return db.User.create({
-                email: chance.email(),
-                password: Auth.hashPassword('12345678')
-            }).then(function(_) {
-                user = _;
+            return db[k.Model.Language].findOne().then(function(language) {
+                return db[k.Model.User].create({
+                    default_study_language_id: language.get(k.Attr.Id)
+                });
+            }).then(function(_user) {
+                user = _user.get({plain: true});
+                return db[k.Model.Credential].create({
+                    user_id: user[k.Attr.Id],
+                    email: 'test-' + chance.email(),
+                    password: Auth.hashPassword('12345678')
+                });
+            }).then(function(credential) {
+                user[k.Attr.Email] = credential.get(k.Attr.Email);
             });
         });
     });
@@ -76,22 +83,36 @@ describe('POST /resend_confirmation_email', function() {
         });
 
         it(`should respond with 422 Unprocessable Entity if the user linked to the specified email address is already confirmed`, function(done) {
-            db.User.create({
-                email_verified: true,
-                email: chance.email(),
-                password: Auth.hashPassword('12345678')
-            }).then(function(user) {
-                request(server).post('/resend_confirmation_email').send({email: user.email}).expect(422, done);
+            db[k.Model.Language].findOne().then(function(language) {
+                return db[k.Model.User].create({
+                    email_verified: true,
+                    default_study_language_id: language.get(k.Attr.Id)
+                });
+            }).then(function(_user) {
+                return db[k.Model.Credential].create({
+                    user_id: _user.get(k.Attr.Id),
+                    email: 'test-' + chance.email(),
+                    password: Auth.hashPassword('12345678')
+                });
+            }).then(function(credential) {
+                request(server).post('/resend_confirmation_email').send({email: credential.get(k.Attr.Email)}).expect(422, done);
             });
         });
 
         it(`should contains the appropriate error response object if the user is already confirmed`, function() {
-            return db.User.create({
-                email_verified: true,
-                email: chance.email(),
-                password: Auth.hashPassword('12345678')
-            }).then(function(user) {
-                return request(server).post('/resend_confirmation_email').send({email: user.email});
+            return db[k.Model.Language].findOne().then(function(language) {
+                return db[k.Model.User].create({
+                    email_verified: true,
+                    default_study_language_id: language.get(k.Attr.Id)
+                });
+            }).then(function(_user) {
+                return db[k.Model.Credential].create({
+                    user_id: _user.get(k.Attr.Id),
+                    email: 'test-' + chance.email(),
+                    password: Auth.hashPassword('12345678')
+                });
+            }).then(function(credential) {
+                return request(server).post('/resend_confirmation_email').send({email: credential.get(k.Attr.Email)});
             }).then(function(response) {
                 const error = _.first(response.body);
                 assert.equal(error.message, i18n.__(`errors.${error.code}`));
@@ -106,7 +127,7 @@ describe('POST /resend_confirmation_email', function() {
 
         it(`should create a new VerificationToken linked to the user`, function() {
             return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
-                return db.VerificationToken.findOne({where: {user_id: user.id}});
+                return db[k.Model.VerificationToken].findOne({where: {user_id: user.id}});
             }).then(function(token) {
                 assert(token);
             });
@@ -114,7 +135,7 @@ describe('POST /resend_confirmation_email', function() {
 
         it(`should send an email to the specified address if it is linked to an user`, function() {
             return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
-                return db.VerificationToken.findOne({
+                return db[k.Model.VerificationToken].findOne({
                     where: {
                         user_id: user.id
                     }
@@ -129,7 +150,7 @@ describe('POST /resend_confirmation_email', function() {
 
         it(`should send an email containing the confirmation URL (with the correct VerificationToken token)`, function() {
             return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
-                return db.VerificationToken.findOne({
+                return db[k.Model.VerificationToken].findOne({
                     where: {
                         user_id: user.id
                     }
