@@ -9,34 +9,47 @@ const services = require('../services');
 const Auth = services['Auth'];
 const GetNativeError = services['GetNativeError'];
 const k = require('../../config/keys.json');
-const User = require('../models')[k.Model.User];
+const db = require('../models');
+const Credential = db[k.Model.Credential];
+const User = db[k.Model.User];
+const Language = db[k.Model.Language];
 
 module.exports.create = (req, res, next) => {
-    const attributes = [
-        k.Attr.Id,
-        k.Attr.Email,
-        k.Attr.BrowserNotificationsEnabled,
-        k.Attr.EmailNotificationsEnabled,
-        k.Attr.EmailVerified,
-        k.Attr.DefaultStudyLanguageCode,
-        k.Attr.PictureUrl,
-        k.Attr.IsSilhouettePicture,
-        k.Attr.Password
-    ];
-
-    User.find({
+    return Credential.findOne({
         where: {email: req.body[k.Attr.Email]},
-        attributes: attributes
-    }).then(user => {
-        if (!user || !Auth.verifyPassword(user.password, req.body[k.Attr.Password])) {
+        attributes: [k.Attr.Email, k.Attr.Password, k.Attr.UserId]
+    }).then(credential => {
+        if (!credential || !Auth.verifyPassword(credential.get(k.Attr.Password), req.body[k.Attr.Password])) {
             throw new GetNativeError(k.Error.UserNamePasswordIncorrect);
         }
 
-        return [user, Auth.generateTokenForUserId(user.id)];
+        return User.findById(credential.get(k.Attr.UserId), {
+            attributes: [
+                k.Attr.Id,
+                k.Attr.BrowserNotificationsEnabled,
+                k.Attr.EmailNotificationsEnabled,
+                k.Attr.EmailVerified,
+                k.Attr.PictureUrl,
+                k.Attr.IsSilhouettePicture
+            ],
+            include: [
+                {
+                    model: Language,
+                    as: 'default_study_language',
+                    attributes: [k.Attr.Name, k.Attr.Code]
+                }
+            ]
+        });
+    }).then(user => {
+        if (!user) {
+            throw new GetNativeError(k.Error.UserMissing);
+        }
+
+        return [user, Auth.generateTokenForUserId(user.get(k.Attr.Id))];
     }).spread((user, token) => {
         Auth.setAuthHeadersOnResponseWithToken(res, token);
         const userAsJson = user.get({plain: true});
-        delete userAsJson.password;
+        userAsJson[k.Attr.Email] = req.body[k.Attr.Email];
         res.send(userAsJson);
     }).catch(GetNativeError, e => {
         res.status(404);

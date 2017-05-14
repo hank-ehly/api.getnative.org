@@ -12,12 +12,27 @@ const logger     = require('../logger');
 const i18n       = require('../i18n');
 const k          = require('../keys.json');
 
-const express    = require('express');
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const morgan     = require('morgan');
+const bodyParser = require('body-parser');
+const passport   = require('passport');
 const Promise    = require('bluebird');
+const express    = require('express');
+const morgan     = require('morgan');
 const path       = require('path');
+
+const FacebookStrategy = require('../passport/facebook');
+const CustomStrategy = require('../passport/custom');
+passport.use('facebook', FacebookStrategy);
+passport.use('custom', CustomStrategy);
+
+passport.serializeUser(function(user, cb) {
+    cb(null, user.get({plain: true}));
+});
+
+passport.deserializeUser(function(obj, cb) {
+    console.log('deserializeUser');
+    cb(null, obj);
+});
 
 module.exports = () => {
     const app = express();
@@ -36,13 +51,15 @@ module.exports = () => {
     app.use(bodyParser.json());
     app.use(cookieParser());
     app.use(i18n.init);
-    app.use(middleware.Cors);
+    app.use(middleware['Cors']);
+
+    app.use(passport.initialize());
 
     app.use(routes);
 
-    app.use(middleware.Error.logErrors);
-    app.use(middleware.Error.clientErrorHandler);
-    app.use(middleware.Error.fallbackErrorHandler);
+    app.use(middleware['Error'].logErrors);
+    app.use(middleware['Error'].clientErrorHandler);
+    app.use(middleware['Error'].fallbackErrorHandler);
 
     return new Promise(resolve => {
         const port = config.get(k.API.Port);

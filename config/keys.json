@@ -5,6 +5,7 @@
     },
     "Attr": {
         "Answer": "answer",
+        "UserId": "user_id",
         "BrowserNotificationsEnabled": "browser_notifications_enabled",
         "Code": "code",
         "CurrentPassword": "current_password",
@@ -73,6 +74,7 @@
         "AuthAdapterType": "AuthAdapterType",
         "WritingAnswer": "WritingAnswer",
         "UserRole": "UserRole",
+        "Credential": "Credential",
         "Gender": "Gender",
         "Language": "Language",
         "WritingQuestion": "WritingQuestion",

@@ -6,14 +6,14 @@
  */
 
 const services          = require('../services');
-const GetNativeError    = services.GetNativeError;
-const Utility           = services.Utility;
-const Auth              = services.Auth;
+const GetNativeError    = services['GetNativeError'];
+const Utility           = services['Utility'];
+const Auth              = services['Auth'];
 const config            = require('../../config');
-const db                = require('../models');
-const User           = db.User;
-const VerificationToken = db.VerificationToken;
 const k                 = require('../../config/keys.json');
+const db                = require('../models');
+const VerificationToken = db[k.Model.VerificationToken];
+const User              = db[k.Model.User];
 
 const Promise           = require('bluebird');
 const mailer            = require('../../config/initializers/mailer');

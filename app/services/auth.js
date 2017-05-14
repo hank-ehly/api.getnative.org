@@ -17,14 +17,12 @@ const jwt     = require('jsonwebtoken');
 const url     = require('url');
 const _       = require('lodash');
 
-module.exports.validateRequest = function(req) {
+module.exports.verifyToken = function(token) {
     const args = {
         issuer: config.get(k.API.Hostname),
         audience: '', // todo
         algorithms: ['RS256']
     };
-
-    const token = Utility.extractAuthTokenFromRequest(req);
 
     return Promise.promisify(jwt.verify)(token, config.get(k.PublicKey), args);
 };

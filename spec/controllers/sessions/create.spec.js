@@ -23,9 +23,9 @@ describe('POST /sessions', function() {
     });
 
     beforeEach(function() {
-        return SpecUtil.login().then(function(_) {
-            server   = _.server;
-            response = _.response;
+        return SpecUtil.login().then(function(initGroup) {
+            server   = initGroup.server;
+            response = initGroup.response;
         });
     });
 
@@ -93,8 +93,16 @@ describe('POST /sessions', function() {
             assert(_.isBoolean(response.body.email_verified));
         });
 
-        it('should respond with an object containing the user\'s default study language code', function() {
-            assert(new RegExp(/[a-z]+/).test(response.body.default_study_language_code));
+        it('should respond with an object containing a top level default_study_language object', function() {
+            assert(_.isPlainObject(response.body.default_study_language));
+        });
+
+        it('should respond with an object containing a top level default_study_language.name string', function() {
+            assert(_.isString(response.body.default_study_language.name));
+        });
+
+        it('should respond with an object containing a top level default_study_language.code string', function() {
+            assert(_.isString(response.body.default_study_language.code));
         });
 
         it('should respond with an object containing the user\'s profile picture URL', function() {

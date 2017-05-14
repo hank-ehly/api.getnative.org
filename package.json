@@ -1,46 +1,48 @@
 {
-    "name": "api.get-native.com",
-    "version": "0.0.1",
-    "description": "Source code for api.get-native.com",
-    "main": "index.js",
-    "scripts": {
-        "test": "mocha -R spec --recursive spec",
-        "start": "/usr/bin/env pm2 start ecosystem.config.json --no-daemon -i max --only development",
-        "sequelize": "sequelize",
-        "mocha": "mocha"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/hank-ehly/api.get-native.com.git"
-    },
-    "keywords": [],
-    "author": "Hank Ehly <henry.ehly@gmail.com>",
-    "license": "UNLICENSED",
-    "private": true,
-    "dependencies": {
-        "bluebird": "^3.5.0",
-        "body-parser": "^1.17.1",
-        "cookie-parser": "^1.4.3",
-        "ejs": "^2.5.6",
-        "express": "^4.15.2",
-        "i18n": "^0.8.3",
-        "joi": "^10.4.1",
-        "jsonwebtoken": "^7.4.0",
-        "lodash": "^4.17.4",
-        "moment": "^2.18.1",
-        "morgan": "^1.8.1",
-        "mysql2": "^1.2.0",
-        "nconf": "^0.8.4",
-        "nodemailer": "^4.0.1",
-        "sequelize": "^4.0.0-2",
-        "sodium": "^2.0.1",
-        "winston": "^2.3.1"
-    },
-    "devDependencies": {
-        "chance": "^1.0.8",
-        "maildev": "^0.14.0",
-        "mocha": "^3.3.0",
-        "sequelize-cli": "^2.7.0",
-        "supertest": "^3.0.0"
-    }
+  "name": "api.get-native.com",
+  "version": "0.0.1",
+  "description": "Source code for api.get-native.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -R spec --recursive spec",
+    "start": "/usr/bin/env pm2 start ecosystem.config.json --no-daemon -i max --only development",
+    "sequelize": "sequelize",
+    "mocha": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hank-ehly/api.get-native.com.git"
+  },
+  "keywords": [],
+  "author": "Hank Ehly <henry.ehly@gmail.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "body-parser": "^1.17.1",
+    "cookie-parser": "^1.4.3",
+    "ejs": "^2.5.6",
+    "express": "^4.15.2",
+    "i18n": "^0.8.3",
+    "joi": "^10.4.1",
+    "jsonwebtoken": "^7.4.0",
+    "lodash": "^4.17.4",
+    "moment": "^2.18.1",
+    "morgan": "^1.8.1",
+    "mysql2": "^1.2.0",
+    "nconf": "^0.8.4",
+    "nodemailer": "^4.0.1",
+    "passport": "^0.3.2",
+    "passport-facebook": "^2.1.1",
+    "sequelize": "^4.0.0-2",
+    "sodium": "^2.0.1",
+    "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "chance": "^1.0.8",
+    "maildev": "^0.14.0",
+    "mocha": "^3.3.0",
+    "sequelize-cli": "^2.7.0",
+    "supertest": "^3.0.0"
+  }
 }
