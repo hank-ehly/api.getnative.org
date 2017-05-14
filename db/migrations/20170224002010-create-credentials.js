@@ -1,42 +1,38 @@
 /**
- * 20170224002531-create-speaker
+ * 20170224002010-create-credentials
  * get-native.com
  *
- * Created by henryehly on 2017/02/24.
+ * Created by henryehly on 2017/05/13.
  */
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('speakers', {
+        return queryInterface.createTable('credentials', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            description: {
-                type: Sequelize.TEXT,
-                allowNull: false
+            user_id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'users',
+                    key: 'id'
+                },
+                onUpdate: 'restrict',
+                onDelete: 'restrict'
             },
-            location: {
+            email: {
                 type: Sequelize.STRING,
                 allowNull: false,
                 defaultValue: ''
             },
-            name: {
+            password: {
                 type: Sequelize.STRING,
                 allowNull: false,
                 defaultValue: ''
-            },
-            picture_url: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                defaultValue: ''
-            },
-            is_silhouette_picture: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: 1
             },
             created_at: {
                 allowNull: false,
@@ -54,6 +50,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('speakers');
+        return queryInterface.dropTable('credentials');
     }
 };

@@ -5,15 +5,18 @@
  * Created by henryehly on 2017/03/01.
  */
 
-const models   = require('../../app/models');
-const chance   = require('chance').Chance();
-const Video    = models.Video;
-const Language = models.Language;
+const k        = require('../../config/keys.json');
+const db       = require('../../app/models');
+const Language = db[k.Model.Language];
+const Video    = db[k.Model.Video];
+
 const Promise  = require('bluebird');
+const chance   = require('chance').Chance();
+const _        = require('lodash');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        const promises = [Video.min('id'), Video.max('id'), Language.findAll({attributes: ['code']})];
+        const promises = [Video.min(k.Attr.Id), Video.max(k.Attr.Id), Language.findAll({attributes: [k.Attr.Id]})];
 
         return Promise.all(promises).spread((minVideoId, maxVideoId, languages) => {
             const transcripts = [];
@@ -23,7 +26,7 @@ module.exports = {
                     transcripts.push({
                         text: chance.paragraph() + chance.paragraph(),
                         video_id: i,
-                        language_code: languages[j].code
+                        language_id: _.sample(languages).get(k.Attr.Id),
                     });
                 }
             }

@@ -1,24 +1,25 @@
 /**
- * category
- * get-native.com
+ * gender
+ * api.get-native.com
  *
- * Created by henryehly on 2017/02/23.
+ * Created by henryehly on 2017/05/13.
  */
 
 const k = require('../../config/keys.json');
 
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define(k.Model.Category, {
+    return sequelize.define(k.Model.Gender, {
         name: {
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: ''
         }
     }, {
-        tableName: 'categories',
+        tableName: 'genders',
+        timestamps: false,
         underscored: true,
         associations: function(models) {
-            models[k.Model.Category].hasMany(models[k.Model.Subcategory], {as: 'subcategories'});
+            models[k.Model.Gender].hasMany(models[k.Model.Speaker]);
         }
     });
 };

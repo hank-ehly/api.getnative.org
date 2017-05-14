@@ -15,7 +15,8 @@ module.exports = {
                     model: 'speakers'
                 },
                 onUpdate: 'restrict',
-                onDelete: 'restrict'
+                onDelete: 'restrict',
+                primaryKey: true
             },
             user_id: {
                 type: Sequelize.INTEGER,
@@ -24,7 +25,8 @@ module.exports = {
                     model: 'users'
                 },
                 onUpdate: 'restrict',
-                onDelete: 'restrict'
+                onDelete: 'restrict',
+                primaryKey: true
             },
             created_at: {
                 allowNull: false,

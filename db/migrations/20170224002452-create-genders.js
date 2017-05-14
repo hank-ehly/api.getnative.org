@@ -1,40 +1,30 @@
 /**
- * 20170510043539-create-roles
+ * 20170224002452-create-genders
  * get-native.com
  *
- * Created by henryehly on 2017/05/10.
+ * Created by henryehly on 2017/02/24.
  */
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('roles', {
+        return queryInterface.createTable('genders', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            description: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
             name: {
                 type: Sequelize.STRING,
                 allowNull: false,
                 defaultValue: ''
-            },
-            created_at: {
-                allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: Sequelize.fn('NOW')
             }
         }, {
             engine: 'InnoDB',
             charset: 'utf8'
         });
     },
-
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('roles');
+        return queryInterface.dropTable('genders');
     }
 };

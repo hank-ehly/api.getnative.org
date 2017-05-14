@@ -1,45 +1,40 @@
 /**
- * 20170417114949-create-verification-tokens
+ * 20170224000655-create-auth-adapter-types
  * get-native.com
  *
- * Created by henryehly on 2017/04/17.
+ * Created by henryehly on 2017/05/13.
  */
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('verification_tokens', {
+        return queryInterface.createTable('auth_adapter_types', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            token: {
+            name: {
                 type: Sequelize.STRING,
                 allowNull: false,
                 defaultValue: ''
             },
-            expiration_date: {
+            created_at: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.fn('NOW')
             },
-            user_id: {
-                type: Sequelize.INTEGER,
+            updated_at: {
                 allowNull: false,
-                references: {
-                    model: 'users',
-                    key: 'id'
-                },
-                onUpdate: 'restrict',
-                onDelete: 'restrict'
-            },
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.fn('NOW')
+            }
         }, {
             engine: 'InnoDB',
             charset: 'utf8'
         });
     },
-
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('verification_tokens');
+        return queryInterface.dropTable('auth_adapter_types');
     }
 };

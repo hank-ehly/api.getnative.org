@@ -1,24 +1,25 @@
 /**
- * 20170224014248-add-user-id-to-notifications
+ * 20170226021012-add-default-study-language-id-to-users
  * get-native.com
  *
- * Created by henryehly on 2017/02/24.
+ * Created by henryehly on 2017/02/26.
  */
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.addColumn('notifications', 'user_id', {
+        return queryInterface.addColumn('users', 'default_study_language_id', {
             type: Sequelize.INTEGER,
             allowNull: false,
             references: {
-                model: 'users',
+                model: 'languages',
                 key: 'id'
             },
             onUpdate: 'restrict',
             onDelete: 'restrict'
         });
     },
+
     down: function(queryInterface, Sequelize) {
-        return queryInterface.removeColumn('notifications', 'user_id');
+        return queryInterface.removeColumn('users', 'default_study_language_id');
     }
 };

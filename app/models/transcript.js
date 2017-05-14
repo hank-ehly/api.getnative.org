@@ -5,23 +5,21 @@
  * Created by henryehly on 2017/02/24.
  */
 
+const k = require('../../config/keys.json');
+
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define('Transcript', {
+    return sequelize.define(k.Model.Transcript, {
         text: {
             type: DataTypes.TEXT,
             allowNull: false
-        },
-        language_code: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: ''
         }
     }, {
         tableName: 'transcripts',
         underscored: true,
         associations: function(models) {
-            models.Transcript.belongsTo(models.Video);
-            models.Transcript.hasMany(models.Collocation, {as: 'collocations'});
+            models[k.Model.Transcript].belongsTo(models[k.Model.Video]);
+            models[k.Model.Transcript].belongsTo(models[k.Model.Language]);
+            models[k.Model.Transcript].hasMany(models[k.Model.Collocation], {as: 'collocations'});
         }
     });
 };

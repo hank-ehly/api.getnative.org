@@ -24,22 +24,18 @@ module.exports = function(sequelize, DataTypes) {
         description: {
             type: DataTypes.TEXT,
             allowNull: false
-        },
-        language_code: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: ''
         }
     }, {
         tableName: 'videos',
         underscored: true,
         associations: function(models) {
-            models.Video.belongsTo(models.Speaker, {as: 'speaker'});
-            models.Video.belongsTo(models.Subcategory, {as: 'subcategory'});
-            models.Video.hasMany(models.CuedVideo, {as: 'cued_videos'});
-            models.Video.hasMany(models.Like, {as: 'likes'});
-            models.Video.hasMany(models.StudySession, {as: 'study_sessions'});
-            models.Video.hasMany(models.Transcript, {as: 'transcripts'});
+            models[k.Model.Video].belongsTo(models[k.Model.Speaker]);
+            models[k.Model.Video].belongsTo(models[k.Model.Subcategory]);
+            models[k.Model.Video].belongsTo(models[k.Model.Language]);
+            models[k.Model.Video].hasMany(models[k.Model.CuedVideo], {as: 'cued_videos'});
+            models[k.Model.Video].hasMany(models[k.Model.Like], {as: 'likes'});
+            models[k.Model.Video].hasMany(models[k.Model.StudySession], {as: 'study_sessions'});
+            models[k.Model.Video].hasMany(models[k.Model.Transcript], {as: 'transcripts'});
         },
         scopes: {
             count: function(count) {

@@ -70,14 +70,20 @@
         "AuthToken": "x-gn-auth-token"
     },
     "Model": {
+        "AuthAdapterType": "AuthAdapterType",
         "WritingAnswer": "WritingAnswer",
+        "UserRole": "UserRole",
+        "Gender": "Gender",
+        "Language": "Language",
         "WritingQuestion": "WritingQuestion",
         "CuedVideo": "CuedVideo",
         "Like": "Like",
         "Follower": "Follower",
         "StudySession": "StudySession",
         "User": "User",
+        "Role": "Role",
         "Subcategory": "Subcategory",
+        "Speaker": "Speaker",
         "Category": "Category",
         "Video": "Video",
         "Transcript": "Transcript",
@@ -88,6 +94,13 @@
     },
     "NODE_ENV": "NODE_ENV",
     "NoReply": "",
+    "OAuth": {
+        "Facebook": {
+            "ClientID": "OAuthFacebookClientID",
+            "ClientSecret": "OAuthFacebookClientSecret",
+            "CallbackURL": "OAuthFacebookCallbackURL"
+        }
+    },
     "PrivateKey": "private_key",
     "PublicKey": "public_key",
     "DKIMPrivateKey": "DKIM_PRIVATE_KEY",

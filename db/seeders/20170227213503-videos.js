@@ -5,18 +5,28 @@
  * Created by henryehly on 2017/02/28.
  */
 
-const models      = require('../../app/models');
-const Speaker     = models.Speaker;
-const Subcategory = models.Subcategory;
-const chance      = require('chance').Chance();
+const k           = require('../../config/keys.json');
+const db          = require('../../app/models');
+const Speaker     = db[k.Model.Speaker];
+const Subcategory = db[k.Model.Subcategory];
+const Language    = db[k.Model.Language];
+
 const Promise     = require('bluebird');
+const chance      = require('chance').Chance();
 const moment      = require('moment');
+const _           = require('lodash');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        const promises = [Speaker.min('id'), Speaker.max('id'), Subcategory.min('id'), Subcategory.max('id')];
+        const promises = [
+            Speaker.min('id'),
+            Speaker.max('id'),
+            Subcategory.min('id'),
+            Subcategory.max('id'),
+            Language.findAll({attributes: [k.Attr.Id]})
+        ];
 
-        return Promise.all(promises).spread((minSpeakerId, maxSpeakerId, minSubcategoryId, maxSubcategoryId) => {
+        return Promise.all(promises).spread((minSpeakerId, maxSpeakerId, minSubcategoryId, maxSubcategoryId, languages) => {
             const videos          = [];
             const numVideos       = 500;
             const youtubeVideoIds = ['9Ayf8Iny9Eg', 'GXsZMQshNzg', 'yCe0DtGq8Pc', '7TQfjmEpYig', 'C9BYTZkde4w'];
@@ -50,7 +60,7 @@ module.exports = {
                         min: minSpeakerId,
                         max: maxSpeakerId
                     }),
-                    language_code: chance.pickone(['en', 'ja']),
+                    language_id: _.sample(languages).get(k.Attr.Id),
                     subcategory_id: chance.integer({
                         min: minSubcategoryId,
                         max: maxSubcategoryId

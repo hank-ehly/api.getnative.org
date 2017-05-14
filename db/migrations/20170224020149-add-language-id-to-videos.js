@@ -1,5 +1,5 @@
 /**
- * 20170224014248-add-user-id-to-notifications
+ * 20170224020149-add-language-id-to-videos
  * get-native.com
  *
  * Created by henryehly on 2017/02/24.
@@ -7,11 +7,11 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.addColumn('notifications', 'user_id', {
+        return queryInterface.addColumn('videos', 'language_id', {
             type: Sequelize.INTEGER,
             allowNull: false,
             references: {
-                model: 'users',
+                model: 'languages',
                 key: 'id'
             },
             onUpdate: 'restrict',
@@ -19,6 +19,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.removeColumn('notifications', 'user_id');
+        return queryInterface.removeColumn('videos', 'language_id');
     }
 };

@@ -5,22 +5,14 @@
  * Created by henryehly on 2017/02/24.
  */
 
-const Utility = require('../services').Utility;
+const Utility = require('../services')['Utility'];
+const k       = require('../../config/keys.json');
+
 const moment  = require('moment');
 const _       = require('lodash');
 
 module.exports = function(sequelize, DataTypes) {
-    const User = sequelize.define('User', {
-        email: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: ''
-        },
-        password: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: ''
-        },
+    const User = sequelize.define(k.Model.User, {
         browser_notifications_enabled: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
@@ -36,11 +28,6 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             defaultValue: false
         },
-        default_study_language_code: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: 'en'
-        },
         picture_url: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -55,11 +42,12 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'users',
         underscored: true,
         associations: function(models) {
-            models.User.hasMany(models.Follower, {as: 'followers'});
-            models.User.hasMany(models.Notification, {as: 'notifications'});
-            models.User.hasMany(models.CuedVideo, {as: 'cued_videos'});
-            models.User.hasMany(models.Like, {as: 'likes'});
-            models.User.hasMany(models.StudySession, {as: 'study_sessions'});
+            models[k.Model.User].hasMany(models[k.Model.Follower], {as: 'followers'});
+            models[k.Model.User].hasMany(models[k.Model.Notification], {as: 'notifications'});
+            models[k.Model.User].hasMany(models[k.Model.CuedVideo], {as: 'cued_videos'});
+            models[k.Model.User].hasMany(models[k.Model.Like], {as: 'likes'});
+            models[k.Model.User].hasMany(models[k.Model.StudySession], {as: 'study_sessions'});
+            models[k.Model.User].belongsTo(models[k.Model.Language], {as: 'default_study_language'})
         }
     });
 

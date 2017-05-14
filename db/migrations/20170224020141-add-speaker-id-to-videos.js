@@ -18,7 +18,6 @@ module.exports = {
             onDelete: 'restrict'
         });
     },
-
     down: function(queryInterface, Sequelize) {
         return queryInterface.removeColumn('videos', 'speaker_id');
     }

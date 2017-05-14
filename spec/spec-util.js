@@ -15,7 +15,7 @@ const jwt     = require('jsonwebtoken');
 let maildev = null;
 
 module.exports.defaultTimeout = 30000;
-module.exports.credentials    = {email: 'test@email.com', password: 'test_password'};
+module.exports.credentials    = {email: 'test@email.com', password: 'password'};
 
 module.exports.seedAll = function() {
     return new Promise(function(resolve, reject) {

@@ -5,8 +5,6 @@
  * Created by henryehly on 2017/02/24.
  */
 
-// Todo: Move data relevant to 1 login mechanism to separate table
-// email, password, (email_notifications_enabled?)
 module.exports = {
     up: function(queryInterface, Sequelize) {
         return queryInterface.createTable('users', {
@@ -15,16 +13,6 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
-            },
-            email: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                defaultValue: ''
-            },
-            password: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                defaultValue: ''
             },
             browser_notifications_enabled: {
                 type: Sequelize.BOOLEAN,
