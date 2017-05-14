@@ -14,10 +14,13 @@ const k                 = require('../../config/keys.json');
 const db                = require('../models');
 const VerificationToken = db[k.Model.VerificationToken];
 const User              = db[k.Model.User];
+const Credential        = db[k.Model.Credential];
+const Language          = db[k.Model.Language];
 
 const Promise           = require('bluebird');
 const mailer            = require('../../config/initializers/mailer');
 const i18n              = require('i18n');
+const _                 = require('lodash');
 
 module.exports.confirmEmail = (req, res, next) => {
     return VerificationToken.findOne({where: {token: req.body.token}}).then(token => {
@@ -35,23 +38,31 @@ module.exports.confirmEmail = (req, res, next) => {
 
         return [token, User.update(changes, {where: {id: token.user_id}})];
     }).spread(token => {
-        const attributes = [
-            k.Attr.Id,
-            k.Attr.Email,
-            k.Attr.BrowserNotificationsEnabled,
-            k.Attr.EmailNotificationsEnabled,
-            k.Attr.EmailVerified,
-            k.Attr.DefaultStudyLanguageCode,
-            k.Attr.PictureUrl,
-            k.Attr.IsSilhouettePicture
-        ];
-
-        return User.findOne({attributes: attributes, where: {id: token.user_id}});
-    }).then(user => {
-        return [user, Auth.generateTokenForUserId(user.id)];
+        return Credential.findOne({
+            where: {user_id: token[k.Attr.UserId]},
+            attributes: [k.Attr.Email],
+            include: [
+                {
+                    model: User.scope('includeDefaultStudyLanguage'),
+                    attributes: [
+                        k.Attr.Id,
+                        k.Attr.BrowserNotificationsEnabled,
+                        k.Attr.EmailNotificationsEnabled,
+                        k.Attr.EmailVerified,
+                        k.Attr.PictureUrl,
+                        k.Attr.IsSilhouettePicture
+                    ]
+                }
+            ]
+        });
+    }).then(credential => {
+        const json = credential.get({plain: true});
+        const user = json['User'];
+        _.set(user, k.Attr.Email, json[k.Attr.Email]);
+        return [user, Auth.generateTokenForUserId(user[k.Attr.Id])];
     }).spread((user, token) => {
         Auth.setAuthHeadersOnResponseWithToken(res, token);
-        res.status(200).send(user.get({plain: true}));
+        res.status(200).send(user);
     }).catch(GetNativeError, e => {
         if (e.code === k.Error.TokenExpired) {
             res.status(404);

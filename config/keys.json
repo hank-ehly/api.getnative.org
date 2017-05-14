@@ -11,6 +11,7 @@
         "CurrentPassword": "current_password",
         "CreatedAt": "created_at",
         "DefaultStudyLanguageCode": "default_study_language_code",
+        "DefaultStudyLanguage": "default_study_language",
         "Description": "description",
         "Email": "email",
         "EmailNotificationsEnabled": "email_notifications_enabled",

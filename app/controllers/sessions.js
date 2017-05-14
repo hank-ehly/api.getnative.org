@@ -23,7 +23,7 @@ module.exports.create = (req, res, next) => {
             throw new GetNativeError(k.Error.UserNamePasswordIncorrect);
         }
 
-        return User.findById(credential.get(k.Attr.UserId), {
+        return User.scope('includeDefaultStudyLanguage').findById(credential.get(k.Attr.UserId), {
             attributes: [
                 k.Attr.Id,
                 k.Attr.BrowserNotificationsEnabled,
@@ -31,13 +31,6 @@ module.exports.create = (req, res, next) => {
                 k.Attr.EmailVerified,
                 k.Attr.PictureUrl,
                 k.Attr.IsSilhouettePicture
-            ],
-            include: [
-                {
-                    model: Language,
-                    as: 'default_study_language',
-                    attributes: [k.Attr.Name, k.Attr.Code]
-                }
             ]
         });
     }).then(user => {

@@ -6,24 +6,25 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const Auth     = require('../../../app/services').Auth;
+const Auth     = require('../../../app/services')['Auth'];
+const k        = require('../../../config/keys.json');
 
 const Promise  = require('bluebird');
 const request  = require('supertest');
 const assert   = require('assert');
 const moment   = require('moment');
-const crypto   = require('crypto');
+const chance   = require('chance').Chance();
 const _        = require('lodash');
 
-// todo: Change to use json request body -- the query parameter thing is only for the client
 describe('POST /confirm_email', function() {
-    let user = null;
-    let server  = null;
-    let db      = null;
+    let server = null;
+    let token  = null;
+    let user   = null;
+    let db     = null;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
     });
 
     beforeEach(function() {
@@ -32,11 +33,17 @@ describe('POST /confirm_email', function() {
             server = initGroup.server;
             db     = initGroup.db;
 
-            return db.User.create({
-                email: 'test-' + crypto.randomBytes(8).toString('hex') + '@email.com',
-                password: Auth.hashPassword('12345678')
-            }).then(function(_) {
-                user = _;
+            return db.sequelize.query(`UPDATE users SET email_verified = true`).then(function() {
+                return db.sequelize.query(`SELECT id FROM users LIMIT 1`);
+            }).then(function(result) {
+                user = _.toPlainObject(result[0][0]);
+                return db[k.Model.VerificationToken].create({
+                    user_id: user[k.Attr.Id],
+                    token: Auth.generateVerificationToken(),
+                    expiration_date: moment().add(1, 'days').toDate()
+                });
+            }).then(function(_token) {
+                token = _token.get(k.Attr.Token);
             });
         });
     });
@@ -47,31 +54,19 @@ describe('POST /confirm_email', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
+        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
     });
 
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
-            return db.VerificationToken.create({
-                user_id: user.id,
-                token: Auth.generateVerificationToken(),
-                expiration_date: moment().add(1, 'days').toDate()
-            }).then(function(token) {
-                return request(server).post(`/confirm_email`).send({token: token.get('token')}).then(function(response) {
-                    assert(_.gt(response.headers['x-gn-auth-token'].length, 0));
-                });
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(_.gt(response.headers['x-gn-auth-token'].length, 0));
             });
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
-            return db.VerificationToken.create({
-                user_id: user.id,
-                token: Auth.generateVerificationToken(),
-                expiration_date: moment().add(1, 'days').toDate()
-            }).then(function(token) {
-                return request(server).post(`/confirm_email`).send({token: token.get('token')}).then(function(response) {
-                    assert(SpecUtil.isParsableTimestamp(+response.headers['x-gn-auth-expire']));
-                });
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(SpecUtil.isParsableTimestamp(+response.headers['x-gn-auth-expire']));
             });
         });
     });
@@ -94,52 +89,100 @@ describe('POST /confirm_email', function() {
         });
 
         it(`should respond with 404 Not Found if the verification token is expired`, function(done) {
-            db.VerificationToken.create({
+            db[k.Model.VerificationToken].create({
                 user_id: user.id,
                 token: Auth.generateVerificationToken(),
                 expiration_date: moment().subtract(1, 'days').toDate()
-            }).then(function(token) {
-                request(server).post(`/confirm_email`).send({token: token.get('token')}).expect(404, done);
+            }).then(function(_token) {
+                request(server).post(`/confirm_email`).send({token: _token.get(k.Attr.Token)}).expect(404, done);
             });
         });
     });
 
     describe('response.success', function() {
         it(`should respond with 200 OK if the verification succeeds`, function(done) {
-            db.VerificationToken.create({
-                user_id: user.id,
-                token: Auth.generateVerificationToken(),
-                expiration_date: moment().add(1, 'days').toDate()
-            }).then(function(token) {
-                request(server).post(`/confirm_email`).send({token: token.get('token')}).expect(200, done);
+            request(server).post(`/confirm_email`).send({token: token}).expect(200, done);
+        });
+
+        it('should respond with an object containing the user\'s ID', function() {
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(_.isNumber(response.body[k.Attr.Id]));
+            });
+        });
+
+        it('should respond with an object containing the user\'s email address', function() {
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(SpecUtil.isValidEmail(response.body[k.Attr.Email]));
+            });
+        });
+
+        it('should respond with an object containing the user\'s preference for receiving browser notifications', function() {
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(_.isBoolean(response.body[k.Attr.BrowserNotificationsEnabled]));
+            });
+        });
+
+        it(`should not include the user password in the response`, function() {
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(!response.body[k.Attr.Password]);
+            });
+        });
+
+        it('should respond with an object containing the user\'s preference for receiving email notifications', function() {
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(_.isBoolean(response.body[k.Attr.EmailNotificationsEnabled]));
+            });
+        });
+
+        it('should respond with an object containing the user\'s email validity status', function() {
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(_.isBoolean(response.body[k.Attr.EmailVerified]));
+            });
+        });
+
+        it('should respond with an object containing a top level default_study_language object', function() {
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(_.isPlainObject(response.body[k.Attr.DefaultStudyLanguage]));
+            });
+        });
+
+        it('should respond with an object containing a top level default_study_language.name string', function() {
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(_.isString(response.body[k.Attr.DefaultStudyLanguage][k.Attr.Name]));
+            });
+        });
+
+        it('should respond with an object containing a top level default_study_language.code string', function() {
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(_.isString(response.body[k.Attr.DefaultStudyLanguage][k.Attr.Code]));
+            });
+        });
+
+        it('should respond with an object containing the user\'s profile picture URL', function() {
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(SpecUtil.isValidURL(response.body[k.Attr.PictureUrl]));
+            });
+        });
+
+        it('should respond with an object containing the user\'s preference for using the profile picture or silhouette image', function() {
+            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
+                assert(_.isBoolean(response.body[k.Attr.IsSilhouettePicture]));
             });
         });
 
         it(`should change the user email_verified value to true if verification succeeds`, function() {
-            return db.VerificationToken.create({
-                user_id: user.id,
-                token: Auth.generateVerificationToken(),
-                expiration_date: moment().add(1, 'days').toDate()
-            }).then(function(token) {
-                return request(server).post(`/confirm_email`).send({token: token.get('token')});
-            }).then(function() {
-                return db.User.findById(user.id);
+            return request(server).post(`/confirm_email`).send({token: token}).then(function() {
+                return db[k.Model.User].findById(user[k.Attr.Id]);
             }).then(function(a) {
-                assert.equal(a.get('email_verified'), true);
+                assert.equal(a.get(k.Attr.EmailVerified), true);
             });
         });
 
         it(`should change the user email_notifications_enabled value to true if verification succeeds`, function() {
-            return db.VerificationToken.create({
-                user_id: user.id,
-                token: Auth.generateVerificationToken(),
-                expiration_date: moment().add(1, 'days').toDate()
-            }).then(function(token) {
-                return request(server).post(`/confirm_email`).send({token: token.get('token')});
-            }).then(function() {
-                return db.User.findById(user.id);
+            return request(server).post(`/confirm_email`).send({token: token}).then(function() {
+                return db[k.Model.User].findById(user[k.Attr.Id]);
             }).then(function(a) {
-                assert.equal(a.get('email_notifications_enabled'), true);
+                assert.equal(a.get(k.Attr.EmailNotificationsEnabled), true);
             });
         });
     });

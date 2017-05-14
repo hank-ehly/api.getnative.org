@@ -23,7 +23,7 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'credentials',
         underscored: true,
         associations: function(models) {
-            models[k.Model.Category].belongsTo(models[k.Model.User]);
+            models[k.Model.Credential].belongsTo(models[k.Model.User]);
         }
     });
 };
