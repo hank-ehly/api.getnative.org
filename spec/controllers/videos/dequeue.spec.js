@@ -28,7 +28,7 @@ describe('POST /videos/:id/dequeue', function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.login().then(function(initGroup) {
             authorization = initGroup.authorization;
-            user       = initGroup.response.body;
+            user          = initGroup.response.body;
             server        = initGroup.server;
             db            = initGroup.db;
 

@@ -7,4 +7,4 @@
 
 const passport = require('passport');
 
-module.exports = passport.authenticate(['custom', 'facebook'], {my: 'options!'});
+module.exports = passport.authenticate(['custom', 'facebook']);

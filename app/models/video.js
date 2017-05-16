@@ -29,9 +29,9 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'videos',
         underscored: true,
         associations: function(models) {
-            models[k.Model.Video].belongsTo(models[k.Model.Speaker]);
-            models[k.Model.Video].belongsTo(models[k.Model.Subcategory]);
-            models[k.Model.Video].belongsTo(models[k.Model.Language]);
+            models[k.Model.Video].belongsTo(models[k.Model.Speaker], {as: 'speaker'});
+            models[k.Model.Video].belongsTo(models[k.Model.Subcategory], {as: 'subcategory'});
+            models[k.Model.Video].belongsTo(models[k.Model.Language], {as: 'language'});
             models[k.Model.Video].hasMany(models[k.Model.CuedVideo], {as: 'cued_videos'});
             models[k.Model.Video].hasMany(models[k.Model.Like], {as: 'likes'});
             models[k.Model.Video].hasMany(models[k.Model.StudySession], {as: 'study_sessions'});
@@ -67,34 +67,40 @@ module.exports = function(sequelize, DataTypes) {
                 return conditions;
             },
             newestFirst: {
-                order: [['created_at', 'DESC']]
+                order: [[k.Attr.CreatedAt, 'DESC']]
             },
             includeSpeakerName: function(Speaker) {
-                return {include: [{model: Speaker, attributes: ['name'], as: 'speaker'}]}
+                return {include: [{model: Speaker, attributes: [k.Attr.Name], as: 'speaker'}]}
             },
             includeSubcategoryNameAndId: function(Subcategory) {
-                return {include: [{model: Subcategory, attributes: ['id', 'name'], as: 'subcategory'}]}
+                return {include: [{model: Subcategory, attributes: [k.Attr.Id, k.Attr.Name], as: 'subcategory'}]}
             },
             orderMostViewed: {
-                order: [['loop_count', 'DESC']]
+                order: [[k.Attr.LoopCount, 'DESC']]
             },
             includeTranscripts: function() {
                 return {
                     include: [
                         {
                             model: sequelize.model(k.Model.Transcript),
-                            attributes: ['id', 'text', 'language_code'],
+                            attributes: [k.Attr.Id, k.Attr.Text],
                             as: 'transcripts',
-                            include: {
-                                model: sequelize.model(k.Model.Collocation),
-                                attributes: ['text', 'description', 'ipa_spelling'],
-                                as: 'collocations',
-                                include: {
-                                    model: sequelize.model(k.Model.UsageExample),
-                                    attributes: ['text'],
-                                    as: 'usage_examples'
+                            include: [
+                                {
+                                    model: sequelize.model(k.Model.Collocation),
+                                    attributes: [k.Attr.Text, k.Attr.Description, k.Attr.IPASpelling],
+                                    as: 'collocations',
+                                    include: {
+                                        model: sequelize.model(k.Model.UsageExample),
+                                        attributes: [k.Attr.Text],
+                                        as: 'usage_examples'
+                                    }
+                                }, {
+                                    model: sequelize.model(k.Model.Language),
+                                    attributes: [k.Attr.Name, k.Attr.Code],
+                                    as: 'language'
                                 }
-                            }
+                            ]
                         }
                     ]
                 }

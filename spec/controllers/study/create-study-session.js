@@ -29,8 +29,8 @@ describe('POST /study', function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.login().then(function(initGroup) {
             authorization = initGroup.authorization;
-            user       = initGroup.response.body;
             server        = initGroup.server;
+            user          = initGroup.response.body;
             db            = initGroup.db;
 
             const byUserId = {
@@ -39,8 +39,8 @@ describe('POST /study', function() {
                 }
             };
 
-            return db.StudySession.findAll(byUserId).then(function(studySessions) {
-                return db.WritingAnswer.destroy({
+            return db[k.Model.StudySession].findAll(byUserId).then(function(studySessions) {
+                return db[k.Model.WritingAnswer].destroy({
                     where: {
                         study_session_id: {
                             $in: _.map(studySessions, 'id')
@@ -48,9 +48,9 @@ describe('POST /study', function() {
                     }
                 });
             }).then(function() {
-                return Promise.join(db.CuedVideo.destroy(byUserId), db.StudySession.destroy(byUserId));
+                return Promise.join(db[k.Model.CuedVideo].destroy(byUserId), db[k.Model.StudySession].destroy(byUserId));
             }).then(function() {
-                return db.Video.findOne();
+                return db[k.Model.Video].findOne();
             }).then(function(video) {
                 reqBody = {
                     video_id: video.get(k.Attr.Id),
@@ -160,8 +160,8 @@ describe('POST /study', function() {
         });
 
         it(`should instantiate a new study_sessions record`, function() {
-            return request(server).post('/study').set('authorization', authorization).send(reqBody).then(function(response) {
-                db.StudySession.findOne({
+            return request(server).post('/study').set('authorization', authorization).send(reqBody).then(function() {
+                return db[k.Model.StudySession].findOne({
                     where: {
                         user_id: user.id,
                         video_id: reqBody.video_id
@@ -173,8 +173,8 @@ describe('POST /study', function() {
         });
 
         it(`should instantiate a new queued video record linking the current user and video being studied`, function() {
-            return request(server).post('/study').set('authorization', authorization).send(reqBody).then(function(response) {
-                db.CuedVideo.findOne({
+            return request(server).post('/study').set('authorization', authorization).send(reqBody).then(function() {
+                return db[k.Model.CuedVideo].findOne({
                     where: {
                         user_id: user.id,
                         video_id: reqBody.video_id

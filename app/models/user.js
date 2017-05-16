@@ -97,7 +97,7 @@ module.exports = function(sequelize, DataTypes) {
                 COUNT(study_sessions.id)     AS total_study_sessions
             FROM study_sessions
                 LEFT JOIN videos ON study_sessions.video_id = videos.id
-            WHERE user_id = ? AND videos.language_code = ? AND is_completed = true;
+            WHERE user_id = ? AND videos.language_id = (SELECT id FROM languages WHERE code = ? LIMIT 1) AND is_completed = true;
         `;
 
         return sequelize.query(query, {replacements: [this.id, lang]}).spread(rows => {
@@ -126,7 +126,7 @@ module.exports = function(sequelize, DataTypes) {
                 SELECT study_sessions.id
                 FROM study_sessions
                     LEFT JOIN videos ON study_sessions.video_id = videos.id
-                WHERE user_id = ? AND videos.language_code = ? AND is_completed = true
+                WHERE user_id = ? AND videos.language_id = (SELECT id FROM languages WHERE code = ? LIMIT 1) AND is_completed = true
             );
         `;
 
@@ -155,7 +155,7 @@ module.exports = function(sequelize, DataTypes) {
                     SELECT DISTINCT DATE(study_sessions.created_at) AS DateCol
                     FROM study_sessions
                         LEFT JOIN videos ON study_sessions.video_id = videos.id
-                    WHERE user_id = ? AND videos.language_code = ? AND is_completed = true
+                    WHERE user_id = ? AND videos.language_id = (SELECT id FROM languages WHERE code = ? LIMIT 1) AND is_completed = true
                     ORDER BY DateCol DESC
                 ) t, (
                     SELECT @rn := 0

@@ -8,14 +8,15 @@
 const request  = require('supertest');
 const assert   = require('assert');
 const SpecUtil = require('../../spec-util');
+const k = require('../../../config/keys.json');
 const Promise  = require('bluebird');
 const _        = require('lodash');
 
 describe('POST /videos/:id/unlike', function() {
-    let server         = null;
-    let authorization  = null;
-    let user           = null;
     let requestVideoId = null;
+    let authorization  = null;
+    let server         = null;
+    let user           = null;
     let db             = null;
 
     before(function() {
@@ -25,20 +26,21 @@ describe('POST /videos/:id/unlike', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(initObjects) {
-            authorization = initObjects.authorization;
-            server        = initObjects.server;
-            user          = initObjects.response.body;
-            db            = initObjects.db;
+        return SpecUtil.login().then(function(result) {
+            authorization = result.authorization;
+            server        = result.server;
+            user          = result.response.body;
+            db            = result.db;
 
             const query = `
                 SELECT video_id 
                 FROM likes 
                 WHERE user_id = (
-                    SELECT id 
-                    FROM users 
-                    WHERE email = ?
-                ) LIMIT 1;
+                    SELECT users.id FROM users 
+                    LEFT JOIN credentials ON users.id = credentials.user_id 
+                    WHERE credentials.email = ?
+                ) 
+                LIMIT 1
             `;
 
             return db.sequelize.query(query, {replacements: [SpecUtil.credentials.email]}).spread(function(rows) {
@@ -59,13 +61,13 @@ describe('POST /videos/:id/unlike', function() {
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return request(server).post(`/videos/${requestVideoId}/unlike`).set('authorization', authorization).then(function(response) {
-                assert(response.header['x-gn-auth-token'].length > 0);
+                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
             });
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
             return request(server).post(`/videos/${requestVideoId}/unlike`).set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isParsableTimestamp(+response.header['x-gn-auth-expire']));
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
         });
     });
@@ -95,14 +97,14 @@ describe('POST /videos/:id/unlike', function() {
 
         it(`should decrement the video's 'like_count' by 1`, function() {
             // get current like_count
-            return db.sequelize.query(`SELECT COUNT(*) AS \`like_count\` FROM \`likes\` WHERE \`video_id\` = ${requestVideoId}`).then(function(r) {
+            return db.sequelize.query(`SELECT COUNT(*) AS like_count FROM likes WHERE video_id = ${requestVideoId}`).then(function(r) {
                 const beforeLikeCount = parseInt(r[0][0].like_count); // ex. 3
 
                 // perform request
                 return request(server).post(`/videos/${requestVideoId}/unlike`).set('authorization', authorization).then(function() {
 
                     // get decremented like_count
-                    return db.sequelize.query(`SELECT COUNT(*) AS \`like_count\` FROM \`likes\` WHERE \`video_id\` = ${requestVideoId}`).then(function(r) {
+                    return db.sequelize.query(`SELECT COUNT(*) AS like_count FROM likes WHERE video_id = ${requestVideoId}`).then(function(r) {
                         const afterLikeCount = parseInt(r[0][0].like_count); // ex. 2
 
                         assert.equal(afterLikeCount, beforeLikeCount - 1);

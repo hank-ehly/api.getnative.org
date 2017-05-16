@@ -5,42 +5,65 @@
  * Created by henryehly on 2017/03/26.
  */
 
-const assert          = require('assert');
 const SpecUtil        = require('../spec-util');
-const Promise         = require('bluebird');
 const db              = require('../../app/models');
+const k               = require('../../config/keys.json');
+const User            = db[k.Model.User];
+const Video           = db[k.Model.Video];
+const WritingAnswer   = db[k.Model.WritingAnswer];
+const WritingQuestion = db[k.Model.WritingQuestion];
+const Credential      = db[k.Model.Credential];
+const StudySession    = db[k.Model.StudySession];
+const Language        = db[k.Model.Language];
+
+const Promise         = require('bluebird');
+const assert          = require('assert');
+const chance          = require('chance').Chance();
 const _               = require('lodash');
-const User         = db.User;
-const Video           = db.Video;
-const WritingAnswer   = db.WritingAnswer;
-const WritingQuestion = db.WritingQuestion;
-const StudySession    = db.StudySession;
 
 describe('User', function() {
-    const credentials = {email: '', password: '12345678'};
-    let user       = null;
+    const credentials = {
+        email: '',
+        password: '12345678'
+    };
+
+    let user = null;
+    let englishLanguageId = null;
+    let japaneseLanguageId = null;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer(), function() {
+            return Language.findAll({attributes: [k.Attr.Code, k.Attr.Id]});
+        }).then(function(languages) {
+            languages = _.invokeMap(languages, 'get', {plain: true});
+            englishLanguageId = _.find(languages, {code: 'en'})[k.Attr.Id];
+            japaneseLanguageId = _.find(languages, {code: 'ja'})[k.Attr.Id];
+        });
     });
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        credentials.email = 'test-' + Math.floor(Math.random() * 10000000) + '@email.com';
-        return User.create(credentials).then(function(_) {
-            user = _;
+        credentials.email = chance.email();
+
+        return Language.findOne().then(function(language) {
+            return User.create({default_study_language_id: language.get(k.Attr.Id)});
+        }).then(function(_user) {
+            user = _user;
+            const newUser = {user_id: user.get(k.Attr.Id)};
+            _.assign(newUser, credentials);
+            return Credential.create(newUser);
         });
     });
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
+        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
     });
 
     describe('existsForEmail', function() {
         it(`should return true if a user exists for a given email address`, function() {
-            return User.existsForEmail(user.email).then(assert);
+            return User.existsForEmail(credentials.email).then(assert);
         });
 
         it(`should return false if a user does not exist for a given email address`, function() {
@@ -51,18 +74,22 @@ describe('User', function() {
 
         it(`should throw a TypeError if the first argument is not an email address`, function() {
             assert.throws(function() {
-                User.existsForEmail(123)
+                User.existsForEmail(123);
             }, TypeError);
         });
     });
 
     describe('calculateStudySessionStatsForLanguage', function() {
         it(`should throw a ReferenceError if no 'lang' is provided`, function() {
-            assert.throws(() => user.calculateStudySessionStatsForLanguage(), ReferenceError);
+            assert.throws(function() {
+                user.calculateStudySessionStatsForLanguage();
+            }, ReferenceError);
         });
 
         it(`should throw a TypeError if the 'lang' argument is not a valid lang code`, function() {
-            assert.throws(() => user.calculateStudySessionStatsForLanguage('invalid'), TypeError);
+            assert.throws(function() {
+                user.calculateStudySessionStatsForLanguage('invalid');
+            }, TypeError);
         });
 
         it(`should return the total study time for the specified language`, function() {
@@ -71,20 +98,20 @@ describe('User', function() {
             const numberOfStudySessions = 5;
 
             const englishVideoPromise = Video.findOne({
-                attributes: ['id'],
-                where: {language_code: 'en'}
+                attributes: [k.Attr.Id],
+                where: {language_id: englishLanguageId}
             });
 
             const japaneseVideoPromise = Video.findOne({
-                attributes: ['id'],
-                where: {language_code: 'ja'}
+                attributes: [k.Attr.Id],
+                where: {language_id: japaneseLanguageId}
             });
 
             return Promise.join(englishVideoPromise, japaneseVideoPromise, function(englishVideo, japaneseVideo) {
                 const englishRecords = _.times(numberOfStudySessions, function(i) {
                     return {
-                        video_id: englishVideo.id,
-                        user_id: user.id,
+                        video_id: englishVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: englishStudyTime,
                         is_completed: true
                     }
@@ -92,14 +119,14 @@ describe('User', function() {
 
                 const japaneseRecords = _.times(numberOfStudySessions, function(i) {
                     return {
-                        video_id: japaneseVideo.id,
-                        user_id: user.id,
+                        video_id: japaneseVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: japaneseStudyTime,
                         is_completed: true
                     }
                 });
 
-                _.set(_.first(japaneseRecords), 'is_completed', false);
+                _.set(_.first(japaneseRecords), k.Attr.IsCompleted, false);
 
                 const createEnglishStudySessions  = StudySession.bulkCreate(englishRecords);
                 const createJapaneseStudySessions = StudySession.bulkCreate(japaneseRecords);
@@ -120,20 +147,20 @@ describe('User', function() {
             const numberOfJapaneseStudySessions = 7;
 
             const englishVideoPromise = Video.findOne({
-                attributes: ['id'],
-                where: {language_code: 'en'}
+                attributes: [k.Attr.Id],
+                where: {language_id: englishLanguageId}
             });
 
             const japaneseVideoPromise = Video.findOne({
-                attributes: ['id'],
-                where: {language_code: 'ja'}
+                attributes: [k.Attr.Id],
+                where: {language_id: japaneseLanguageId}
             });
 
             return Promise.all([englishVideoPromise, japaneseVideoPromise]).spread(function(englishVideo, japaneseVideo) {
                 const englishRecords = _.times(numberOfEnglishStudySessions, function(i) {
                     return {
-                        video_id: englishVideo.id,
-                        user_id: user.id,
+                        video_id: englishVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: englishStudyTime,
                         is_completed: true
                     }
@@ -141,8 +168,8 @@ describe('User', function() {
 
                 const japaneseRecords = _.times(numberOfJapaneseStudySessions, function(i) {
                     return {
-                        video_id: japaneseVideo.id,
-                        user_id: user.id,
+                        video_id: japaneseVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: japaneseStudyTime,
                         is_completed: true
                     }
@@ -177,25 +204,29 @@ describe('User', function() {
 
     describe('calculateWritingStatsForLanguage', function() {
         it(`should throw a ReferenceError if no 'lang' is provided`, function() {
-            assert.throws(() => user.calculateWritingStatsForLanguage(), ReferenceError);
+            assert.throws(function() {
+                user.calculateWritingStatsForLanguage();
+            }, ReferenceError);
         });
 
         it(`should throw a TypeError if the 'lang' argument is not a valid lang code`, function() {
-            assert.throws(() => user.calculateWritingStatsForLanguage('invalid'), TypeError);
+            assert.throws(function() {
+                user.calculateWritingStatsForLanguage('invalid');
+            }, TypeError);
         });
 
         it(`should return the maximum number of words the user has written in a single study session for the specified language`, function() {
             const studyTime             = 300;
             const numberOfStudySessions = 2;
 
-            const englishVideoPromise  = Video.findOne({attributes: ['id'], where: {language_code: 'en'}});
-            const japaneseVideoPromise = Video.findOne({attributes: ['id'], where: {language_code: 'ja'}});
+            const englishVideoPromise  = Video.findOne({attributes: [k.Attr.Id], where: {language_id: englishLanguageId}});
+            const japaneseVideoPromise = Video.findOne({attributes: [k.Attr.Id], where: {language_id: japaneseLanguageId}});
 
             return Promise.join(englishVideoPromise, japaneseVideoPromise, function(englishVideo, japaneseVideo) {
                 const englishRecords = _.times(numberOfStudySessions, function(i) {
                     return {
-                        video_id: englishVideo.id,
-                        user_id: user.id,
+                        video_id: englishVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: 300,
                         is_completed: true
                     }
@@ -203,8 +234,8 @@ describe('User', function() {
 
                 const japaneseRecords = _.times(numberOfStudySessions, function(i) {
                     return {
-                        video_id: japaneseVideo.id,
-                        user_id: user.id,
+                        video_id: japaneseVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: 300,
                         is_completed: true
                     }
@@ -217,12 +248,12 @@ describe('User', function() {
 
                 return Promise.all([createEnglishStudySessions, createJapaneseStudySessions, WritingQuestion.findOne()]);
             }).spread(function(englishStudySessions, japaneseStudySessions, writingQuestion) {
-                const writingQuestionId = writingQuestion.get('id');
+                const writingQuestionId = writingQuestion.get(k.Attr.Id);
                 const word = _.constant('word ');
 
                 const englishAnswer_1 = {
                     answer: _.times(100, word).join(''),
-                    study_session_id: _.first(englishStudySessions).get('id'),
+                    study_session_id: _.first(englishStudySessions).get(k.Attr.Id),
                     words_per_minute: 20,
                     word_count: 100,
                     writing_question_id: writingQuestionId
@@ -230,14 +261,14 @@ describe('User', function() {
 
                 const englishAnswer_2 = _.assign(_.clone(englishAnswer_1), {
                     answer: _.times(200, word).join(''),
-                    study_session_id: _.nth(englishStudySessions, 1).get('id'),
+                    study_session_id: _.nth(englishStudySessions, 1).get(k.Attr.Id),
                     words_per_minute: 40,
                     word_count: 200
                 });
 
                 const japaneseAnswer_1 = {
                     answer: _.times(300, word).join(''),
-                    study_session_id: _.first(japaneseStudySessions).get('id'),
+                    study_session_id: _.first(japaneseStudySessions).get(k.Attr.Id),
                     words_per_minute: 60,
                     word_count: 300,
                     writing_question_id: writingQuestionId
@@ -245,7 +276,7 @@ describe('User', function() {
 
                 const japaneseAnswer_2 = _.assign(_.clone(japaneseAnswer_1), {
                     answer: _.times(400, word).join(''),
-                    study_session_id: _.nth(japaneseStudySessions, 1).get('id'),
+                    study_session_id: _.nth(japaneseStudySessions, 1).get(k.Attr.Id),
                     words_per_minute: 80,
                     word_count: 400
                 });
@@ -263,20 +294,20 @@ describe('User', function() {
 
         it(`should return the WPM of the writing answer in the specified language with the most words for the user`, function() {
             const englishVideoPromise = Video.findOne({
-                attributes: ['id'],
-                where: {language_code: 'en'}
+                attributes: [k.Attr.Id],
+                where: {language_id: englishLanguageId}
             });
 
             const japaneseVideoPromise = Video.findOne({
-                attributes: ['id'],
-                where: {language_code: 'ja'}
+                attributes: [k.Attr.Id],
+                where: {language_id: japaneseLanguageId}
             });
 
             return Promise.join(englishVideoPromise, japaneseVideoPromise, function(englishVideo, japaneseVideo) {
                 const englishRecords = _.times(2, function(i) {
                     return {
-                        video_id: englishVideo.id,
-                        user_id: user.id,
+                        video_id: englishVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: 300,
                         is_completed: true
                     }
@@ -284,8 +315,8 @@ describe('User', function() {
 
                 const japaneseRecords = _.times(2, function(i) {
                     return {
-                        video_id: japaneseVideo.id,
-                        user_id: user.id,
+                        video_id: japaneseVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: 300,
                         is_completed: true
                     }
@@ -298,12 +329,12 @@ describe('User', function() {
 
                 return Promise.all([createEnglishStudySessions, createJapaneseStudySessions, WritingQuestion.findOne()]);
             }).spread(function(englishStudySessions, japaneseStudySessions, writingQuestion) {
-                const writingQuestionId = writingQuestion.get('id');
+                const writingQuestionId = writingQuestion.get(k.Attr.Id);
                 const word = _.constant('word ');
 
                 const englishAnswer_1 = {
                     answer: _.times(100, word).join(''),
-                    study_session_id: _.first(englishStudySessions).get('id'),
+                    study_session_id: _.first(englishStudySessions).get(k.Attr.Id),
                     words_per_minute: 20,
                     word_count: 100,
                     writing_question_id: writingQuestionId
@@ -311,14 +342,14 @@ describe('User', function() {
 
                 const englishAnswer_2 = _.assign(_.clone(englishAnswer_1), {
                     answer: _.times(200, word).join(''),
-                    study_session_id: _.nth(englishStudySessions, 1).get('id'),
+                    study_session_id: _.nth(englishStudySessions, 1).get(k.Attr.Id),
                     words_per_minute: 40,
                     word_count: 200
                 });
 
                 const japaneseAnswer_1 = {
                     answer: _.times(300, word).join(''),
-                    study_session_id: _.first(japaneseStudySessions).get('id'),
+                    study_session_id: _.first(japaneseStudySessions).get(k.Attr.Id),
                     words_per_minute: 60,
                     word_count: 300,
                     writing_question_id: writingQuestionId
@@ -326,7 +357,7 @@ describe('User', function() {
 
                 const japaneseAnswer_2 = _.assign(_.clone(japaneseAnswer_1), {
                     answer: _.times(400, word).join(''),
-                    study_session_id: _.nth(japaneseStudySessions, 1).get('id'),
+                    study_session_id: _.nth(japaneseStudySessions, 1).get(k.Attr.Id),
                     words_per_minute: 80,
                     word_count: 400
                 });
@@ -355,16 +386,20 @@ describe('User', function() {
 
     describe('calculateStudyStreaks', function() {
         it(`should throw a ReferenceError if no 'lang' is provided`, function() {
-            assert.throws(() => user.calculateStudyStreaksForLanguage(), ReferenceError);
+            assert.throws(function() {
+                user.calculateStudyStreaksForLanguage();
+            }, ReferenceError);
         });
 
         it(`should throw a TypeError if the 'lang' argument is not a valid lang code`, function() {
-            assert.throws(() => user.calculateStudyStreaksForLanguage('invalid'), TypeError);
+            assert.throws(function() {
+                user.calculateStudyStreaksForLanguage('invalid');
+            }, TypeError);
         });
 
         it(`should return the longest number of consecutive days the user has studied for the specified language`, function() {
-            const japaneseVideoPromise = Video.findOne({attributes: ['id'], where: {language_code: 'ja'}});
-            const englishVideoPromise  = Video.findOne({attributes: ['id'], where: {language_code: 'en'}});
+            const japaneseVideoPromise = Video.findOne({attributes: [k.Attr.Id], where: {language_id: japaneseLanguageId}});
+            const englishVideoPromise  = Video.findOne({attributes: [k.Attr.Id], where: {language_id: englishLanguageId}});
 
             return Promise.join(japaneseVideoPromise, englishVideoPromise, function(japaneseVideo, englishVideo) {
                 const englishStudyDates = [
@@ -391,8 +426,8 @@ describe('User', function() {
 
                 const englishStudySessions = _.times(englishStudyDates.length, function(i) {
                     return {
-                        video_id: englishVideo.id,
-                        user_id: user.id,
+                        video_id: englishVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: 300,
                         created_at: englishStudyDates[i],
                         is_completed: true
@@ -401,15 +436,15 @@ describe('User', function() {
 
                 const japaneseStudySessions = _.times(japaneseStudyDates.length, function(i) {
                     return {
-                        video_id: japaneseVideo.id,
-                        user_id: user.id,
+                        video_id: japaneseVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: 300,
                         created_at: japaneseStudyDates[i],
                         is_completed: true
                     }
                 });
 
-                _.nth(japaneseStudySessions, 6).is_completed = false;
+                _.nth(japaneseStudySessions, 6)[k.Attr.IsCompleted] = false;
 
                 return StudySession.bulkCreate(_.concat(englishStudySessions, japaneseStudySessions));
             }).then(function() {
@@ -421,8 +456,8 @@ describe('User', function() {
         });
 
         it(`should return the number of days the user has consecutively studied for the specified language`, function() {
-            const japaneseVideoPromise = Video.findOne({attributes: ['id'], where: {language_code: 'ja'}});
-            const englishVideoPromise  = Video.findOne({attributes: ['id'], where: {language_code: 'en'}});
+            const japaneseVideoPromise = Video.findOne({attributes: [k.Attr.Id], where: {language_id: japaneseLanguageId}});
+            const englishVideoPromise  = Video.findOne({attributes: [k.Attr.Id], where: {language_id: englishLanguageId}});
 
             return Promise.join(japaneseVideoPromise, englishVideoPromise, function(japaneseVideo, englishVideo) {
                 const oneDay             = 1000 * 60 * 60 * 24;
@@ -440,8 +475,8 @@ describe('User', function() {
 
                 const englishStudySessions = _.times(englishStudyDates.length, function(i) {
                     return {
-                        video_id: englishVideo.id,
-                        user_id: user.id,
+                        video_id: englishVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: 300,
                         created_at: englishStudyDates[i],
                         is_completed: true
@@ -452,8 +487,8 @@ describe('User', function() {
 
                 const japaneseStudySessions = _.times(japaneseStudyDates.length, function(i) {
                     return {
-                        video_id: japaneseVideo.id,
-                        user_id: user.id,
+                        video_id: japaneseVideo[k.Attr.Id],
+                        user_id: user[k.Attr.Id],
                         study_time: 300,
                         created_at: japaneseStudyDates[i],
                         is_completed: true

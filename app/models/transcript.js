@@ -18,7 +18,7 @@ module.exports = function(sequelize, DataTypes) {
         underscored: true,
         associations: function(models) {
             models[k.Model.Transcript].belongsTo(models[k.Model.Video]);
-            models[k.Model.Transcript].belongsTo(models[k.Model.Language]);
+            models[k.Model.Transcript].belongsTo(models[k.Model.Language], {as: 'language'});
             models[k.Model.Transcript].hasMany(models[k.Model.Collocation], {as: 'collocations'});
         }
     });

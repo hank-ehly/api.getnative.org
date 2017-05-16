@@ -40,13 +40,14 @@ module.exports = function(sequelize, DataTypes) {
                     where: {
                         study_session_id: {
                             $in: sequelize.literal(`(
-                                SELECT \`id\`
-                                FROM \`study_sessions\`
-                                WHERE \`video_id\` IN (
-                                    SELECT \`id\`
-                                    FROM \`videos\`
-                                    WHERE \`language_code\` = '${lang}'
-                                ) AND \`user_id\` = '${userId}'
+                                SELECT id
+                                FROM study_sessions
+                                WHERE video_id IN (
+                                    SELECT videos.id
+                                    FROM videos
+                                    LEFT JOIN languages ON videos.language_id = languages.id
+                                    WHERE languages.code = '${lang}'
+                                ) AND user_id = '${userId}'
                             )`)
                         }
                     }

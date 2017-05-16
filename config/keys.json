@@ -19,6 +19,7 @@
         "ExampleAnswer": "example_answer",
         "Id": "id",
         "IsCompleted": "is_completed",
+        "IPASpelling": "ipa_spelling",
         "IsSilhouettePicture": "is_silhouette_picture",
         "LanguageCode": "language_code",
         "Length": "length",
@@ -57,7 +58,8 @@
         "PasswordIncorrect": "PasswordIncorrect",
         "TokenExpired": "TokenExpired",
         "UserMissing": "UserMissing",
-        "UserAlreadyVerified": "UserAlreadyVerified"
+        "UserAlreadyVerified": "UserAlreadyVerified",
+        "ResourceNotFound": "ResourceNotFound"
     },
     "ENVIRONMENT": "ENVIRONMENT",
     "Env": {

@@ -34,12 +34,11 @@ module.exports.clientErrorHandler = function(e, req, res, next) {
     }
 };
 
-module.exports.fallbackErrorHandler = function(error, req, res) {
-    if (config.get(k.API.ENV) !== k.Env.Production) {
-        return res.status(500).send(error.stack);
+module.exports.fallbackErrorHandler = function(e, req, res, next) {
+    if (config.get(k.ENVIRONMENT) !== k.Env.Production) {
+        return res.status(500).send(e.stack);
     }
 
     // todo: if error is result of non-existent request path, send 404
-
     return res.sendStatus(500);
 };

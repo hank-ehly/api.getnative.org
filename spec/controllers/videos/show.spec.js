@@ -165,10 +165,21 @@ describe('GET /videos/:id', function() {
             });
         });
 
-        it(`should contain a valid 'language_code' string`, function() {
+        it(`should contain a 'language' object`, function() {
             return request(server).get(`/videos/${id}`).set('authorization', authorization).then(function(response) {
-                // todo: compare against set list of lang codes
-                assert(_.includes(['en', 'ja'], response.body.language_code));
+                assert(_.isPlainObject(response.body.language));
+            });
+        });
+
+        it(`should contains a 'language.name' string`, function() {
+            return request(server).get(`/videos/${id}`).set('authorization', authorization).then(function(response) {
+                assert(_.includes(['English', '日本語'], response.body.language.name));
+            });
+        });
+
+        it(`should contains a 'language.code' string`, function() {
+            return request(server).get(`/videos/${id}`).set('authorization', authorization).then(function(response) {
+                assert(_.includes(['en', 'ja'], response.body.language.code));
             });
         });
 
@@ -225,6 +236,24 @@ describe('GET /videos/:id', function() {
         it(`should contains a non-null 'related_videos.records[N].picture_url url string`, function() {
             return request(server).get(`/videos/${id}`).set('authorization', authorization).then(function(response) {
                 assert(SpecUtil.isValidURL(_.first(response.body.related_videos.records).picture_url));
+            });
+        });
+
+        it(`should contain a 'related_videos.records[N].language' object`, function() {
+            return request(server).get(`/videos/${id}`).set('authorization', authorization).then(function(response) {
+                assert(_.isPlainObject(_.first(response.body.related_videos.records).language));
+            });
+        });
+
+        it(`should contain a 'related_videos.records[N].language.name' string`, function() {
+            return request(server).get(`/videos/${id}`).set('authorization', authorization).then(function(response) {
+                assert(_.isString(_.first(response.body.related_videos.records).language.name));
+            });
+        });
+
+        it(`should contain a 'related_videos.records[N].language.code' string`, function() {
+            return request(server).get(`/videos/${id}`).set('authorization', authorization).then(function(response) {
+                assert(_.isString(_.first(response.body.related_videos.records).language.code));
             });
         });
 
@@ -304,9 +333,21 @@ describe('GET /videos/:id', function() {
             });
         });
 
-        it(`should contain a non-null 'transcripts.records[N].language_code' string`, function() {
+        it(`should contain a non-null 'transcripts.records[N].language' object`, function() {
             return request(server).get(`/videos/${id}`).set('authorization', authorization).then(function(response) {
-                assert(_.isString(_.first(response.body.transcripts.records).language_code));
+                assert(_.isPlainObject(_.first(response.body.transcripts.records).language));
+            });
+        });
+
+        it(`should contain a non-null 'transcripts.records[N].language.code' string`, function() {
+            return request(server).get(`/videos/${id}`).set('authorization', authorization).then(function(response) {
+                assert(_.isString(_.first(response.body.transcripts.records).language.code));
+            });
+        });
+
+        it(`should contain a non-null 'transcripts.records[N].language.name' string`, function() {
+            return request(server).get(`/videos/${id}`).set('authorization', authorization).then(function(response) {
+                assert(_.isString(_.first(response.body.transcripts.records).language.name));
             });
         });
 

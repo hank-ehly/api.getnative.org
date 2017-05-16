@@ -23,11 +23,6 @@ describe('clean (StudySession)', function() {
         return SpecUtil.seedAll();
     });
 
-    afterEach(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.seedAllUndo();
-    });
-
     it(`should remove all StudySession records where 'is_completed' is false and more than 24 has passed since 'created_at'`, function(done) {
         this.timeout(SpecUtil.defaultTimeout);
 

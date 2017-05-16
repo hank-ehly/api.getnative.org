@@ -11,7 +11,7 @@ const WritingAnswer   = db[k.Model.WritingAnswer];
 const WritingQuestion = db[k.Model.WritingQuestion];
 const QueuedVideo     = db[k.Model.CuedVideo];
 const StudySession    = db[k.Model.StudySession];
-const User         = db[k.Model.User];
+const User            = db[k.Model.User];
 const Video           = db[k.Model.Video];
 const services        = require('../services');
 const ModelService    = services['Model'](db);
@@ -23,35 +23,29 @@ const Promise         = require('bluebird');
 const _               = require('lodash');
 
 module.exports.stats = (req, res, next) => {
-    User.findById(req.userId).then(user => {
-        if (!user) {
-            throw new GetNativeError(k.Error.UserMissing);
-        }
+    const sessionStats = req.user.calculateStudySessionStatsForLanguage(req.params.lang);
+    const writingStats = req.user.calculateWritingStatsForLanguage(req.params.lang);
+    const studyStreaks = req.user.calculateStudyStreaksForLanguage(req.params.lang);
 
-        const sessionStats = user.calculateStudySessionStatsForLanguage(req.params.lang);
-        const writingStats = user.calculateWritingStatsForLanguage(req.params.lang);
-        const studyStreaks = user.calculateStudyStreaksForLanguage(req.params.lang);
-
-        return Promise.join(sessionStats, writingStats, studyStreaks, (sessions, writing, streaks) => {
-            res.status(200).send({
-                lang: req.params.lang,
-                total_time_studied: sessions.total_time_studied,
-                consecutive_days: streaks.consecutive_days,
-                total_study_sessions: sessions.total_study_sessions,
-                longest_consecutive_days: streaks.longest_consecutive_days,
-                maximum_words: writing.maximum_words,
-                maximum_wpm: writing.maximum_wpm
-            });
-        }).catch(Promise.reject);
+    return Promise.join(sessionStats, writingStats, studyStreaks, (sessions, writing, streaks) => {
+        res.status(200).send({
+            lang: req.params.lang,
+            total_time_studied: sessions.total_time_studied,
+            consecutive_days: streaks.consecutive_days,
+            total_study_sessions: sessions.total_study_sessions,
+            longest_consecutive_days: streaks.longest_consecutive_days,
+            maximum_words: writing.maximum_words,
+            maximum_wpm: writing.maximum_wpm
+        });
     }).catch(next);
 };
 
 module.exports.writing_answers = (req, res, next) => {
     const createdAt = ModelService.getDateAttrForTableColumnTZOffset(k.Model.WritingAnswer, k.Attr.CreatedAt, req.query.time_zone_offset);
 
-    WritingAnswer.scope([
+    return WritingAnswer.scope([
         'newestFirst',
-        {method: ['forUserWithLang', req.userId, req.params.lang]},
+        {method: ['forUserWithLang', req.user[k.Attr.Id], req.params.lang]},
         {method: ['since', req.query.since]},
         {method: ['maxId', req.query.max_id]}
     ]).findAll({
@@ -76,18 +70,18 @@ module.exports.writing_answers = (req, res, next) => {
 };
 
 module.exports.createStudySession = (req, res, next) => {
-    const videoId = req.body[k.Attr.VideoId];
-    const studyTime    = req.body[k.Attr.StudyTime];
+    const videoId   = req.body[k.Attr.VideoId];
+    const studyTime = req.body[k.Attr.StudyTime];
 
     const queuedVideo = QueuedVideo.findOrCreate({
         where: {
-            user_id: req.userId,
+            user_id: req.user[k.Attr.Id],
             video_id: videoId
         }
     });
 
     const studySession = StudySession.create({
-        user_id: req.userId,
+        user_id: req.user[k.Attr.Id],
         video_id: videoId,
         study_time: studyTime
     });
@@ -99,7 +93,7 @@ module.exports.createStudySession = (req, res, next) => {
 };
 
 module.exports.complete = (req, res, next) => {
-    StudySession.update({is_completed: true}, {where: {id: req.body.id}}).then(function() {
+    return StudySession.update({is_completed: true}, {where: {id: req.body.id}}).then(function() {
         res.sendStatus(204);
     }).catch(next);
 };

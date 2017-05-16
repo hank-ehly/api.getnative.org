@@ -6,7 +6,8 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const Utility  = require('../../../app/services').Utility;
+const Utility  = require('../../../app/services')['Utility'];
+const k        = require('../../../config/keys.json');
 
 const Promise  = require('bluebird');
 const request  = require('supertest');
@@ -17,6 +18,7 @@ describe('GET /videos', function() {
     let server = null;
     let authorization = null;
     let user = null;
+    let db = null;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -25,11 +27,11 @@ describe('GET /videos', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(_) {
-            server        = _.server;
-            db            = _.db;
-            authorization = _.authorization;
-            user          = _.response.body;
+        return SpecUtil.login().then(function(result) {
+            authorization = result.authorization;
+            server        = result.server;
+            user          = result.response.body;
+            db            = result.db;
         });
     });
 
@@ -224,7 +226,6 @@ describe('GET /videos', function() {
             return request(server).get('/videos').set('authorization', authorization).then(function(response) {
                 _.forEach(response.body.records, function(record) {
                     assert(_.isNumber(record.loop_count), 'loop_count is not a number');
-                    // assert(_.gt(record.loop_count), 0, 'loop_count is not greater than or equal to 0');
                 });
             });
         });
@@ -265,7 +266,7 @@ describe('GET /videos', function() {
         });
 
         it(`should return only records whose IDs are less than the 'max_id' query parameter`, function() {
-            return db.Video.findAll().then(function(videos) {
+            return db[k.Model.Video].findAll().then(function(videos) {
                 let midVideoId = videos[Math.floor(videos.length / 2)].get('id');
                 return request(server).get(`/videos?max_id=${midVideoId}`).set('authorization', authorization).then(function(response) {
                     assert(_.lt(_.first(response.body.records).id, midVideoId));
@@ -286,7 +287,7 @@ describe('GET /videos', function() {
         });
 
         it(`should return videos if a category_id is specified`, function() {
-            return db.Category.findOne({attributes: ['id']}).then(function(category) {
+            return db[k.Model.Category].findOne({attributes: ['id']}).then(function(category) {
                 return request(server).get(`/videos?category_id=${category.get('id')}`).set('authorization', authorization).then(function(response) {
                     assert(_.isNumber(response.body.count));
                     assert(_.isArray(response.body.records));
@@ -296,15 +297,17 @@ describe('GET /videos', function() {
 
         it(`should return only English videos if the request contains no 'lang' parameter`, function() {
             return request(server).get(`/videos`).set('authorization', authorization).then(function(response) {
-                let firstVideoId = _.first(response.body.records).id;
-                return db.sequelize.query(`SELECT language_code FROM videos WHERE videos.id = ${firstVideoId} LIMIT 1`).spread(function(result) {
-                    assert.equal(_.first(result).language_code, 'en');
+                let firstVideoId = _.first(response.body.records)[k.Attr.Id];
+                return db.sequelize.query(`SELECT language_id FROM videos WHERE videos.id = ${firstVideoId} LIMIT 1`).spread(function(result) {
+                    return db[k.Model.Language].findOne({where: {code: 'en'}, attributes: [k.Attr.Id]}).then(function(language) {
+                        assert.equal(_.first(result).language_id, language.get(k.Attr.Id));
+                    });
                 });
             });
         });
 
         it(`should return videos of a specific subcategory`, function() {
-            return db.Subcategory.findOne({attributes: ['id']}).then(function(subcategory) {
+            return db[k.Model.Subcategory].findOne({attributes: ['id']}).then(function(subcategory) {
                 const id = subcategory.get('id');
                 return request(server).get(`/videos?subcategory_id=${id}`).set('authorization', authorization).then(function(response) {
                     _.forEach(response.body.records, function(record) {
@@ -317,9 +320,9 @@ describe('GET /videos', function() {
         it(`should return videos of a specific category`, function() {
             let categoryId = null;
 
-            db.Category.findOne({attributes: ['id']}).then(function(category) {
+            db[k.Model.Category].findOne({attributes: ['id']}).then(function(category) {
                 categoryId = category.get('id');
-                return db.Subcategory.findAll({
+                return db[k.Model.Subcategory].findAll({
                     attributes: ['id'],
                     where: {category_id: categoryId}
                 });

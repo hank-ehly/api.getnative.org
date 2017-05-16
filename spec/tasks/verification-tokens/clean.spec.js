@@ -27,11 +27,6 @@ describe('clean (VerificationToken)', function() {
         return SpecUtil.seedAll();
     });
 
-    afterEach(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.seedAllUndo();
-    });
-
     it(`should delete all VerificationToken records whose expiration date is equal to or before the current time`, function(done) {
         this.timeout(SpecUtil.defaultTimeout);
 

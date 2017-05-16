@@ -8,7 +8,7 @@
 const k = require('../../config/keys.json');
 
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define('Language', {
+    return sequelize.define(k.Model.Language, {
         name: {
             type: DataTypes.STRING,
             allowNull: false,

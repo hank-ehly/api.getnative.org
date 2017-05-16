@@ -6,6 +6,7 @@
  */
 
 const SpecUtil = require('../../spec-util');
+const k        = require('../../../config/keys.json');
 
 const Promise  = require('bluebird');
 const request  = require('supertest');
@@ -25,11 +26,11 @@ describe('GET /study/writing_answers', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(_) {
-            server = _.server;
-            db = _.db;
-            authorization = _.authorization;
-            user = _.response.body;
+        return SpecUtil.login().then(function(result) {
+            authorization = result.authorization;
+            server        = result.server;
+            user          = result.response.body;
+            db            = result.db;
         });
     });
 
@@ -45,7 +46,7 @@ describe('GET /study/writing_answers', function() {
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return request(server).get('/study/en/writing_answers').set('authorization', authorization).then(function(response) {
-                assert(response.header['x-gn-auth-token'].length > 0);
+                assert(_.gt(response.header['x-gn-auth-token'].length, 0));
             });
         });
 
@@ -196,21 +197,22 @@ describe('GET /study/writing_answers', function() {
         it(`should return only records whose language is equal to that of the 'lang' request param`, function() {
             const requestLang = 'ja';
             return request(server).get(`/study/${requestLang}/writing_answers`).set('authorization', authorization).then(function(response) {
-                const studySessionIds = _.transform(response.body.records, (ids, record) => {
+                const studySessionIds = _.transform(response.body.records, function(ids, record) {
                     ids.push(record.study_session_id);
                 }, []);
 
                 return db.sequelize.query(`
-                    SELECT \`language_code\` 
-                    FROM \`videos\` 
-                    WHERE \`id\` IN (
-                        SELECT \`video_id\` 
-                        FROM \`study_sessions\` 
-                        WHERE \`id\` IN (${studySessionIds.join(',')})
+                    SELECT L.code 
+                    FROM videos V
+                    LEFT JOIN languages L ON V.language_id = L.id
+                    WHERE V.id IN (
+                        SELECT video_id
+                        FROM study_sessions 
+                        WHERE id IN (${studySessionIds.join(',')})
                     )
-                `).spread(rows => {
-                    _.forEach(rows, (row) => {
-                        assert.equal(row.language_code, requestLang);
+                `).spread(function(rows) {
+                    _.forEach(rows, function(row) {
+                        assert.equal(row[k.Attr.Code], requestLang);
                     });
                 });
             });
