@@ -43,7 +43,7 @@ module.exports.create = (req, res, next) => {
         Auth.setAuthHeadersOnResponseWithToken(res, token);
         const userAsJson = user.get({plain: true});
         userAsJson[k.Attr.Email] = req.body[k.Attr.Email];
-        res.send(userAsJson);
+        res.status(201).send(userAsJson);
     }).catch(GetNativeError, e => {
         res.status(404);
         next(e);

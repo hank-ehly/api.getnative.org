@@ -26,15 +26,15 @@ describe('POST /study/complete', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(initGroup) {
-            authorization = initGroup.authorization;
-            server        = initGroup.server;
-            db            = initGroup.db;
+        return SpecUtil.login().then(function(result) {
+            authorization = result.authorization;
+            server        = result.server;
+            db            = result.db;
 
             return db.Video.findOne().then(function(video) {
                 return db.StudySession.create({
                     video_id: video.get(k.Attr.Id),
-                    user_id: initGroup.response.body.id,
+                    user_id: result.response.body.id,
                     study_time: 300,
                     is_completed: false
                 });

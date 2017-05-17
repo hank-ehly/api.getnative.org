@@ -94,8 +94,8 @@ describe('POST /users', function() {
     });
 
     describe('response.success', function() {
-        it('should respond with 200 OK for a successful request', function(done) {
-            request(server).post('/users').send(credential).expect(200, done);
+        it('should respond with 201 Created for a successful request', function(done) {
+            request(server).post('/users').send(credential).expect(201, done);
         });
 
         it(`should respond with an object containing the user's ID`, function() {
@@ -140,9 +140,21 @@ describe('POST /users', function() {
             });
         });
 
+        it(`should respond with an object containing the user's default study language object`, function() {
+            return request(server).post('/users').send(credential).then(function(response) {
+                assert(_.isPlainObject(response.body[k.Attr.DefaultStudyLanguage]));
+            });
+        });
+
+        it(`should respond with an object containing the user's default study language name`, function() {
+            return request(server).post('/users').send(credential).then(function(response) {
+                assert(_.isString(response.body[k.Attr.DefaultStudyLanguage].name));
+            });
+        });
+
         it(`should respond with an object containing the user's default study language code`, function() {
             return request(server).post('/users').send(credential).then(function(response) {
-                assert(new RegExp(/[a-z]+/).test(response.body.default_study_language_code));
+                assert(_.isString(response.body[k.Attr.DefaultStudyLanguage].code));
             });
         });
 

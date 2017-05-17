@@ -33,9 +33,7 @@ module.exports.create = (req, res, next) => {
 
         return Language.findOne({where: {code: 'en'}});
     }).then(language => {
-        return User.create({
-            default_study_language_id: language.get(k.Attr.Id),
-        });
+        return User.create({default_study_language_id: language.get(k.Attr.Id)});
     }).then(_user => {
         return Promise.all([
             _user, db[k.Model.Credential].create({
@@ -81,7 +79,8 @@ module.exports.create = (req, res, next) => {
         return Auth.generateTokenForUserId(user[k.Attr.Id]);
     }).then(token => {
         Auth.setAuthHeadersOnResponseWithToken(res, token);
-        res.send(_.omit(user, k.Attr.Password));
+        const userWithoutPassword = _.omit(user, k.Attr.Password);
+        res.status(201).send(userWithoutPassword);
     }).catch(GetNativeError, e => {
         if (e.code === k.Error.UserAlreadyExists) {
             res.status(422);

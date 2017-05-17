@@ -106,7 +106,7 @@ module.exports = function(sequelize, DataTypes) {
                 }
             },
             relatedToVideo: function(videoId) {
-                // todo: could this be more clean and/or efficient?
+                // todo: could this be more clean and/or efficient? => Yes, use LEFT JOIN
                 return {
                     where: {
                         subcategory_id: {

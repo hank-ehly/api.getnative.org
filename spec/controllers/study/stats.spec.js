@@ -6,6 +6,7 @@
  */
 
 const SpecUtil = require('../../spec-util');
+const k        = require('../../../config/keys.json');
 
 const Promise  = require('bluebird');
 const request  = require('supertest');
@@ -25,11 +26,11 @@ describe('GET /study/stats', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(_) {
-            authorization = _.authorization;
-            server        = _.server;
-            user          = _.response.body;
-            db            = _.db;
+        return SpecUtil.login().then(function(result) {
+            authorization = result.authorization;
+            server        = result.server;
+            user          = result.response.body;
+            db            = result.db;
         });
     });
 
@@ -45,13 +46,13 @@ describe('GET /study/stats', function() {
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return request(server).get('/study/en/stats').set('authorization', authorization).then(function(response) {
-                assert(_.gt(response.header['x-gn-auth-token'].length, 0));
+                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
             });
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
             return request(server).get('/study/en/stats').set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isParsableTimestamp(+response.header['x-gn-auth-expire']));
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
         });
     });

@@ -87,6 +87,7 @@ describe('GET /videos', function() {
             request(server).get('/videos?category_id=notANumber').set('authorization', authorization).expect(400, done);
         });
 
+        // todo: limit is too low
         it(`should return a 400 Bad Request response if the 'count' is above 9`, function(done) {
             request(server).get(`/videos?count=11`).set('authorization', authorization).expect(400, done);
         });
@@ -119,6 +120,7 @@ describe('GET /videos', function() {
         });
 
         // todo: can't include the same parameter more than once
+        // todo: bad time_zone_offset
     });
 
     describe('response.success', function() {

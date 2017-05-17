@@ -6,6 +6,7 @@
  */
 
 const SpecUtil = require('../../spec-util');
+const k        = require('../../../config/keys.json');
 
 const Promise  = require('bluebird');
 const request  = require('supertest');
@@ -15,8 +16,8 @@ const _        = require('lodash');
 describe('POST /videos/:id/dequeue', function() {
     let authorization = null;
     let sampleVideo   = null;
-    let user       = null;
     let server        = null;
+    let user          = null;
     let db            = null;
 
     before(function() {
@@ -26,25 +27,25 @@ describe('POST /videos/:id/dequeue', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(initGroup) {
-            authorization = initGroup.authorization;
-            user          = initGroup.response.body;
-            server        = initGroup.server;
-            db            = initGroup.db;
+        return SpecUtil.login().then(function(result) {
+            authorization = result.authorization;
+            user          = result.response.body;
+            server        = result.server;
+            db            = result.db;
 
             return db.sequelize.query(`
                 SELECT * FROM videos WHERE id NOT IN (
                     SELECT video_id FROM cued_videos WHERE user_id = ?
                 ) LIMIT 1;
-            `, {replacements: [user.id]}).spread(function(video) {
+            `, {replacements: [user[k.Attr.Id]]}).spread(function(video) {
                 return _.first(video);
             }).then(function(nonQueuedVideo) {
                 return db.CuedVideo.create({
-                    user_id: user.id,
-                    video_id: nonQueuedVideo.id
+                    user_id: user[k.Attr.Id],
+                    video_id: nonQueuedVideo[k.Attr.Id]
                 });
             }).then(function(queuedVideo) {
-                return db.Video.findById(queuedVideo.video_id);
+                return db.Video.findById(queuedVideo[k.Attr.VideoId]);
             }).then(function(video) {
                 sampleVideo = video;
             });
@@ -62,35 +63,35 @@ describe('POST /videos/:id/dequeue', function() {
 
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
-            return request(server).post(`/videos/${sampleVideo.id}/dequeue`).set('authorization', authorization).then(function(response) {
-                assert(_.gt(response.header['x-gn-auth-token'].length, 0));
+            return request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/dequeue`).set('authorization', authorization).then(function(response) {
+                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
             });
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
-            return request(server).post(`/videos/${sampleVideo.id}/dequeue`).set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isParsableTimestamp(+response.header['x-gn-auth-expire']));
+            return request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/dequeue`).set('authorization', authorization).then(function(response) {
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
         });
     });
 
     describe('response.success', function() {
         it(`should return 204 No Content for a valid request`, function(done) {
-            request(server).post(`/videos/${sampleVideo.id}/dequeue`).set('authorization', authorization).expect(204, done);
+            request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/dequeue`).set('authorization', authorization).expect(204, done);
         });
 
         it(`should not contain a response body`, function() {
-            return request(server).post(`/videos/${sampleVideo.id}/dequeue`).set('authorization', authorization).then(function(response) {
+            return request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/dequeue`).set('authorization', authorization).then(function(response) {
                 assert.equal(_.size(response.body), 0);
             });
         });
 
         it(`should remove the video from the queue (by destroying the appropriate queued video record)`, function() {
-            return request(server).post(`/videos/${sampleVideo.id}/dequeue`).set('authorization', authorization).then(function(response) {
+            return request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/dequeue`).set('authorization', authorization).then(function(response) {
                 return db.CuedVideo.findOne({
                     where: {
-                        user_id: user.id,
-                        video_id: sampleVideo.id
+                        user_id: user[k.Attr.Id],
+                        video_id: sampleVideo[k.Attr.Id]
                     }
                 });
             }).then(function(dequeuedVideo) {
@@ -101,7 +102,7 @@ describe('POST /videos/:id/dequeue', function() {
 
     describe('response.failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
-            request(server).post(`/videos/${sampleVideo.id}/dequeue`).expect(401, done);
+            request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/dequeue`).expect(401, done);
         });
 
         it(`should respond with 400 Bad Request if the 'id' parameter is not a number`, function(done) {

@@ -13,7 +13,7 @@ const request  = require('supertest');
 const assert   = require('assert');
 const _        = require('lodash');
 
-describe('GET /study/writing_answers', function() {
+describe('GET /study/:lang/writing_answers', function() {
     let server        = null;
     let authorization = null;
     let user          = null;
@@ -46,13 +46,13 @@ describe('GET /study/writing_answers', function() {
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return request(server).get('/study/en/writing_answers').set('authorization', authorization).then(function(response) {
-                assert(_.gt(response.header['x-gn-auth-token'].length, 0));
+                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
             });
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
             return request(server).get('/study/en/writing_answers').set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isParsableTimestamp(+response.header['x-gn-auth-expire']));
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
         });
     });
@@ -62,7 +62,7 @@ describe('GET /study/writing_answers', function() {
             request(server).get('/study/en/writing_answers').expect(401, done);
         });
 
-        it(`should return a 400 response if the 'since' query parameter value is a future date`, function(done) {
+        it(`should return 400 Bad Request if the 'since' query parameter value is a future date`, function(done) {
             let twoDaysLater = new Date().getTime() + (1000 * 60 * 60 * 24 * 2);
             request(server).get(`/study/en/writing_answers?since=${twoDaysLater}`).set('authorization', authorization).expect(400, done);
         });
@@ -78,6 +78,8 @@ describe('GET /study/writing_answers', function() {
         it(`should return a 400 response if the 'max_id' query param value is a negative number`, function(done) {
             request(server).get('/study/en/writing_answers?max_id=-1000').set('authorization', authorization).expect(400, done);
         });
+
+        // todo: invalid or unintelligible time_zone_offset
     });
 
     describe('response.success', function() {

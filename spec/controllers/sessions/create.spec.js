@@ -65,8 +65,8 @@ describe('POST /sessions', function() {
     });
 
     describe('response.success', function() {
-        it('should respond with 200 OK', function(done) {
-            request(server).post('/sessions').send(SpecUtil.credentials).expect(200, done);
+        it('should respond with 201 Created', function(done) {
+            request(server).post('/sessions').send(SpecUtil.credentials).expect(201, done);
         });
 
         it('should respond with an object containing the user\'s ID', function() {

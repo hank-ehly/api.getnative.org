@@ -16,8 +16,8 @@ const _       = require('lodash');
 describe('POST /videos/:id/queue', function() {
     let authorization  = null;
     let sampleVideo    = null;
-    let user        = null;
     let server         = null;
+    let user           = null;
     let db             = null;
 
     before(function() {
@@ -29,15 +29,15 @@ describe('POST /videos/:id/queue', function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.login().then(function(initGroup) {
             authorization = initGroup.authorization;
-            user       = initGroup.response.body;
             server        = initGroup.server;
+            user          = initGroup.response.body;
             db            = initGroup.db;
 
             return db.sequelize.query(`
                 SELECT * FROM videos WHERE id NOT IN (
                     SELECT video_id FROM cued_videos WHERE user_id = ?
                 ) LIMIT 1;
-            `, {replacements: [user.id]}).spread(function(video) {
+            `, {replacements: [user[k.Attr.Id]]}).spread(function(video) {
                 sampleVideo = _.first(video);
             });
         });
@@ -54,35 +54,35 @@ describe('POST /videos/:id/queue', function() {
 
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
-            return request(server).post(`/videos/${sampleVideo.id}/queue`).set('authorization', authorization).then(function(response) {
-                assert(_.gt(response.header['x-gn-auth-token'].length, 0));
+            return request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/queue`).set('authorization', authorization).then(function(response) {
+                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
             });
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
-            return request(server).post(`/videos/${sampleVideo.id}/queue`).set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isParsableTimestamp(+response.header['x-gn-auth-expire']));
+            return request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/queue`).set('authorization', authorization).then(function(response) {
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
         });
     });
 
     describe('response.success', function() {
         it(`should return 204 No Content for a valid request`, function(done) {
-            request(server).post(`/videos/${sampleVideo.id}/queue`).set('authorization', authorization).expect(204, done);
+            request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/queue`).set('authorization', authorization).expect(204, done);
         });
 
         it(`should not contain a response body`, function() {
-            return request(server).post(`/videos/${sampleVideo.id}/queue`).set('authorization', authorization).then(function(response) {
+            return request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/queue`).set('authorization', authorization).then(function(response) {
                 assert.equal(_.size(response.body), 0);
             });
         });
 
         it(`should add the appropriate video to the appropriate queue`, function() {
-            return request(server).post(`/videos/${sampleVideo.id}/queue`).set('authorization', authorization).then(function(response) {
+            return request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/queue`).set('authorization', authorization).then(function(response) {
                 return db[k.Model.CuedVideo].findOne({
                     where: {
-                        user_id: user.id,
-                        video_id: sampleVideo.id
+                        user_id: user[k.Attr.Id],
+                        video_id: sampleVideo[k.Attr.Id]
                     }
                 });
             }).then(function(queuedVideo) {
@@ -93,7 +93,7 @@ describe('POST /videos/:id/queue', function() {
 
     describe('response.failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
-            request(server).post(`/videos/${sampleVideo.id}/queue`).expect(401, done);
+            request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/queue`).expect(401, done);
         });
 
         it(`should respond with 400 Bad Request if the 'id' parameter is not a number`, function(done) {

@@ -20,6 +20,7 @@ router.post('/users', ValidateParams(pv.users.create), ctrl.users.create);
 // todo: Combine with /users/password
 router.patch('/users', ValidateParams(pv.users.update),  Authenticate, ctrl.users.update);
 
+// todo: Document
 router.get('/oauth/facebook',          passport.authenticate('facebook', {scope: ['public_profile']}));
 router.get('/oauth/facebook/callback', passport.authenticate('facebook', {failureRedirect: 'https://hankehly.com'}), ctrl.oauth.facebookCallback);
 

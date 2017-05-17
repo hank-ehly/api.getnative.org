@@ -7,6 +7,7 @@
 
 const Speaker  = require('../../../app/models')['Speaker'];
 const SpecUtil = require('../../spec-util');
+const k        = require('../../../config/keys.json');
 
 const request  = require('supertest');
 const Promise  = require('bluebird');
@@ -31,9 +32,9 @@ describe('GET /speakers/:id', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(_) {
-            server        = _.server;
-            authorization = _.authorization;
+        return SpecUtil.login().then(function(result) {
+            server        = result.server;
+            authorization = result.authorization;
         });
     });
 
@@ -48,75 +49,75 @@ describe('GET /speakers/:id', function() {
 
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(response) {
-                assert(response.header['x-gn-auth-token'].length > 0);
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(response) {
+                assert(response.header[k.Header.AuthToken].length > 0);
             });
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isParsableTimestamp(+response.header['x-gn-auth-expire']));
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(response) {
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
         });
     });
 
     describe('response.failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
-            request(server).get(`/speakers/${testSpeaker.id}`).expect(401, done);
+            request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).expect(401, done);
         });
     });
 
     describe('response.success', function() {
         it('should return a single object', () => {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(speaker) {
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 assert(_.isPlainObject(speaker.body));
             });
         });
 
         it(`should return an object containing the same 'id' value as the URL parameter`, () => {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(speaker) {
-                assert.equal(speaker.body.id, testSpeaker.id);
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
+                assert.equal(speaker.body.id, testSpeaker[k.Attr.Id]);
             });
         });
 
         it('should return an object containing a string description about the speaker', () => {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(speaker) {
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 assert(_.isString(speaker.body.description));
             });
         });
 
         it(`should not return a blank 'description'`, () => {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(speaker) {
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 assert(_.gt(speaker.body.description.length, 0))
             });
         });
 
         it(`should return an object containing the speaker's string 'name' property`, () => {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(speaker) {
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 assert(_.isString(speaker.body.name));
             });
         });
 
         it(`should not return a blank 'name'`, () => {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(speaker) {
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 assert(_.gt(speaker.body.name.length, 0));
             });
         });
 
         it(`should return an object containing the speaker's string location`, () => {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(speaker) {
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 assert(_.isString(speaker.body.location));
             });
         });
 
         it(`should not return a blank 'location'`, () => {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(speaker) {
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 assert(_.gt(speaker.body.location.length, 0));
             });
         });
 
         it(`should return an object containing the speaker's valid picture url`, () => {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(speaker) {
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 let parsedURL = url.parse(speaker.body.picture_url);
                 assert(parsedURL.protocol);
                 assert(parsedURL.hostname);
@@ -124,7 +125,7 @@ describe('GET /speakers/:id', function() {
         });
 
         it(`should return an object containing a boolean value denoting whether or not the speaker has chosen to use a custom picture`, () => {
-            return request(server).get(`/speakers/${testSpeaker.id}`).set('authorization', authorization).then(function(speaker) {
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 assert(_.isBoolean(speaker.body.is_silhouette_picture));
             });
         });

@@ -6,6 +6,7 @@
  */
 
 const SpecUtil = require('../../spec-util');
+const k        = require('../../../config/keys.json');
 
 const Promise  = require('bluebird');
 const request  = require('supertest');
@@ -25,10 +26,10 @@ describe('POST /videos/:id/like', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(initGroup) {
-            authorization = initGroup.authorization;
-            server = initGroup.server;
-            db = initGroup.db;
+        return SpecUtil.login().then(function(result) {
+            authorization = result.authorization;
+            server        = result.server;
+            db            = result.db;
 
             return db.sequelize.query(`
                 SELECT id
@@ -38,7 +39,7 @@ describe('POST /videos/:id/like', function() {
                     FROM likes
                     WHERE user_id = ?
                 ) LIMIT 1
-            `, {replacements: [initGroup.response.body.id]}).spread(r => requestVideoId = _.first(r).id);
+            `, {replacements: [result.response.body[k.Attr.Id]]}).spread(r => requestVideoId = _.first(r)[k.Attr.Id]);
         });
     });
 
@@ -54,13 +55,13 @@ describe('POST /videos/:id/like', function() {
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return request(server).post(`/videos/${requestVideoId}/like`).set('authorization', authorization).then(function(response) {
-                assert(response.header['x-gn-auth-token'].length > 0);
+                assert(response.header[k.Header.AuthToken].length > 0);
             });
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
             return request(server).post(`/videos/${requestVideoId}/like`).set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isParsableTimestamp(+response.header['x-gn-auth-expire']));
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
         });
     });
@@ -90,14 +91,14 @@ describe('POST /videos/:id/like', function() {
 
         it(`should increment the video's 'like_count' by 1`, function() {
             // get current like_count
-            return db.sequelize.query(`SELECT COUNT(*) AS \`like_count\` FROM \`likes\` WHERE \`video_id\` = ${requestVideoId}`).then(r => {
+            return db.sequelize.query(`SELECT COUNT(*) AS like_count FROM likes WHERE video_id = ${requestVideoId}`).then(r => {
                 const beforeLikeCount = parseInt(r[0][0].like_count);
 
                 // perform request
                 return request(server).post(`/videos/${requestVideoId}/like`).set('authorization', authorization).then(() => {
 
                     // get incremented like_count
-                    return db.sequelize.query(`SELECT COUNT(*) AS \`like_count\` FROM \`likes\` WHERE \`video_id\` = ${requestVideoId}`).then(r => {
+                    return db.sequelize.query(`SELECT COUNT(*) AS like_count FROM likes WHERE video_id = ${requestVideoId}`).then(r => {
                         const afterLikeCount = parseInt(r[0][0].like_count);
 
                         assert.equal(afterLikeCount, beforeLikeCount + 1);

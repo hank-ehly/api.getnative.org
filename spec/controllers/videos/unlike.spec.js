@@ -5,10 +5,11 @@
  * Created by henryehly on 2017/03/24.
  */
 
+const SpecUtil = require('../../spec-util');
 const request  = require('supertest');
 const assert   = require('assert');
-const SpecUtil = require('../../spec-util');
-const k = require('../../../config/keys.json');
+const k        = require('../../../config/keys.json');
+
 const Promise  = require('bluebird');
 const _        = require('lodash');
 
@@ -21,7 +22,7 @@ describe('POST /videos/:id/unlike', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
     });
 
     beforeEach(function() {
@@ -44,7 +45,7 @@ describe('POST /videos/:id/unlike', function() {
             `;
 
             return db.sequelize.query(query, {replacements: [SpecUtil.credentials.email]}).spread(function(rows) {
-                requestVideoId = _.first(rows).video_id;
+                requestVideoId = _.first(rows)[k.Attr.VideoId];
             });
         });
     });
@@ -55,7 +56,7 @@ describe('POST /videos/:id/unlike', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
+        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
     });
 
     describe('response.headers', function() {
