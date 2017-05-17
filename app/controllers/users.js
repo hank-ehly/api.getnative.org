@@ -35,18 +35,30 @@ module.exports.create = (req, res, next) => {
     }).then(language => {
         return User.create({default_study_language_id: language.get(k.Attr.Id)});
     }).then(_user => {
-        return Promise.all([
-            _user, db[k.Model.Credential].create({
-                user_id: _user.get(k.Attr.Id),
-                email: req.body[k.Attr.Email],
-                password: Auth.hashPassword(req.body[k.Attr.Password])
-            })
-        ]);
-    }).spread((_user, credential) => {
         if (!_user) {
             throw new Error('Failed to create new user');
         }
 
+        const findUser = User.scope('includeDefaultStudyLanguage').findOne({
+            where: {id: _user.get(k.Attr.Id)},
+            attributes: [
+                k.Attr.Id,
+                k.Attr.BrowserNotificationsEnabled,
+                k.Attr.EmailNotificationsEnabled,
+                k.Attr.EmailVerified,
+                k.Attr.PictureUrl,
+                k.Attr.IsSilhouettePicture
+            ]
+        });
+
+        const createCredential = db[k.Model.Credential].create({
+            user_id: _user.get(k.Attr.Id),
+            email: req.body[k.Attr.Email],
+            password: Auth.hashPassword(req.body[k.Attr.Password])
+        });
+
+        return Promise.all([findUser, createCredential]);
+    }).spread((_user, credential) => {
         user = _user.get({plain: true});
         user[k.Attr.Email] = credential.get(k.Attr.Email);
 
