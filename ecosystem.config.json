@@ -20,7 +20,7 @@
         {
             "name": "staging",
             "script": "/var/www/api.stg.get-native.com/current/index.js",
-            "cwd": "/var/www/get-native.com/current",
+            "cwd": "/var/www/api.stg.get-native.com/current",
             "error_file": "/var/log/pm2/api.stg.err.log",
             "out_file": "/var/log/pm2/api.stg.out.log",
             "pid_file": "/run/pm2/api.stg.pid",
