@@ -16,26 +16,34 @@ const chance      = require('chance').Chance();
 const moment      = require('moment');
 const _           = require('lodash');
 
+let videoUrls = [
+    'https://storage.googleapis.com/stg.get-native.com/test-video.mp4'
+];
+
+if ([k.Env.Test, k.Env.CircleCI].includes(process.env.NODE_ENV)) {
+    videoUrls = [
+        'http://techslides.com/demos/sample-videos/small.mp4'
+    ]
+}
+
 module.exports = {
     up: function(queryInterface, Sequelize) {
         const promises = [
-            Speaker.min('id'),
-            Speaker.max('id'),
-            Subcategory.min('id'),
-            Subcategory.max('id'),
+            Speaker.min(k.Attr.Id),
+            Speaker.max(k.Attr.Id),
+            Subcategory.min(k.Attr.Id),
+            Subcategory.max(k.Attr.Id),
             Language.findAll({attributes: [k.Attr.Id]})
         ];
 
         return Promise.all(promises).spread((minSpeakerId, maxSpeakerId, minSubcategoryId, maxSubcategoryId, languages) => {
-            const videos          = [];
-            const numVideos       = 500;
-            const youtubeVideoIds = ['9Ayf8Iny9Eg', 'GXsZMQshNzg', 'yCe0DtGq8Pc', '7TQfjmEpYig', 'C9BYTZkde4w'];
-
-            const minDate         = moment().subtract(numVideos + 10, 'days');
+            const videos    = [];
+            const numVideos = 500;
+            const minDate   = moment().subtract(numVideos + 10, 'days');
 
             for (let i = 0; i < numVideos; i++) {
                 let created_at   = moment(minDate).add(i + 1, 'days');
-                let updated_at   = chance.pickone([
+                let updated_at   = _.sample([
                     moment(created_at),
                     moment(created_at).add(1, 'days'),
                     moment(created_at).add(2, 'days'),
@@ -54,7 +62,7 @@ module.exports = {
                         min: 10,
                         max: 20000
                     }),
-                    video_url: 'https://youtu.be/' + chance.pickone(youtubeVideoIds),
+                    video_url: _.sample(videoUrls),
                     description: chance.paragraph(),
                     speaker_id: chance.integer({
                         min: minSpeakerId,
