@@ -40,11 +40,11 @@
         "WritingQuestionId": "writing_question_id"
     },
     "Client": {
-        "Host": "CLIENT_HOSTNAME",
-        "Protocol": "CLIENT_PROTOCOL"
+        "Host": "kClientHost",
+        "Protocol": "kClientProtocol"
     },
     "Debug": "DEBUG",
-    "DefaultLocale": "DefaultLocale",
+    "DefaultLocale": "kDefaultLocale",
     "Email": {
         "Welcome": "Welcome",
         "ResetPassword": "ResetPassword"
@@ -61,7 +61,7 @@
         "UserAlreadyVerified": "UserAlreadyVerified",
         "ResourceNotFound": "ResourceNotFound"
     },
-    "ENVIRONMENT": "ENVIRONMENT",
+    "ENVIRONMENT": "kENVIRONMENT",
     "Env": {
         "Development": "development",
         "Test": "test",
@@ -101,14 +101,18 @@
     "NoReply": "",
     "OAuth": {
         "Facebook": {
-            "ClientID": "OAuthFacebookClientID",
-            "ClientSecret": "OAuthFacebookClientSecret",
-            "CallbackURL": "OAuthFacebookCallbackURL"
+            "ClientID": "kOAuthFacebookClientID",
+            "ClientSecret": "kOAuthFacebookClientSecret",
+            "CallbackURL": "kOAuthFacebookCallbackURL"
         }
     },
-    "PrivateKey": "private_key",
-    "PublicKey": "public_key",
-    "DKIMPrivateKey": "DKIM_PRIVATE_KEY",
+    "GoogleCloud": {
+        "ProjectId": "kGoogleCloudProjectId",
+        "KeyFilename": "kGoogleCloudKeyFilename"
+    },
+    "PrivateKey": "kPrivateKey",
+    "PublicKey": "kPublicKey",
+    "DKIMPrivateKey": "kDKIMPrivateKey",
     "SMTP": {
         "Port": "smtp:port",
         "Host": "smtp:host"

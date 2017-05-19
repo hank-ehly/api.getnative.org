@@ -23,4 +23,6 @@ defaults[k.OAuth.Facebook.CallbackURL] = defaults[k.Client.Protocol] + '://' + d
 defaults[k.OAuth.Facebook.ClientID] = '215586025582003';
 defaults[k.OAuth.Facebook.ClientSecret] = 'a27245e5fee9aa9b324c159b895db0aa';
 
+defaults[k.GoogleCloud.ProjectId] = 'stg-get-native';
+
 module.exports = defaults;
