@@ -27,9 +27,7 @@ router.get('/oauth/facebook/callback', passport.authenticate('facebook', {failur
 // todo: Rest-ify all
 router.post( '/users/password',              ValidateParams(pv.users.updatePassword),          Authenticate, ctrl.users.updatePassword);
 router.post( '/users/email',                 ValidateParams(pv.users.updateEmail),             Authenticate, ctrl.users.updateEmail);
-
 router.get(  '/categories',                  ValidateParams(pv.categories.index),              Authenticate, ctrl.categories.index);
-
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                                     ctrl.auth.confirmEmail);
 router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                          ctrl.auth.resendConfirmationEmail);
 router.post( '/study',                       ValidateParams(pv.study.createStudySession),      Authenticate, ctrl.study.createStudySession);
