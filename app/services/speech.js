@@ -17,7 +17,7 @@ let client;
 if (![k.Env.Test, k.Env.CircleCI].includes(config.get(k.ENVIRONMENT))) {
     client = Speech({
         projectId: config.get(k.GoogleCloud.ProjectId),
-        keyFilename: config.get(k.GoogleCloud.KeyFilename) // todo: ??
+        keyFilename: config.get(k.GoogleCloud.KeyFilename)
     });
 } else {
     client = {
