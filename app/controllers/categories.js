@@ -14,7 +14,7 @@ const ResponseWrapper = require('../services')['ResponseWrapper'];
 const _ = require('lodash');
 
 module.exports.index = (req, res, next) => {
-    Category.findAll({
+    return Category.findAll({
         attributes: [k.Attr.Id, k.Attr.Name],
         include: [{model: Subcategory, as: 'subcategories', attributes: [k.Attr.Id, k.Attr.Name]}]
     }).then(categories => {
