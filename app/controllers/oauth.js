@@ -9,5 +9,5 @@ const logger = require('../../config/logger');
 
 module.exports.facebookCallback = (req, res) => {
     logger.info(req.user);
-    res.redirect('http://localhost:5555');
+    res.redirect('http://localhost:5555/dashboard'); // todo: make dynamic
 };
