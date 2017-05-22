@@ -6,7 +6,7 @@
  */
 
 const FacebookStrategy = require('passport-facebook').Strategy;
-const config     = require('../index');
+const config     = require('../application').config;
 const logger     = require('../logger');
 const k          = require('../keys.json');
 

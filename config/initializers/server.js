@@ -6,7 +6,7 @@
  */
 
 const middleware = require('../../app/middleware');
-const config     = require('../index');
+const config     = require('../application').config;
 const routes     = require('../routes');
 const logger     = require('../logger');
 const i18n       = require('../i18n');

@@ -6,7 +6,7 @@
  */
 
 const Utility = require('./utility');
-const config  = require('../../config');
+const config  = require('../../config/application').config;
 const k       = require('../../config/keys.json');
 
 const Promise = require('bluebird');

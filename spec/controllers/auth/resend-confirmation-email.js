@@ -6,7 +6,7 @@
  */
 
 const SpecUtil      = require('../../spec-util');
-const config        = require('../../../config');
+const config        = require('../../../config/application').config;
 const Auth          = require('../../../app/services').Auth;
 const k             = require('../../../config/keys.json');
 

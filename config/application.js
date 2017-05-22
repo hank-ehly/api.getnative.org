@@ -1,8 +1,8 @@
 /**
- * config
- * get-native.com
+ * application
+ * api.get-native.com
  *
- * Created by henryehly on 2017/04/04.
+ * Created by henryehly on 2017/05/22.
  */
 
 const logger  = require('./logger');
@@ -38,18 +38,11 @@ function Config() {
         nconf.set(key, config[key]);
     }
 
-    const promises = [];
-
-    promises.push([
-        fs.readFileAsync(path.resolve(__dirname, 'secrets', 'id_rsa'), 'utf8'),
-        fs.readFileAsync(path.resolve(__dirname, 'secrets', 'id_rsa.pem'), 'utf8')
-    ]);
-
     if (!_.includes([k.Env.CircleCI, k.Env.Test], nconf.get(k.ENVIRONMENT))) {
-        promises.push(fs.readFileAsync(path.resolve(__dirname, 'secrets', 'gcloud-credentials.json')))
+        nconf.set(k.GoogleCloud.KeyFilename, path.resolve(__dirname, 'secrets', 'gcloud-credentials.json'));
     }
 
-    Promise.all(promises).spread((privateKey, publicKey) => {
+    Promise.join(fs.readFileAsync(path.resolve(__dirname, 'secrets', 'id_rsa'), 'utf8'), fs.readFileAsync(path.resolve(__dirname, 'secrets', 'id_rsa.pem'), 'utf8'), (privateKey, publicKey) => {
         nconf.set(k.PrivateKey, privateKey);
         nconf.set(k.PublicKey, publicKey);
     }).catch(e => {
@@ -63,4 +56,4 @@ Config.prototype.get = function(key) {
 
 const config = new Config();
 
-module.exports = config;
+module.exports.config = config;

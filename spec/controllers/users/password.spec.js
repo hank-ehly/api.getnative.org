@@ -8,7 +8,7 @@
 const Auth     = require('../../../app/services')['Auth'];
 const SpecUtil = require('../../spec-util');
 const Promise  = require('bluebird');
-const config   = require('../../../config');
+const config   = require('../../../config/application').config;
 const k        = require('../../../config/keys.json');
 
 const request  = require('supertest');

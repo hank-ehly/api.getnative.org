@@ -202,6 +202,11 @@ module.exports = {
                 id: Joi.number().integer().min(1).required()
             }
         },
+        transcribe: {
+            headers: {
+                authorization: Joi.string().required()
+            }
+        },
         unlike: {
             headers: {
                 authorization: Joi.string().required()

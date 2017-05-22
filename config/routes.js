@@ -46,4 +46,8 @@ router.post( '/videos/:id/like',             ValidateParams(pv.videos.like),    
 router.post( '/videos/:id/queue',            ValidateParams(pv.videos.queue),                  Authenticate, ctrl.videos.queue);
 router.post( '/videos/:id/unlike',           ValidateParams(pv.videos.unlike),                 Authenticate, ctrl.videos.unlike);
 
+// Authenticate provides the req.user. For endpoints requiring admin permissions, check the user role
+// * You may wish to join the user role table to the user table when creating req.user
+router.post( '/videos/transcribe', ValidateParams(pv.videos.transcribe), Authenticate, ctrl.videos.transcribe);
+
 module.exports = router;

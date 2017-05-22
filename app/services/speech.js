@@ -5,10 +5,10 @@
  * Created by henryehly on 2017/05/19.
  */
 
-const Speech = require('@google-cloud/speech');
-
-const config = require('../../config');
+const config = require('../../config/application').config;
 const k      = require('../../config/keys.json');
+
+const Speech = require('@google-cloud/speech');
 
 let client;
 
@@ -17,7 +17,7 @@ let client;
 if (![k.Env.Test, k.Env.CircleCI].includes(config.get(k.ENVIRONMENT))) {
     client = Speech({
         projectId: config.get(k.GoogleCloud.ProjectId),
-        keyFilename: config.get(k.GoogleCloud.KeyFilename)
+        keyFilename: config.get(k.GoogleCloud.KeyFilename) // todo: ??
     });
 } else {
     client = {

@@ -5,7 +5,7 @@
  * Created by henryehly on 2017/03/26.
  */
 
-const config = require('../index');
+const config = require('../application').config;
 const k      = require('../keys.json');
 
 const mailer = require('nodemailer');

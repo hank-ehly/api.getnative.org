@@ -29,9 +29,9 @@ describe('POST /confirm_email', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.startServer().then(function(initGroup) {
-            server = initGroup.server;
-            db     = initGroup.db;
+        return SpecUtil.startServer().then(function(results) {
+            server = results.server;
+            db     = results.db;
 
             return db.sequelize.query(`UPDATE users SET email_verified = true`).then(function() {
                 return db.sequelize.query(`SELECT id FROM users LIMIT 1`);

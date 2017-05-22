@@ -168,3 +168,7 @@ module.exports.dequeue = (req, res, next) => {
         res.sendStatus(204);
     }).catch(next);
 };
+
+module.exports.transcribe = (req, res, next) => {
+    res.sendStatus(204);
+};

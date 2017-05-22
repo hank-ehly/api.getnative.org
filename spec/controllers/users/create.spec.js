@@ -7,7 +7,7 @@
 
 const SpecUtil = require('../../spec-util');
 const Utility  = require('../../../app/services')['Utility'];
-const config   = require('../../../config');
+const config   = require('../../../config/application').config;
 const k        = require('../../../config/keys.json');
 
 const request  = require('supertest');

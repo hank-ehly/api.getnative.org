@@ -6,7 +6,7 @@
  */
 
 const express = require('express');
-const config  = require('../../config');
+const config  = require('../../config/application').config;
 const logger  = require('../../config/logger');
 const router  = express.Router();
 const k = require('../../config/keys.json');

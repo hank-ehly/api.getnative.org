@@ -8,6 +8,7 @@
 const SpecUtil = require('../../spec-util');
 const request = require('supertest');
 const assert = require('assert');
+const k = require('../../../config/keys.json');
 const _ = require('lodash');
 
 const mocha = require('mocha');
@@ -18,6 +19,7 @@ const beforeEach = mocha.beforeEach;
 const describe = mocha.describe;
 const it = mocha.it;
 const path = require('path');
+const Promise = require('bluebird');
 
 describe('POST /videos/transcribe', function() {
     let authorization = null;
@@ -27,7 +29,7 @@ describe('POST /videos/transcribe', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.startMailServer();
+        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
     });
 
     beforeEach(function() {
@@ -40,7 +42,7 @@ describe('POST /videos/transcribe', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.stopMailServer();
+        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
     });
 
     afterEach(function(done) {
@@ -54,6 +56,18 @@ describe('POST /videos/transcribe', function() {
     });
 
     describe('success', function() {
+        it('should respond with an X-GN-Auth-Token header', function() {
+            return request(server).post(url).set('authorization', authorization).attach('file', file).then(function(response) {
+                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
+            });
+        });
+
+        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
+            return request(server).post(url).set('authorization', authorization).attach('file', file).then(function(response) {
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
+            });
+        });
+
         it('should respond with 200 OK for a successful request', function(done) {
             request(server).post(url).set('authorization', authorization).attach('file', file).expect(200, done);
         });

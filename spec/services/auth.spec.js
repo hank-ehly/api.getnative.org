@@ -5,15 +5,15 @@
  * Created by henryehly on 2017/03/27.
  */
 
-const services    = require('../../app/services');
-const Auth = services.Auth;
-const Utility    = services.Utility;
-const SpecUtil   = require('../spec-util');
-const config     = require('../../config');
-const k          = require('../../config/keys.json');
+const services = require('../../app/services');
+const Auth     = services['Auth'];
+const Utility  = services['Utility'];
+const SpecUtil = require('../spec-util');
+const config   = require('../../config/application').config;
+const k        = require('../../config/keys.json');
 
-const assert     = require('assert');
-const _          = require('lodash');
+const assert   = require('assert');
+const _        = require('lodash');
 
 describe('Auth', function() {
     describe('refreshToken', function() {

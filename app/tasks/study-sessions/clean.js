@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const config    = require('../../../config');
+const config    = require('../../../config/application').config;
 const k         = require('../../../config/keys.json');
 const dbconf    = require(__dirname + '/../../../config/database.json')[config.get(k.ENVIRONMENT)];
 

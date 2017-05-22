@@ -9,6 +9,11 @@ const SpecUtil = require('../../spec-util');
 const Utility  = require('../../../app/services')['Utility'];
 const k        = require('../../../config/keys.json');
 
+const mocha = require('mocha');
+const before = mocha.before;
+const after = mocha.after;
+const beforeEach = mocha.beforeEach;
+const afterEach = mocha.afterEach;
 const Promise  = require('bluebird');
 const request  = require('supertest');
 const assert   = require('assert');
@@ -52,7 +57,7 @@ describe('GET /videos/:id', function() {
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(response.header[k.Header.AuthToken].length > 0);
+                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
             });
         });
 

@@ -5,6 +5,8 @@
  * Created by henryehly on 2017/03/03.
  */
 
+const k       = require('../config/keys.json');
+
 const url     = require('url');
 const request = require('supertest');
 const Promise = require('bluebird');
@@ -55,23 +57,19 @@ module.exports.getAllEmail = function() {
 };
 
 module.exports.startServer = function() {
-    return new Promise(function(resolve, reject) {
-        const initPath = '../index';
-        delete require.cache[require.resolve(initPath)];
-        return require(initPath).then(resolve).catch(reject);
-    });
+    delete require.cache[require.resolve('../index')];
+    return require('../index');
 };
 
 module.exports.login = function() {
-    return new Promise(function(resolve, reject) {
-        return module.exports.startServer().then(function(initGroup) {
-            return request(initGroup.server).post('/sessions').send(module.exports.credentials).then(function(response) {
-                const retObj         = initGroup;
-                retObj.authorization = 'Bearer: ' + response.headers['x-gn-auth-token'];
-                retObj.response      = response;
-                resolve(retObj);
-            }).catch(reject);
-        });
+    let retObj;
+    return module.exports.startServer().then(function(results) {
+        retObj = results;
+        return request(results.server).post('/sessions').send(module.exports.credentials);
+    }).then(function(response) {
+        retObj.authorization = ['Bearer:', response.headers[k.Header.AuthToken]].join(' ');
+        retObj.response = response;
+        return retObj;
     });
 };
 
