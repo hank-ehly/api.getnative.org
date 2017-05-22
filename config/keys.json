@@ -75,6 +75,7 @@
     },
     "Model": {
         "AuthAdapterType": "AuthAdapterType",
+        "Identity": "Identity",
         "WritingAnswer": "WritingAnswer",
         "UserRole": "UserRole",
         "Credential": "Credential",
