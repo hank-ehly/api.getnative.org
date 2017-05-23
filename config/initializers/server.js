@@ -26,11 +26,10 @@ passport.use('facebook', FacebookStrategy);
 passport.use('custom', CustomStrategy);
 
 passport.serializeUser(function(user, cb) {
-    cb(null, user.get({plain: true}));
+    cb(null, user);
 });
 
 passport.deserializeUser(function(obj, cb) {
-    console.log('deserializeUser');
     cb(null, obj);
 });
 
