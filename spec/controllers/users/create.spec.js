@@ -25,7 +25,6 @@ describe('POST /users', function() {
     let db      = null;
 
     const credential = {
-        email: '',
         password: '12345678'
     };
 
@@ -178,13 +177,13 @@ describe('POST /users', function() {
                     where: {
                         email: credential.email
                     }
-                }).then(user => {
+                }).then(function(user) {
                     return db[k.Model.Identity].findOne({
                         where: {
                             user_id: user.get(k.Attr.Id)
                         }
                     });
-                }).then(identity => {
+                }).then(function(identity) {
                     const authType = db[k.Model.AuthAdapterType].findOne({
                         where: {
                             name: 'local'
@@ -195,8 +194,73 @@ describe('POST /users', function() {
                     });
 
                     return Promise.all([identity, authType]);
-                }).spread((identity, authType) => {
+                }).spread(function(identity, authType) {
                     assert.equal(identity.get('auth_adapter_type_id'), authType.get(k.Attr.Id));
+                });
+            });
+        });
+
+        it(`should create an additional 'local' Identity record if a user already has a 'facebook' Identity`, function() {
+            const cache = {};
+
+            return db[k.Model.Language].findOne().then(function(language) {
+                const findAuthAdapterTypes = db[k.Model.AuthAdapterType].findAll();
+
+                const createUser = db[k.Model.User].create({
+                    email: credential[k.Attr.Email],
+                    default_study_language_id: language.get(k.Attr.Id)
+                });
+
+                return Promise.all([findAuthAdapterTypes, createUser]);
+            }).spread(function(authAdapterTypes, user) {
+                cache.authAdapterTypes = authAdapterTypes;
+
+                return db[k.Model.Identity].create({
+                    auth_adapter_type_id: _.find(authAdapterTypes, {name: 'facebook'}).get(k.Attr.Id),
+                    user_id: user.get(k.Attr.Id)
+                });
+            }).then(function() {
+                return request(server).post('/users').send(credential).then(function(response) {
+                    return db[k.Model.Identity].findOne({
+                        where: {
+                            auth_adapter_type_id: _.find(cache.authAdapterTypes, {name: 'local'}).get(k.Attr.Id),
+                            user_id: response.body[k.Attr.Id]
+                        }
+                    });
+                }).then(function(identity) {
+                    assert(identity);
+                });
+            });
+        });
+
+        it(`should create Credential record if a user already has a 'facebook' Identity`, function() {
+            const cache = {};
+
+            return db[k.Model.Language].findOne().then(function(language) {
+                const findAuthAdapterTypes = db[k.Model.AuthAdapterType].findAll();
+
+                const createUser = db[k.Model.User].create({
+                    email: credential[k.Attr.Email],
+                    default_study_language_id: language.get(k.Attr.Id)
+                });
+
+                return Promise.all([findAuthAdapterTypes, createUser]);
+            }).spread(function(authAdapterTypes, user) {
+                cache.authAdapterTypes = authAdapterTypes;
+
+                return db[k.Model.Identity].create({
+                    auth_adapter_type_id: _.find(authAdapterTypes, {name: 'facebook'}).get(k.Attr.Id),
+                    user_id: user.get(k.Attr.Id)
+                });
+            }).then(function() {
+                return request(server).post('/users').send(credential).then(function(response) {
+                    return db[k.Model.Credential].findOne({
+                        where: {
+                            user_id: response.body[k.Attr.Id]
+                        }
+                    });
+                }).then(function(newCredential) {
+                    assert(newCredential);
                 });
             });
         });
@@ -226,7 +290,7 @@ describe('POST /users', function() {
                     where: {
                         email: credential.email
                     }
-                }).then(user => {
+                }).then(function(user) {
                     return db[k.Model.Credential].findOne({
                         where: {
                             user_id: user.get(k.Attr.Id)
