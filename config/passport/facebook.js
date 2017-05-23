@@ -18,16 +18,36 @@ const services = require('../../app/services');
 const Auth = services['Auth'];
 const Utility = services['Utility'];
 
-// todo: Prevent overlapping accounts
 // todo: Refactor
 // todo: Test
 // todo: (*) Make sure time-out isn't an issue
 const strategy = new FacebookStrategy({
     clientID: config.get(k.OAuth.Facebook.ClientID),
     clientSecret: config.get(k.OAuth.Facebook.ClientSecret),
-    profileFields: ['emails', 'gender', 'displayName', 'name', 'profileUrl'],
+    profileFields: [
+        'id',
+        'displayName',
+        'age_range',
+        'locale',
+        'photos',
+        'emails'
+    ],
     callbackURL: config.get(k.OAuth.Facebook.CallbackURL)
 }, (accessToken, refreshToken, profile, cb) => {
+    logger.info(profile, {json: true});
+
+    // todo: Prevent overlapping accounts (by using email)
+    // check if another user exists with the same email
+    // IF: exists
+    // THEN:
+    //     IF: that user has a 'facebook' identity
+    //     THEN: get the user data and invoke the callback
+    //     ELSE: create a 'facebook' identity for the user and invoke the callback with the user data
+    // IF: not exists
+    // THEN: create a user record and identity record of 'facebook' type && invoke callback with user data
+
+    // let email = _.first(profile.emails);
+
     let adapter = null;
 
     return AuthAdapterType.findOne({
@@ -55,15 +75,7 @@ const strategy = new FacebookStrategy({
         });
     }).then(identity => {
         if (identity) {
-            return User.findById(identity.get(k.Attr.UserId), {
-                include: [
-                    {
-                        model: Language,
-                        attributes: [k.Attr.Name, k.Attr.Code],
-                        as: 'default_study_language'
-                    }
-                ]
-            }).then(user => {
+            return User.scope('includeDefaultStudyLanguage').findById(identity.get(k.Attr.UserId)).then(user => {
                 return cb(null, user);
             });
         } else {
@@ -81,15 +93,7 @@ const strategy = new FacebookStrategy({
                         auth_adapter_type_id: adapter.get(k.Attr.Id),
                         auth_adapter_user_id: profile[k.Attr.Id]
                     }).then(() => {
-                        return User.findById(user.get(k.Attr.Id), {
-                            include: [
-                                {
-                                    model: Language,
-                                    attributes: [k.Attr.Name, k.Attr.Code],
-                                    as: 'default_study_language'
-                                }
-                            ]
-                        }).then(user => {
+                        return User.scope('includeDefaultStudyLanguage').findById(user.get(k.Attr.Id)).then(user => {
                             return cb(null, user);
                         });
                     });

@@ -18,6 +18,11 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             defaultValue: false
         },
+        email: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: ''
+        },
         email_notifications_enabled: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
@@ -69,16 +74,13 @@ module.exports = function(sequelize, DataTypes) {
             throw new TypeError(`Argument 'email' must be a string`);
         }
 
-        const query = `
-            SELECT EXISTS(
-                SELECT U.id
-                FROM users U
-                LEFT JOIN credentials C ON U.id = C.user_id
-                WHERE C.email = ?
-            ) AS does_exist
-        `;
-
-        return sequelize.query(query, {replacements: [email]}).spread(rows => _.first(rows).does_exist);
+        return sequelize.query(`SELECT EXISTS(SELECT id FROM users WHERE email = ?) AS does_exist`, {
+            replacements: [
+                email
+            ]
+        }).spread(rows => {
+            return _.first(rows).does_exist;
+        });
     };
 
     User.prototype.calculateStudySessionStatsForLanguage = function(lang) {

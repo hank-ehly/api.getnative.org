@@ -20,6 +20,7 @@ module.exports = {
             const records = _.times(count, () => {
                 return {
                     browser_notifications_enabled: chance.bool(),
+                    email: chance.email(),
                     email_notifications_enabled: chance.bool(),
                     email_verified: chance.bool({likelihood: 80}),
                     default_study_language_id: _.sample(languages).get(k.Attr.Id),
@@ -27,6 +28,9 @@ module.exports = {
                     is_silhouette_picture: chance.bool()
                 }
             });
+
+            /* For testing purposes */
+            _.first(records)[k.Attr.Email] = 'test@email.com';
 
             return queryInterface.bulkInsert('users', records);
         });

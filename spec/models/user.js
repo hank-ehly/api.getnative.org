@@ -23,7 +23,6 @@ const _               = require('lodash');
 
 describe('User', function() {
     const credentials = {
-        email: '',
         password: '12345678'
     };
 
@@ -44,15 +43,14 @@ describe('User', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        credentials.email = chance.email();
-
         return Language.findOne().then(function(language) {
-            return User.create({default_study_language_id: language.get(k.Attr.Id)});
+            return User.create({
+                default_study_language_id: language.get(k.Attr.Id),
+                email: chance.email()
+            });
         }).then(function(_user) {
             user = _user;
-            const newUser = {user_id: user.get(k.Attr.Id)};
-            _.assign(newUser, credentials);
-            return Credential.create(newUser);
+            return Credential.create({user_id: user.get(k.Attr.Id)});
         });
     });
 
@@ -63,7 +61,7 @@ describe('User', function() {
 
     describe('existsForEmail', function() {
         it(`should return true if a user exists for a given email address`, function() {
-            return User.existsForEmail(credentials.email).then(assert);
+            return User.existsForEmail(user.email).then(assert);
         });
 
         it(`should return false if a user does not exist for a given email address`, function() {

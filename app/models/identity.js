@@ -8,13 +8,7 @@
 const k = require('../../config/keys.json');
 
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define(k.Model.Identity, {
-        auth_adapter_user_id: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: ''
-        }
-    }, {
+    return sequelize.define(k.Model.Identity, {}, {
         tableName: 'identities',
         underscored: true,
         associations: function(models) {
@@ -23,4 +17,3 @@ module.exports = function(sequelize, DataTypes) {
         }
     });
 };
-

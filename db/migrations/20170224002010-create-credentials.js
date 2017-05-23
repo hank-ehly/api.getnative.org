@@ -24,11 +24,6 @@ module.exports = {
                 onUpdate: 'restrict',
                 onDelete: 'restrict'
             },
-            email: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                defaultValue: ''
-            },
             password: {
                 type: Sequelize.STRING,
                 allowNull: false,

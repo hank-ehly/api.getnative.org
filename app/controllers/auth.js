@@ -36,33 +36,33 @@ module.exports.confirmEmail = (req, res, next) => {
         changes[k.Attr.EmailVerified] = true;
         changes[k.Attr.EmailNotificationsEnabled] = true;
 
-        return [token, User.update(changes, {where: {id: token.user_id}})];
-    }).spread(token => {
-        return Credential.findOne({
-            where: {user_id: token[k.Attr.UserId]},
-            attributes: [k.Attr.Email],
-            include: [
-                {
-                    model: User.scope('includeDefaultStudyLanguage'),
-                    attributes: [
-                        k.Attr.Id,
-                        k.Attr.BrowserNotificationsEnabled,
-                        k.Attr.EmailNotificationsEnabled,
-                        k.Attr.EmailVerified,
-                        k.Attr.PictureUrl,
-                        k.Attr.IsSilhouettePicture
-                    ]
+        return [
+            token, User.update(changes, {
+                where: {
+                    id: token[k.Attr.UserId]
                 }
+            })
+        ];
+    }).spread(token => {
+        return User.scope('includeDefaultStudyLanguage').findOne({
+            where: {
+                id: token[k.Attr.UserId]
+            },
+            attributes: [
+                k.Attr.Id,
+                k.Attr.BrowserNotificationsEnabled,
+                k.Attr.Email,
+                k.Attr.EmailNotificationsEnabled,
+                k.Attr.EmailVerified,
+                k.Attr.PictureUrl,
+                k.Attr.IsSilhouettePicture
             ]
         });
-    }).then(credential => {
-        const json = credential.get({plain: true});
-        const user = json['User'];
-        _.set(user, k.Attr.Email, json[k.Attr.Email]);
-        return [user, Auth.generateTokenForUserId(user[k.Attr.Id])];
+    }).then(user => {
+        return [user, Auth.generateTokenForUserId(user.get(k.Attr.Id))];
     }).spread((user, token) => {
         Auth.setAuthHeadersOnResponseWithToken(res, token);
-        res.status(200).send(user);
+        res.status(200).send(user.get({plain: true}));
     }).catch(GetNativeError, e => {
         if (e.code === k.Error.TokenExpired) {
             res.status(404);
@@ -77,16 +77,11 @@ module.exports.resendConfirmationEmail = (req, res, next) => {
             throw new GetNativeError(k.Error.UserMissing);
         }
 
-        return Credential.findOne({
-            where: {email: req.body[k.Attr.Email]},
-            include: [User]
+        return User.findOne({
+            where: {email: req.body[k.Attr.Email]}
         });
-    }).then(function(credential) {
-        credential = credential.get({plain: true});
-        const user = credential['User'];
-        user[k.Attr.Email] = credential[k.Attr.Email];
-
-        if (user[k.Attr.EmailVerified]) {
+    }).then(function(user) {
+        if (user.get(k.Attr.EmailVerified)) {
             throw new GetNativeError(k.Error.UserAlreadyVerified);
         }
 
@@ -94,7 +89,7 @@ module.exports.resendConfirmationEmail = (req, res, next) => {
         const expirationDate = Utility.tomorrow();
 
         return VerificationToken.create({
-            user_id: user[k.Attr.Id],
+            user_id: user.get(k.Attr.Id),
             token: token,
             expiration_date: expirationDate
         });

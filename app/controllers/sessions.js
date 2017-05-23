@@ -12,38 +12,47 @@ const k = require('../../config/keys.json');
 const db = require('../models');
 const Credential = db[k.Model.Credential];
 const User = db[k.Model.User];
-const Language = db[k.Model.Language];
 
 module.exports.create = (req, res, next) => {
-    return Credential.findOne({
-        where: {email: req.body[k.Attr.Email]},
-        attributes: [k.Attr.Email, k.Attr.Password, k.Attr.UserId]
+    let cache = {};
+
+    return User.scope('includeDefaultStudyLanguage').findOne({
+        where: {
+            email: req.body[k.Attr.Email]
+        },
+        attributes: [
+            k.Attr.Id,
+            k.Attr.Email,
+            k.Attr.BrowserNotificationsEnabled,
+            k.Attr.EmailNotificationsEnabled,
+            k.Attr.EmailVerified,
+            k.Attr.PictureUrl,
+            k.Attr.IsSilhouettePicture
+        ]
+    }).then(user => {
+        if (!user) {
+            throw new GetNativeError(k.Error.UserNamePasswordIncorrect);
+        }
+
+        cache.user = user;
+
+        return Credential.findOne({
+            where: {
+                user_id: user.get(k.Attr.Id)
+            },
+            attributes: [
+                k.Attr.Password
+            ]
+        });
     }).then(credential => {
         if (!credential || !Auth.verifyPassword(credential.get(k.Attr.Password), req.body[k.Attr.Password])) {
             throw new GetNativeError(k.Error.UserNamePasswordIncorrect);
         }
 
-        return User.scope('includeDefaultStudyLanguage').findById(credential.get(k.Attr.UserId), {
-            attributes: [
-                k.Attr.Id,
-                k.Attr.BrowserNotificationsEnabled,
-                k.Attr.EmailNotificationsEnabled,
-                k.Attr.EmailVerified,
-                k.Attr.PictureUrl,
-                k.Attr.IsSilhouettePicture
-            ]
-        });
-    }).then(user => {
-        if (!user) {
-            throw new GetNativeError(k.Error.UserMissing);
-        }
-
-        return [user, Auth.generateTokenForUserId(user.get(k.Attr.Id))];
-    }).spread((user, token) => {
+        return Auth.generateTokenForUserId(cache.user.get(k.Attr.Id));
+    }).then(token => {
         Auth.setAuthHeadersOnResponseWithToken(res, token);
-        const userAsJson = user.get({plain: true});
-        userAsJson[k.Attr.Email] = req.body[k.Attr.Email];
-        res.status(201).send(userAsJson);
+        res.status(201).send(cache.user.get({plain: true}));
     }).catch(GetNativeError, e => {
         res.status(404);
         next(e);

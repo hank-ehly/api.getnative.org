@@ -23,9 +23,6 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'languages',
         underscored: true,
         associations: function(models) {
-            // this association is unused, but is in place for data integrity
-            // models[k.Model.Language].hasMany(models[k.Model.User], {as: 'users'})
-
             models[k.Model.Language].hasMany(models[k.Model.Video], {as: 'videos'});
             models[k.Model.Language].hasMany(models[k.Model.Transcript], {as: 'transcripts'});
         }

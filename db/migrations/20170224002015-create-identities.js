@@ -14,11 +14,6 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            auth_adapter_user_id: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                defaultValue: ''
-            },
             created_at: {
                 allowNull: false,
                 type: Sequelize.DATE,

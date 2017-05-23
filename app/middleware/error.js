@@ -5,7 +5,7 @@
  * Created by henryehly on 2017/03/13.
  */
 
-const GetNativeError = require('../services').GetNativeError;
+const GetNativeError = require('../services')['GetNativeError'];
 const config         = require('../../config/application').config;
 const logger         = require('../../config/logger');
 const k              = require('../../config/keys.json');
@@ -17,15 +17,6 @@ module.exports.logErrors = function(e, req, res, next) {
     next(e);
 };
 
-/*
-* All client error responses have the following format:
-*
-*     [ ErrorObject, ErrorObject, ... ]
-*
-* An ErrorObject is the following format:
-*
-*     { message: <String> }
-* */
 module.exports.clientErrorHandler = function(e, req, res, next) {
     if (e instanceof GetNativeError || (_.isArray(e) && _.first(e) instanceof GetNativeError)) {
         res.json(_.castArray(e));

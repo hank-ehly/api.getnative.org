@@ -9,11 +9,6 @@ const k = require('../../config/keys.json');
 
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define(k.Model.Credential, {
-        email: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: ''
-        },
         password: {
             type: DataTypes.STRING,
             allowNull: false,

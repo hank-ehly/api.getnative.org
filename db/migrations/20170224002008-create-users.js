@@ -19,6 +19,11 @@ module.exports = {
                 allowNull: false,
                 defaultValue: 0
             },
+            email: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                defaultValue: ''
+            },
             email_notifications_enabled: {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,

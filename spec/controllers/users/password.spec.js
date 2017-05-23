@@ -34,17 +34,23 @@ describe('POST /users/password', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(_) {
-            authorization = _.authorization;
-            server        = _.server;
-            user          = _.response.body;
-            db            = _.db;
+        return SpecUtil.login().then(function(results) {
+            authorization = results.authorization;
+            server        = results.server;
+            user          = results.response.body;
+            db            = results.db;
         });
     });
 
     afterEach(function(done) {
         const hashPassword = Auth.hashPassword(validBody.current_password);
-        db[k.Model.Credential].update({password: hashPassword}, {where: {user_id: user[k.Attr.Id]}}).then(() => {
+        db[k.Model.Credential].update({
+            password: hashPassword
+        }, {
+            where: {
+                user_id: user[k.Attr.Id]
+            }
+        }).then(() => {
             server.close(done);
         });
     });
@@ -122,7 +128,11 @@ describe('POST /users/password', function() {
     describe('other', function() {
         it(`should change the users' password`, function() {
             return request(server).post('/users/password').set('authorization', authorization).send(validBody).then(function() {
-                return db[k.Model.Credential].findOne({where: {user_id: user[k.Attr.Id]}}).then(function(credential) {
+                return db[k.Model.Credential].findOne({
+                    where: {
+                        user_id: user[k.Attr.Id]
+                    }
+                }).then(function(credential) {
                     assert(Auth.verifyPassword(credential[k.Attr.Password], validBody[k.Attr.NewPassword]));
                 });
             });

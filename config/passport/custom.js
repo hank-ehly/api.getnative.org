@@ -30,15 +30,7 @@ CustomStrategy.prototype.authenticate = function(req) {
     }
 
     return Auth.verifyToken(token).then(decodedToken => {
-        return Promise.join(User.findById(decodedToken.sub, {
-            include: [
-                {
-                    model: Language,
-                    as: k.Attr.DefaultStudyLanguage,
-                    attributes: [k.Attr.Code, k.Attr.Name]
-                }
-            ]
-        }), Auth.refreshToken(decodedToken));
+        return Promise.join(User.scope('includeDefaultStudyLanguage').findById(decodedToken.sub), Auth.refreshToken(decodedToken));
     }).spread((user, refreshedToken) => {
         Auth.setAuthHeadersOnResponseWithToken(req.res, refreshedToken);
 

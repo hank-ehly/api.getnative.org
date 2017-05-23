@@ -20,9 +20,9 @@ const _        = require('lodash');
 // todo: You don't want to allow someone to make 10,000 users via the commandline <- Use rate-limiting
 // todo: Should User-Agents like 'curl' be allowed to use the API at all?
 describe('POST /users', function() {
+    let maildev = null;
     let server  = null;
     let db      = null;
-    let maildev = null;
 
     const credential = {
         email: '',
@@ -172,6 +172,35 @@ describe('POST /users', function() {
     });
 
     describe('other', function() {
+        it(`should create an Identity record containing the new user ID and an auth type of 'local'`, function() {
+            return request(server).post('/users').send(credential).then(function() {
+                return db[k.Model.User].findOne({
+                    where: {
+                        email: credential.email
+                    }
+                }).then(user => {
+                    return db[k.Model.Identity].findOne({
+                        where: {
+                            user_id: user.get(k.Attr.Id)
+                        }
+                    });
+                }).then(identity => {
+                    const authType = db[k.Model.AuthAdapterType].findOne({
+                        where: {
+                            name: 'local'
+                        },
+                        attributes: [
+                            k.Attr.Id
+                        ]
+                    });
+
+                    return Promise.all([identity, authType]);
+                }).spread((identity, authType) => {
+                    assert.equal(identity.get('auth_adapter_type_id'), authType.get(k.Attr.Id));
+                });
+            });
+        });
+
         it(`should send a confirmation email to the newly registered user after successful registration`, function() {
             return request(server).post('/users').send(credential).then(function() {
                 return SpecUtil.getAllEmail().then(function(emails) {
@@ -193,8 +222,18 @@ describe('POST /users', function() {
 
         it(`should store the new users' password in an encrypted format that is not equal to the request`, function() {
             return request(server).post('/users').send(credential).then(function(response) {
-                return db[k.Model.Credential].findOne({where: {email: credential.email}}).then(function(credentialFromDB) {
-                    assert.notEqual(credentialFromDB.password, credential.password);
+                return db[k.Model.User].findOne({
+                    where: {
+                        email: credential.email
+                    }
+                }).then(user => {
+                    return db[k.Model.Credential].findOne({
+                        where: {
+                            user_id: user.get(k.Attr.Id)
+                        }
+                    }).then(function(credentialFromDB) {
+                        assert.notEqual(credentialFromDB.password, credential.password);
+                    });
                 });
             });
         });

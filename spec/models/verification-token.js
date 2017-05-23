@@ -21,14 +21,26 @@ describe('VerificationToken', function() {
     let user = null;
 
     before(function() {
-        return Language.bulkCreate([{name: 'English', code: 'en'}, {name: '日本語', code: 'ja'}]);
+        return Language.bulkCreate([
+            {
+                name: 'English',
+                code: 'en'
+            },
+            {
+                name: '日本語',
+                code: 'ja'
+            }
+        ]);
     });
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
 
         return Language.findOne().then(function(language) {
-            return User.create({default_study_language_id: language.get(k.Attr.Id)});
+            return User.create({
+                default_study_language_id: language.get(k.Attr.Id),
+                email: chance.email()
+            });
         }).then(function(_user) {
             user = _user.get({plain: true});
         });

@@ -5,6 +5,8 @@
  * Created by henryehly on 2017/02/26.
  */
 
+const k = require('../../config/keys.json');
+
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define('WritingQuestion', {
         text: {
@@ -20,8 +22,8 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'writing_questions',
         underscored: true,
         associations: function(models) {
-            models.WritingQuestion.belongsTo(models.Subcategory);
-            models.WritingQuestion.hasMany(models.WritingAnswer, {as: 'writing_answers'});
+            models[k.Model.WritingQuestion].belongsTo(models[k.Model.Subcategory]);
+            models[k.Model.WritingQuestion].hasMany(models[k.Model.WritingAnswer], {as: 'writing_answers'});
         }
     });
 };

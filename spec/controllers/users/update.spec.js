@@ -33,17 +33,19 @@ describe('PATCH /users', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(result) {
-            authorization = result.authorization;
-            server        = result.server;
-            user          = result.response.body;
-            db            = result.db;
+        return SpecUtil.login().then(function(results) {
+            authorization = results.authorization;
+            server        = results.server;
+            user          = results.response.body;
+            db            = results.db;
 
             return db[k.Model.Language].findOne({
                 where: {
                     code: 'en'
                 },
-                attributes: [k.Attr.Id]
+                attributes: [
+                    k.Attr.Id
+                ]
             }).then(function(language) {
                 context.default_study_language_id = language.get(k.Attr.Id);
                 return db[k.Model.User].update(context, {

@@ -34,17 +34,11 @@ describe('POST /resend_confirmation_email', function() {
 
             return db[k.Model.Language].findOne().then(function(language) {
                 return db[k.Model.User].create({
-                    default_study_language_id: language.get(k.Attr.Id)
+                    default_study_language_id: language.get(k.Attr.Id),
+                    email: 'test-' + chance.email()
                 });
             }).then(function(_user) {
                 user = _user.get({plain: true});
-                return db[k.Model.Credential].create({
-                    user_id: user[k.Attr.Id],
-                    email: 'test-' + chance.email(),
-                    password: Auth.hashPassword('12345678')
-                });
-            }).then(function(credential) {
-                user[k.Attr.Email] = credential.get(k.Attr.Email);
             });
         });
     });
@@ -86,16 +80,11 @@ describe('POST /resend_confirmation_email', function() {
             db[k.Model.Language].findOne().then(function(language) {
                 return db[k.Model.User].create({
                     email_verified: true,
-                    default_study_language_id: language.get(k.Attr.Id)
+                    default_study_language_id: language.get(k.Attr.Id),
+                    email: 'test-' + chance.email()
                 });
             }).then(function(_user) {
-                return db[k.Model.Credential].create({
-                    user_id: _user.get(k.Attr.Id),
-                    email: 'test-' + chance.email(),
-                    password: Auth.hashPassword('12345678')
-                });
-            }).then(function(credential) {
-                request(server).post('/resend_confirmation_email').send({email: credential.get(k.Attr.Email)}).expect(422, done);
+                request(server).post('/resend_confirmation_email').send({email: _user.get(k.Attr.Email)}).expect(422, done);
             });
         });
 
@@ -103,16 +92,11 @@ describe('POST /resend_confirmation_email', function() {
             return db[k.Model.Language].findOne().then(function(language) {
                 return db[k.Model.User].create({
                     email_verified: true,
-                    default_study_language_id: language.get(k.Attr.Id)
+                    default_study_language_id: language.get(k.Attr.Id),
+                    email: 'test-' + chance.email()
                 });
             }).then(function(_user) {
-                return db[k.Model.Credential].create({
-                    user_id: _user.get(k.Attr.Id),
-                    email: 'test-' + chance.email(),
-                    password: Auth.hashPassword('12345678')
-                });
-            }).then(function(credential) {
-                return request(server).post('/resend_confirmation_email').send({email: credential.get(k.Attr.Email)});
+                return request(server).post('/resend_confirmation_email').send({email: _user.get(k.Attr.Email)});
             }).then(function(response) {
                 const error = _.first(response.body);
                 assert.equal(error.message, i18n.__(`errors.${error.code}`));

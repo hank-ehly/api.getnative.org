@@ -5,44 +5,74 @@
  * Created by henryehly on 2017/02/03.
  */
 
-const services = require('../services');
-const GetNativeError = services['GetNativeError'];
-const Utility = services['Utility'];
-const config = require('../../config/application').config;
-const Auth = services['Auth'];
-const k = require('../../config/keys.json');
-const db = require('../models');
-const User = db[k.Model.User];
-const Credential = db[k.Model.Credential];
-const Language = db[k.Model.Language];
+const services          = require('../services');
+const GetNativeError    = services['GetNativeError'];
+const Utility           = services['Utility'];
+const config            = require('../../config/application').config;
+const Auth              = services['Auth'];
+const k                 = require('../../config/keys.json');
+const db                = require('../models');
+const User              = db[k.Model.User];
+const Credential        = db[k.Model.Credential];
+const Identity          = db[k.Model.Identity];
+const AuthAdapterType   = db[k.Model.AuthAdapterType];
+const Language          = db[k.Model.Language];
 const VerificationToken = db[k.Model.VerificationToken];
 
-const Promise = require('bluebird');
-const mailer = require('../../config/initializers/mailer');
-const i18n = require('i18n');
-const _ = require('lodash');
+const Promise           = require('bluebird');
+const mailer            = require('../../config/initializers/mailer');
+const i18n              = require('i18n');
+const _                 = require('lodash');
 
 module.exports.create = (req, res, next) => {
-    let user = null;
+    let cache = {};
 
     // todo: Use DB unique key constraint to throw error
-    return User.existsForEmail(req.body[k.Attr.Email]).then(exists => {
-        if (exists) {
+    return User.existsForEmail(req.body[k.Attr.Email]).then(alreadyExists => {
+        if (alreadyExists) {
             throw new GetNativeError(k.Error.UserAlreadyExists);
         }
 
-        return Language.findOne({where: {code: 'en'}});
+        return Language.findOne({
+            where: {
+                code: 'en'
+            }
+        });
     }).then(language => {
-        return User.create({default_study_language_id: language.get(k.Attr.Id)});
-    }).then(_user => {
-        if (!_user) {
+        return User.create({
+            default_study_language_id: language.get(k.Attr.Id),
+            email: req.body[k.Attr.Email]
+        });
+    }).then(user => {
+        if (!user) {
             throw new Error('Failed to create new user');
         }
 
-        const findUser = User.scope('includeDefaultStudyLanguage').findOne({
-            where: {id: _user.get(k.Attr.Id)},
+        cache.user = user;
+
+        return Credential.create({
+            user_id: user.get(k.Attr.Id),
+            password: Auth.hashPassword(req.body[k.Attr.Password])
+        });
+    }).then(credential => {
+        return AuthAdapterType.findOne({
+            where: {
+                name: 'local'
+            }
+        });
+    }).then(authAdapterType => {
+        return Identity.create({
+            user_id: cache.user.get(k.Attr.Id),
+            auth_adapter_type_id: authAdapterType.get(k.Attr.Id)
+        });
+    }).then(() => {
+        return User.scope('includeDefaultStudyLanguage').findOne({
+            where: {
+                id: cache.user.get(k.Attr.Id)
+            },
             attributes: [
                 k.Attr.Id,
+                k.Attr.Email,
                 k.Attr.BrowserNotificationsEnabled,
                 k.Attr.EmailNotificationsEnabled,
                 k.Attr.EmailVerified,
@@ -50,20 +80,11 @@ module.exports.create = (req, res, next) => {
                 k.Attr.IsSilhouettePicture
             ]
         });
-
-        const createCredential = db[k.Model.Credential].create({
-            user_id: _user.get(k.Attr.Id),
-            email: req.body[k.Attr.Email],
-            password: Auth.hashPassword(req.body[k.Attr.Password])
-        });
-
-        return Promise.all([findUser, createCredential]);
-    }).spread((_user, credential) => {
-        user = _user.get({plain: true});
-        user[k.Attr.Email] = credential.get(k.Attr.Email);
+    }).then(user => {
+        cache.user = user;
 
         return VerificationToken.create({
-            user_id: user[k.Attr.Id],
+            user_id: user.get(k.Attr.Id),
             token: Auth.generateVerificationToken(),
             expiration_date: Utility.tomorrow()
         });
@@ -88,11 +109,10 @@ module.exports.create = (req, res, next) => {
             html: html
         });
     }).then(() => {
-        return Auth.generateTokenForUserId(user[k.Attr.Id]);
+        return Auth.generateTokenForUserId(cache.user.get(k.Attr.Id));
     }).then(token => {
         Auth.setAuthHeadersOnResponseWithToken(res, token);
-        const userWithoutPassword = _.omit(user, k.Attr.Password);
-        res.status(201).send(userWithoutPassword);
+        res.status(201).send(cache.user.get({plain: true}));
     }).catch(GetNativeError, e => {
         if (e.code === k.Error.UserAlreadyExists) {
             res.status(422);
@@ -135,13 +155,22 @@ module.exports.update = (req, res, next) => {
             attr.default_study_language_id = language.get(k.Attr.Id);
         }
 
-        req.user.update(attr).then(() => res.sendStatus(204)).catch(next);
-    });
+        return req.user.update(attr);
+    }).then(() => {
+        return res.sendStatus(204);
+    }).catch(next);
 };
 
 module.exports.updatePassword = (req, res, next) => {
     const hashPassword = Auth.hashPassword(req.body[k.Attr.NewPassword]);
-    return Credential.update({password: hashPassword}, {where: {user_id: req.user[k.Attr.Id]}}).then(() => {
+
+    return Credential.update({
+        password: hashPassword
+    }, {
+        where: {
+            user_id: req.user[k.Attr.Id]
+        }
+    }).then(() => {
         return new Promise((resolve, reject) => {
             res.app.render(k.Templates.PasswordUpdated, {__: i18n.__}, (err, html) => {
                 if (err) {
@@ -151,19 +180,11 @@ module.exports.updatePassword = (req, res, next) => {
                 }
             });
         });
-    }).spread(html => {
-        return Promise.all([
-            html,
-            Credential.findOne({
-                where: {user_id: req.user[k.Attr.Id]},
-                attributes: [k.Attr.Email]
-            })
-        ]);
-    }).spread((html, credential) => {
+    }).then(html => {
         return mailer.sendMail({
             subject: i18n.__('password-updated.title'),
             from: config.get(k.NoReply),
-            to: credential.get(k.Attr.Email),
+            to: req.user.get(k.Attr.Email),
             html: html
         });
     }).then(() => {

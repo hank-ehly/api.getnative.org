@@ -17,13 +17,10 @@ module.exports = {
         return User.findAll().then(users => {
             const credentials = _.times(users.length, i => {
                 return {
-                    email: chance.email(),
                     password: Auth.hashPassword('password'),
                     user_id: users[i].get(k.Attr.Id)
                 }
             });
-
-            _.first(credentials).email = 'test@email.com';
 
             return queryInterface.bulkInsert('credentials', credentials);
         });

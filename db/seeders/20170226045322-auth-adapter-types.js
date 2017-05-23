@@ -8,7 +8,7 @@
 module.exports = {
     up: function(queryInterface, Sequelize) {
         return queryInterface.bulkInsert('auth_adapter_types', [
-            {name: 'facebook'}, {name: 'twitter'}
+            {name: 'facebook'}, {name: 'twitter'}, {name: 'local'}
         ]);
     },
 
