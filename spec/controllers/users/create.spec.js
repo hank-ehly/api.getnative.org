@@ -135,7 +135,7 @@ describe('POST /users', function() {
 
         it(`should respond with an object containing the user's email validity status`, function() {
             return request(server).post('/users').send(credential).then(function(response) {
-                assert(_.isBoolean(response.body.email_verified));
+                assert.equal(response.body.email_verified, false);
             });
         });
 
@@ -200,7 +200,7 @@ describe('POST /users', function() {
             });
         });
 
-        it(`should create an additional 'local' Identity record if a user already has a 'facebook' Identity`, function() {
+        it(`should create a 'local' Identity record even if a user already has a 'facebook' Identity`, function() {
             const cache = {};
 
             return db[k.Model.Language].findOne().then(function(language) {
@@ -221,14 +221,24 @@ describe('POST /users', function() {
                 });
             }).then(function() {
                 return request(server).post('/users').send(credential).then(function(response) {
-                    return db[k.Model.Identity].findOne({
+                    return db[k.Model.Identity].findAll({
                         where: {
-                            auth_adapter_type_id: _.find(cache.authAdapterTypes, {name: 'local'}).get(k.Attr.Id),
                             user_id: response.body[k.Attr.Id]
                         }
+                    }).then(function(identities) {
+                        assert.equal(identities.length, 2);
+
+                        let facebookIdentity = _.find(identities, {
+                            auth_adapter_type_id: _.find(cache.authAdapterTypes, {name: 'facebook'}).get(k.Attr.Id)
+                        });
+
+                        let localIdentity = _.find(identities, {
+                            auth_adapter_type_id: _.find(cache.authAdapterTypes, {name: 'local'}).get(k.Attr.Id)
+                        });
+
+                        assert(facebookIdentity);
+                        assert(localIdentity);
                     });
-                }).then(function(identity) {
-                    assert(identity);
                 });
             });
         });
@@ -258,9 +268,9 @@ describe('POST /users', function() {
                         where: {
                             user_id: response.body[k.Attr.Id]
                         }
+                    }).then(function(newCredential) {
+                        assert(newCredential);
                     });
-                }).then(function(newCredential) {
-                    assert(newCredential);
                 });
             });
         });

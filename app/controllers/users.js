@@ -27,44 +27,93 @@ const _                 = require('lodash');
 module.exports.create = (req, res, next) => {
     let cache = {};
 
-    // todo: Use DB unique key constraint to throw error
     return User.existsForEmail(req.body[k.Attr.Email]).then(alreadyExists => {
         if (alreadyExists) {
-            throw new GetNativeError(k.Error.UserAlreadyExists);
+            return User.findOne({
+                where: {
+                    email: req.body[k.Attr.Email]
+                }
+            }).then(user => {
+                cache.user = user;
+
+                return AuthAdapterType.findOne({
+                    where: {
+                        name: 'local'
+                    }
+                });
+            }).then(authAdapterType => {
+                return Promise.all([
+                    authAdapterType, Identity.findOne({
+                        where: {
+                            auth_adapter_type_id: authAdapterType.get(k.Attr.Id),
+                            user_id: cache.user.get(k.Attr.Id)
+                        }
+                    })
+                ]);
+            }).spread((authAdapterType, identity) => {
+                if (identity) {
+                    throw new GetNativeError(k.Error.UserAlreadyExists);
+                }
+
+                return User.findOne({
+                    where: {
+                        email: req.body[k.Attr.Email]
+                    }
+                }).then(user => {
+
+                    return cache.user.update({
+                        email_verified: false
+                    });
+                }).then(() => {
+                    return Identity.create({
+                        user_id: cache.user.get(k.Attr.Id),
+                        auth_adapter_type_id: authAdapterType.get(k.Attr.Id)
+                    });
+                }).then(identity => {
+                    if (!identity) {
+                        throw new Error('Failed to create new user');
+                    }
+
+                    return Credential.create({
+                        user_id: cache.user.get(k.Attr.Id),
+                        password: Auth.hashPassword(req.body[k.Attr.Password])
+                    });
+                });
+            });
+        } else {
+            return Language.findOne({
+                where: {
+                    code: 'en'
+                }
+            }).then(language => {
+                return User.create({
+                    default_study_language_id: language.get(k.Attr.Id),
+                    email: req.body[k.Attr.Email]
+                });
+            }).then(user => {
+                if (!user) {
+                    throw new Error('Failed to create new user');
+                }
+
+                cache.user = user;
+
+                return Credential.create({
+                    user_id: user.get(k.Attr.Id),
+                    password: Auth.hashPassword(req.body[k.Attr.Password])
+                });
+            }).then(credential => {
+                return AuthAdapterType.findOne({
+                    where: {
+                        name: 'local'
+                    }
+                });
+            }).then(authAdapterType => {
+                return Identity.create({
+                    user_id: cache.user.get(k.Attr.Id),
+                    auth_adapter_type_id: authAdapterType.get(k.Attr.Id)
+                });
+            });
         }
-
-        return Language.findOne({
-            where: {
-                code: 'en'
-            }
-        });
-    }).then(language => {
-        return User.create({
-            default_study_language_id: language.get(k.Attr.Id),
-            email: req.body[k.Attr.Email]
-        });
-    }).then(user => {
-        if (!user) {
-            throw new Error('Failed to create new user');
-        }
-
-        cache.user = user;
-
-        return Credential.create({
-            user_id: user.get(k.Attr.Id),
-            password: Auth.hashPassword(req.body[k.Attr.Password])
-        });
-    }).then(credential => {
-        return AuthAdapterType.findOne({
-            where: {
-                name: 'local'
-            }
-        });
-    }).then(authAdapterType => {
-        return Identity.create({
-            user_id: cache.user.get(k.Attr.Id),
-            auth_adapter_type_id: authAdapterType.get(k.Attr.Id)
-        });
     }).then(() => {
         return User.scope('includeDefaultStudyLanguage').findOne({
             where: {
