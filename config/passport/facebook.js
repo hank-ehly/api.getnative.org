@@ -6,34 +6,94 @@
  */
 
 const FacebookStrategy = require('passport-facebook').Strategy;
-const config     = require('../application').config;
-const logger     = require('../logger');
-const k          = require('../keys.json');
+const config = require('../application').config;
+const logger = require('../logger');
+const k = require('../keys.json');
+const db = require('../../app/models');
+const Identity = db[k.Model.Identity];
+const AuthAdapterType = db[k.Model.AuthAdapterType];
+const User = db[k.Model.User];
+const Language = db[k.Model.Language];
+const services = require('../../app/services');
+const Auth = services['Auth'];
+const Utility = services['Utility'];
 
 const strategy = new FacebookStrategy({
     clientID: config.get(k.OAuth.Facebook.ClientID),
     clientSecret: config.get(k.OAuth.Facebook.ClientSecret),
+    passReqToCallback: true,
     profileFields: ['emails', 'gender', 'displayName', 'name', 'profileUrl'],
     callbackURL: config.get(k.OAuth.Facebook.CallbackURL)
-}, function(accessToken, refreshToken, profile, cb) {
-    // find user by their facebook ID
-    // if none exists, create new user
+}, (req, accessToken, refreshToken, profile, cb) => {
+    let adapter = null;
 
-    // const s = `
-    //     SELECT U.id FROM users U LEFT JOIN identities I ON U.id = I.user_id WHERE I.adapter_type = 'facebook' AND I.adapter_user_id = ${profile.userId}
-    // `;
+    return AuthAdapterType.findOne({
+        where: {
+            name: 'facebook'
+        },
+        attributes: [
+            k.Attr.Id
+        ]
+    }).then(_adapter => {
+        if (!_adapter) {
+            throw new Error('Adapter not found.');
+        }
 
-    // Identities.findOne({
-    //     where: {
-    //         adapter_type: k.AdapterType.Facebook,
-    //         adapter_user_id: profile.userId
-    //     }
-    // }, attributes: [k.Attr.UserId])
+        adapter = _adapter;
 
-    logger.info('Access Token:', accessToken);
-    logger.info('Refresh Token:', refreshToken);
-    logger.info('Profile:', profile);
-    return cb(null, profile);
+        return Identity.findOne({
+            where: {
+                auth_adapter_type_id: adapter.get(k.Attr.Id),
+                auth_adapter_user_id: profile[k.Attr.Id]
+            },
+            attributes: [
+                k.Attr.UserId
+            ]
+        });
+    }).then(identity => {
+        if (identity) {
+            return User.findById(identity.get(k.Attr.UserId), {
+                include: [
+                    {
+                        model: Language,
+                        attributes: [k.Attr.Name, k.Attr.Code],
+                        as: 'default_study_language'
+                    }
+                ]
+            }).then(user => {
+                return cb(null, user);
+            });
+        } else {
+            return Language.findOne({
+                where: {
+                    code: 'en'
+                },
+                attributes: [k.Attr.Id]
+            }).then(language => {
+                return User.create({
+                    default_study_language_id: language.get(k.Attr.Id)
+                }).then(user => {
+                    return Identity.create({
+                        user_id: user.get(k.Attr.Id),
+                        auth_adapter_type_id: adapter.get(k.Attr.Id),
+                        auth_adapter_user_id: profile[k.Attr.Id]
+                    }).then(() => {
+                        return User.findById(user.get(k.Attr.Id), {
+                            include: [
+                                {
+                                    model: Language,
+                                    attributes: [k.Attr.Name, k.Attr.Code],
+                                    as: 'default_study_language'
+                                }
+                            ]
+                        }).then(user => {
+                            return cb(null, user);
+                        });
+                    });
+                });
+            });
+        }
+    });
 });
 
 module.exports = strategy;
