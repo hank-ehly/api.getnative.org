@@ -93,7 +93,8 @@ const strategy = new FacebookStrategy({
                     // ELSE: create a 'facebook' identity for the user and invoke the callback with the user data
                     return Identity.create({
                         user_id: user.get(k.Attr.Id),
-                        auth_adapter_type_id: cache.adapter.get(k.Attr.Id)
+                        auth_adapter_type_id: cache.adapter.get(k.Attr.Id),
+                        auth_adapter_user_id: _.toString(profile[k.Attr.Id])
                     }).then(() => {
                         return cb(null, user);
                     });
@@ -131,7 +132,8 @@ const strategy = new FacebookStrategy({
                 }).then(adapter => {
                     return Identity.create({
                         user_id: user.get(k.Attr.Id),
-                        auth_adapter_type_id: adapter.get(k.Attr.Id)
+                        auth_adapter_type_id: adapter.get(k.Attr.Id),
+                        auth_adapter_user_id: _.toString(profile[k.Attr.Id])
                     });
                 }).then(() => {
                     return cb(null, user);
