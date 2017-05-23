@@ -64,8 +64,8 @@ module.exports.generateTokenForUserId = userId => {
 };
 
 module.exports.setAuthHeadersOnResponseWithToken = (res, token) => {
-    res.set('X-GN-Auth-Expire', moment().add(1, 'hours').valueOf().toString());
-    res.set('X-GN-Auth-Token', token);
+    res.set(k.Header.AuthExpire, moment().add(1, 'hours').valueOf().toString());
+    res.set(k.Header.AuthToken, token);
 };
 
 module.exports.extractUserIdFromRequest = req => {
