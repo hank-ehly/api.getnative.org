@@ -101,6 +101,12 @@ module.exports.create = (req, res, next) => {
     }).catch(next);
 };
 
+module.exports.show = (req, res) => {
+    const jsonUser = req.user.get({plain: true});
+    const normalizedUserObj = _.omit(jsonUser, [k.Attr.CreatedAt, k.Attr.UpdatedAt, 'default_study_language_id']);
+    res.send(normalizedUserObj);
+};
+
 module.exports.update = (req, res, next) => {
     const attr = _.transform(req.body, function(result, value, key) {
         if ([k.Attr.EmailNotificationsEnabled, k.Attr.BrowserNotificationsEnabled, k.Attr.DefaultStudyLanguageCode].includes(key)) {

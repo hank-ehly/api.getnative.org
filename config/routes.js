@@ -8,6 +8,7 @@
 const ctrl = require('../app/controllers');
 const router = require('express').Router();
 const pv = require('./param-validation');
+const k = require('../config/keys.json');
 
 const middleware = require('../app/middleware');
 const passport = require('passport');
@@ -22,11 +23,12 @@ router.patch('/users', ValidateParams(pv.users.update),  Authenticate, ctrl.user
 
 // todo: Document
 router.get('/oauth/facebook',          passport.authenticate('facebook', {scope: ['public_profile']}));
-router.get('/oauth/facebook/callback', passport.authenticate('facebook', {failureRedirect: 'https://hankehly.com'}), ctrl.oauth.facebookCallback);
+router.get('/oauth/facebook/callback', passport.authenticate('facebook', {failureRedirect: k.Client.BaseURI}), ctrl.oauth.facebookCallback);
 
 // todo: Rest-ify all
 router.post( '/users/password',              ValidateParams(pv.users.updatePassword),          Authenticate, ctrl.users.updatePassword);
 router.post( '/users/email',                 ValidateParams(pv.users.updateEmail),             Authenticate, ctrl.users.updateEmail);
+router.get(  '/users/me',                    ValidateParams(pv.users.me),                      Authenticate, ctrl.users.show);
 router.get(  '/categories',                  ValidateParams(pv.categories.index),              Authenticate, ctrl.categories.index);
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                                     ctrl.auth.confirmEmail);
 router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                          ctrl.auth.resendConfirmationEmail);

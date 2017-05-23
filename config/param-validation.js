@@ -48,6 +48,11 @@ module.exports = {
             body: {
                 email: Joi.string().regex(regex.email).required(),
             }
+        },
+        me: {
+            headers: {
+                authorization: Joi.string().required()
+            }
         }
     },
     auth: {
