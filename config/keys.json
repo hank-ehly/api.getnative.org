@@ -41,7 +41,8 @@
     },
     "Client": {
         "Host": "kClientHost",
-        "Protocol": "kClientProtocol"
+        "Protocol": "kClientProtocol",
+        "BaseURI": "kClientBaseURI"
     },
     "Debug": "DEBUG",
     "DefaultLocale": "kDefaultLocale",

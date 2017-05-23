@@ -17,5 +17,6 @@ config[k.Client.Protocol] = 'https';
 config[k.NoReply] = 'noreply@stg.get-native.com';
 config[k.OAuth.Facebook.ClientID] = '215585938915345';
 config[k.OAuth.Facebook.ClientSecret] = '48d86be6bfdcfcab1a491c890c01e89a';
+config[k.Client.BaseURI] = 'https://stg.get-native.com';
 
 module.exports = config;
