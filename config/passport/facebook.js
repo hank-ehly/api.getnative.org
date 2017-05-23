@@ -18,6 +18,10 @@ const services = require('../../app/services');
 const Auth = services['Auth'];
 const Utility = services['Utility'];
 
+// todo: Prevent overlapping accounts
+// todo: Refactor
+// todo: Test
+// todo: (*) Make sure time-out isn't an issue
 const strategy = new FacebookStrategy({
     clientID: config.get(k.OAuth.Facebook.ClientID),
     clientSecret: config.get(k.OAuth.Facebook.ClientSecret),
