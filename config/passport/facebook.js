@@ -21,10 +21,9 @@ const Utility = services['Utility'];
 const strategy = new FacebookStrategy({
     clientID: config.get(k.OAuth.Facebook.ClientID),
     clientSecret: config.get(k.OAuth.Facebook.ClientSecret),
-    passReqToCallback: true,
     profileFields: ['emails', 'gender', 'displayName', 'name', 'profileUrl'],
     callbackURL: config.get(k.OAuth.Facebook.CallbackURL)
-}, (req, accessToken, refreshToken, profile, cb) => {
+}, (accessToken, refreshToken, profile, cb) => {
     let adapter = null;
 
     return AuthAdapterType.findOne({
