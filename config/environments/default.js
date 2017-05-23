@@ -6,6 +6,7 @@
  */
 
 const k = require('../keys.json');
+const oauthSecrets = require('../secrets/oauth.json');
 
 const defaults = {};
 
@@ -21,9 +22,13 @@ defaults[k.Client.Protocol] = 'http';
 
 defaults[k.Client.BaseURI] = 'http://localhost:5555';
 
-defaults[k.OAuth.Facebook.CallbackURL] = defaults[k.Client.Protocol] + '://' + defaults[k.API.Hostname] + ':' + defaults[k.API.Port] + '/oauth/facebook/callback';
-defaults[k.OAuth.Facebook.ClientID] = '215586025582003';
-defaults[k.OAuth.Facebook.ClientSecret] = 'a27245e5fee9aa9b324c159b895db0aa';
+defaults[k.OAuth.Facebook.ClientID] = oauthSecrets.development.facebook.clientId;
+defaults[k.OAuth.Facebook.ClientSecret] = oauthSecrets.development.facebook.clientSecret;
+defaults[k.OAuth.Facebook.CallbackURL] = 'http://localhost:3000/oauth/facebook/callback';
+
+defaults[k.OAuth.Twitter.ConsumerKey] = oauthSecrets.development.twitter.consumerKey;
+defaults[k.OAuth.Twitter.ConsumerSecret] = oauthSecrets.development.twitter.consumerSecret;
+defaults[k.OAuth.Twitter.CallbackURL] = 'http://localhost:3000/oauth/twitter/callback';
 
 defaults[k.GoogleCloud.ProjectId] = 'stg-get-native';
 

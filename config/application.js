@@ -42,6 +42,7 @@ function Config() {
         nconf.set(k.GoogleCloud.KeyFilename, path.resolve(__dirname, 'secrets', 'gcloud-credentials.json'));
     }
 
+    // TODO: You don't need to read these files, just convert them to JSON and add them to the config!!
     Promise.join(fs.readFileAsync(path.resolve(__dirname, 'secrets', 'id_rsa'), 'utf8'), fs.readFileAsync(path.resolve(__dirname, 'secrets', 'id_rsa.pem'), 'utf8'), (privateKey, publicKey) => {
         nconf.set(k.PrivateKey, privateKey);
         nconf.set(k.PublicKey, publicKey);
