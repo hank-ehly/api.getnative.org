@@ -10,15 +10,16 @@ const Auth = services['Auth'];
 const Utility = services['Utility'];
 const k = require('../../config/keys.json');
 const User = require('../../app/models')[k.Model.User];
+const Language = require('../../app/models')[k.Model.Language];
 
 const Promise = require('bluebird');
 const _ = require('lodash');
 
-function CustomStrategy(verify) {
+function CustomStrategy() {
     this.name = 'custom';
 }
 
-CustomStrategy.prototype.authenticate = function(req, options) {
+CustomStrategy.prototype.authenticate = function(req) {
     const self = this;
 
     let token = null;
@@ -29,7 +30,15 @@ CustomStrategy.prototype.authenticate = function(req, options) {
     }
 
     return Auth.verifyToken(token).then(decodedToken => {
-        return Promise.join(User.findById(decodedToken.sub), Auth.refreshToken(decodedToken));
+        return Promise.join(User.findById(decodedToken.sub, {
+            include: [
+                {
+                    model: Language,
+                    as: k.Attr.DefaultStudyLanguage,
+                    attributes: [k.Attr.Code, k.Attr.Name]
+                }
+            ]
+        }), Auth.refreshToken(decodedToken));
     }).spread((user, refreshedToken) => {
         Auth.setAuthHeadersOnResponseWithToken(req.res, refreshedToken);
 
