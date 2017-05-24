@@ -37,24 +37,6 @@ const strategy = new FacebookStrategy({
     ],
     callbackURL: config.get(k.OAuth.Facebook.CallbackURL)
 }, (accessToken, refreshToken, profile, cb) => {
-    logger.info(profile, {json: true});
-
-    // {
-    //     id: '2545994211381',
-    //     username: undefined,
-    //     displayName: 'Hank Ehly',
-    //     name: {
-    //         familyName: undefined,
-    //         givenName: undefined,
-    //         middleName: undefined
-    //     },
-    //     gender: undefined,
-    //     profileUrl: undefined,
-    //     emails: [{value: 'henry.ehly@gmail.com'}],
-    //     photos: [{value: 'https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/16807431_2546476943449_5422516981354096077_n.jpg?oh=8670d7a5566fe6ea2237da52be7ecef5&oe=599EA663'}],
-    //     provider: 'facebook'
-    // }
-
     const cache = {};
 
     // check if another user exists with the same email
@@ -69,7 +51,7 @@ const strategy = new FacebookStrategy({
             // IF: that user has a 'facebook' identity
             return AuthAdapterType.findOne({
                 where: {
-                    name: 'facebook'
+                    name: profile.provider
                 },
                 attributes: [
                     k.Attr.Id
@@ -124,7 +106,7 @@ const strategy = new FacebookStrategy({
             }).then(user => {
                 return AuthAdapterType.findOne({
                     where: {
-                        name: 'facebook'
+                        name: profile.provider
                     },
                     attributes: [
                         k.Attr.Id
