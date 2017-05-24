@@ -13,22 +13,34 @@ const ResponseWrapper = require('../services')['ResponseWrapper'];
 
 const _ = require('lodash');
 
-module.exports.index = (req, res, next) => {
-    return Category.findAll({
-        attributes: [k.Attr.Id, k.Attr.Name],
-        include: [{model: Subcategory, as: 'subcategories', attributes: [k.Attr.Id, k.Attr.Name]}]
-    }).then(categories => {
-        categories = _.invokeMap(categories, 'get', {
-            plain: true
+module.exports.index = async (req, res, next) => {
+    let categories;
+
+    try {
+        categories = await Category.findAll({
+            attributes: [k.Attr.Id, k.Attr.Name],
+            include: [
+                {
+                    model: Subcategory,
+                    as: 'subcategories',
+                    attributes: [k.Attr.Id, k.Attr.Name]
+                }
+            ]
         });
+    } catch (e) {
+        return next(e);
+    }
 
-        categories = _.map(categories, category => {
-            category.subcategories = _.zipObject(['records', 'count'], [category.subcategories, category.subcategories.length]);
-            return category;
-        });
+    categories = _.invokeMap(categories, 'get', {
+        plain: true
+    });
 
-        categories = _.zipObject(['records', 'count'], [categories, categories.length]);
+    categories = _.map(categories, category => {
+        category.subcategories = _.zipObject(['records', 'count'], [category.subcategories, category.subcategories.length]);
+        return category;
+    });
 
-        res.send(categories);
-    }).catch(next);
+    categories = _.zipObject(['records', 'count'], [categories, categories.length]);
+
+    res.send(categories);
 };
