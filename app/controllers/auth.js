@@ -32,12 +32,12 @@ module.exports.confirmEmail = async (req, res, next) => {
             }
         });
     } catch (e) {
-        next(e);
+        return next(e);
     }
 
     if (!verificationToken || verificationToken.isExpired()) {
         res.status(404);
-        return next(new GetNativeError(k.Error.TokenExpired))
+        return next(new GetNativeError(k.Error.TokenExpired));
     }
 
     const changes = {
@@ -67,7 +67,7 @@ module.exports.confirmEmail = async (req, res, next) => {
             ]
         });
     } catch (e) {
-        next(e);
+        return next(e);
     }
 
     if (!user) {
@@ -81,7 +81,7 @@ module.exports.confirmEmail = async (req, res, next) => {
             res.status(404);
         }
 
-        next(e);
+        return next(e);
     }
 
     if (!jsonWebToken) {
@@ -95,56 +95,87 @@ module.exports.confirmEmail = async (req, res, next) => {
     }));
 };
 
-module.exports.resendConfirmationEmail = (req, res, next) => {
-    User.existsForEmail(req.body[k.Attr.Email]).then(exists => {
-        if (!exists) {
-            throw new GetNativeError(k.Error.UserMissing);
-        }
+module.exports.resendConfirmationEmail = async (req, res, next) => {
+    let userAlreadyExists, user, verificationToken, mailHtml;
 
-        return User.findOne({
+    try {
+        userAlreadyExists = await User.existsForEmail(req.body[k.Attr.Email]);
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!userAlreadyExists) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.UserMissing));
+    }
+
+    try {
+        user = await User.findOne({
             where: {email: req.body[k.Attr.Email]}
         });
-    }).then(function(user) {
-        if (user.get(k.Attr.EmailVerified)) {
-            throw new GetNativeError(k.Error.UserAlreadyVerified);
-        }
+    } catch (e) {
+        return next(e);
+    }
 
-        const token = Auth.generateVerificationToken();
-        const expirationDate = Utility.tomorrow();
+    if (!user) {
+        // this overlaps with existsForEmail
+        res.status(404);
+        return next(new GetNativeError(k.Error.UserMissing));
+    }
 
-        return VerificationToken.create({
+    if (user.get(k.Attr.EmailVerified)) {
+        res.status(422);
+        return next(new GetNativeError(k.Error.UserAlreadyVerified));
+    }
+
+    try {
+        verificationToken = await VerificationToken.create({
             user_id: user.get(k.Attr.Id),
-            token: token,
-            expiration_date: expirationDate
+            token: Auth.generateVerificationToken(),
+            expiration_date: Utility.tomorrow()
         });
-    }).then(verificationToken => {
-        return new Promise((resolve, reject) => {
-            res.app.render('welcome', {
-                confirmationURL: Auth.generateConfirmationURLForToken(verificationToken.get(k.Attr.Token)),
-                __: i18n.__
-            }, (err, html) => {
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!verificationToken) {
+        throw new Error('variable verificationToken is undefined');
+    }
+
+    try {
+        const templateVariables = {
+            confirmationURL: Auth.generateConfirmationURLForToken(verificationToken.get(k.Attr.Token)),
+            __: i18n.__
+        };
+
+        // this syntax is ugly -- but promisify/Promise.method/Promisify.fromCallback don't work
+        mailHtml = await new Promise((resolve, reject) => {
+            res.app.render('welcome', templateVariables, (err, html) => {
                 if (err) {
                     reject(err);
                 } else {
                     resolve(html);
                 }
-            });
+            })
         });
-    }).then(html => {
-        return mailer.sendMail({
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!mailHtml) {
+        throw new Error('variable mailHtml is undefined');
+    }
+
+    try {
+        await mailer.sendMail({
             subject: i18n.__('welcome.title'),
             from:    config.get(k.NoReply),
             to:      req.body[k.Attr.Email],
-            html:    html
+            html:    mailHtml
         });
-    }).then(() => {
-        res.sendStatus(204);
-    }).catch(GetNativeError, e => {
-        if (e.code === k.Error.UserMissing) {
-            res.status(404);
-        } else if (e.code === k.Error.UserAlreadyVerified) {
-            res.status(422);
-        }
-        next(e);
-    }).catch(next);
+    } catch (e) {
+        return next(e);
+    }
+
+    res.sendStatus(204);
 };
