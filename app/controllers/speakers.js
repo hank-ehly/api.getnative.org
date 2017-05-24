@@ -5,22 +5,29 @@
  * Created by henryehly on 2017/03/16.
  */
 
-const Speaker = require('../models').Speaker;
-const k       = require('../../config/keys.json');
+const k = require('../../config/keys.json');
+const Speaker = require('../models')[k.Model.Speaker];
 
-module.exports.show = (req, res, next) => {
-    Speaker.findById(req.params.id, {
-        attributes: {
-            exclude: [
-                k.Attr.CreatedAt, k.Attr.UpdatedAt
-            ]
-        }
-    }).then(speaker => {
-        res.send(speaker.get({plain: true}));
-    }).catch(() => {
-        next({
-            message: 'Error',
-            errors: [{message: 'Unable to fetch speaker'}]
-        })
-    });
+module.exports.show = async (req, res, next) => {
+    let speaker;
+
+    try {
+        speaker = await Speaker.findById(req.params[k.Attr.Id], {
+            attributes: {
+                exclude: [
+                    k.Attr.CreatedAt, k.Attr.UpdatedAt
+                ]
+            }
+        });
+    } catch (e) {
+        next(e);
+    }
+
+    if (!speaker) {
+        throw new Error('variable speaker is undefined');
+    }
+
+    res.send(speaker.get({
+        plain: true
+    }));
 };
