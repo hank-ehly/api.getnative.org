@@ -83,6 +83,10 @@ module.exports = function(sequelize, DataTypes) {
         });
     };
 
+    User.findOrCreateFromPassportProfile = function() {
+        return {};
+    };
+
     User.prototype.calculateStudySessionStatsForLanguage = function(lang) {
         if (!lang) {
             throw new ReferenceError(`Required 'lang' argument is missing`);
