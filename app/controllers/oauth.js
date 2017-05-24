@@ -20,3 +20,7 @@ module.exports.facebookCallback = (req, res, next) => {
         res.redirect(redirectUrl);
     }).catch(next);
 };
+
+module.exports.twitterCallback = async (req, res, next) => {
+    res.sendStatus(404);
+};
