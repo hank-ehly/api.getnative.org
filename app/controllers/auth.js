@@ -22,31 +22,39 @@ const mailer            = require('../../config/initializers/mailer');
 const i18n              = require('i18n');
 const _                 = require('lodash');
 
-module.exports.confirmEmail = (req, res, next) => {
-    return VerificationToken.findOne({where: {token: req.body.token}}).then(token => {
-        if (!token) {
-            throw new GetNativeError(k.Error.TokenExpired);
-        }
+module.exports.confirmEmail = async (req, res, next) => {
+    let verificationToken, user, jsonWebToken;
 
-        if (token.isExpired()) {
-            throw new GetNativeError(k.Error.TokenExpired);
-        }
-
-        const changes = {};
-        changes[k.Attr.EmailVerified] = true;
-        changes[k.Attr.EmailNotificationsEnabled] = true;
-
-        return [
-            token, User.update(changes, {
-                where: {
-                    id: token[k.Attr.UserId]
-                }
-            })
-        ];
-    }).spread(token => {
-        return User.scope('includeDefaultStudyLanguage').findOne({
+    try {
+        verificationToken = await VerificationToken.findOne({
             where: {
-                id: token[k.Attr.UserId]
+                token: req.body.token
+            }
+        });
+    } catch (e) {
+        next(e);
+    }
+
+    if (!verificationToken || verificationToken.isExpired()) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.TokenExpired))
+    }
+
+    const changes = {
+        email_verified: true,
+        email_notifications_enabled: true
+    };
+
+    try {
+        await User.update(changes, {
+            where: {
+                id: verificationToken[k.Attr.UserId]
+            }
+        });
+
+        user = await User.scope('includeDefaultStudyLanguage').findOne({
+            where: {
+                id: verificationToken[k.Attr.UserId]
             },
             attributes: [
                 k.Attr.Id,
@@ -58,17 +66,33 @@ module.exports.confirmEmail = (req, res, next) => {
                 k.Attr.IsSilhouettePicture
             ]
         });
-    }).then(user => {
-        return [user, Auth.generateTokenForUserId(user.get(k.Attr.Id))];
-    }).spread((user, token) => {
-        Auth.setAuthHeadersOnResponseWithToken(res, token);
-        res.status(200).send(user.get({plain: true}));
-    }).catch(GetNativeError, e => {
-        if (e.code === k.Error.TokenExpired) {
+    } catch (e) {
+        next(e);
+    }
+
+    if (!user) {
+        throw new Error('variable user is undefined');
+    }
+
+    try {
+        jsonWebToken = await Auth.generateTokenForUserId(user.get(k.Attr.Id));
+    } catch (e) {
+        if (e instanceof GetNativeError && e.code === k.Error.TokenExpired) {
             res.status(404);
         }
+
         next(e);
-    }).catch(next);
+    }
+
+    if (!jsonWebToken) {
+        throw new Error('variable jsonWebToken is undefined');
+    }
+
+    Auth.setAuthHeadersOnResponseWithToken(res, jsonWebToken);
+
+    return res.status(200).send(user.get({
+        plain: true
+    }));
 };
 
 module.exports.resendConfirmationEmail = (req, res, next) => {
