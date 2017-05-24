@@ -156,7 +156,7 @@ module.exports.resendConfirmationEmail = async (req, res, next) => {
                 } else {
                     resolve(html);
                 }
-            })
+            });
         });
     } catch (e) {
         return next(e);
