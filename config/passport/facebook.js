@@ -68,7 +68,7 @@ const strategy = new FacebookStrategy({
             }).then(identity => {
                 if (identity) {
                     // THEN: get the user data and invoke the callback
-                    return User.scope('includeDefaultStudyLanguage').findById(identity.get(k.Attr.UserId)).then(user => {
+                    return User.findById(identity.get(k.Attr.UserId)).then(user => {
                         return cb(null, user);
                     });
                 } else {

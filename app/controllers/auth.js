@@ -52,7 +52,7 @@ module.exports.confirmEmail = async (req, res, next) => {
             }
         });
 
-        user = await User.scope('includeDefaultStudyLanguage').findOne({
+        user = await User.findOne({
             where: {
                 id: verificationToken[k.Attr.UserId]
             },

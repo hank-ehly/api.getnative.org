@@ -16,7 +16,7 @@ const User = db[k.Model.User];
 module.exports.create = (req, res, next) => {
     let cache = {};
 
-    return User.scope('includeDefaultStudyLanguage').findOne({
+    return User.findOne({
         where: {
             email: req.body[k.Attr.Email]
         },

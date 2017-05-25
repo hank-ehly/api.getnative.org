@@ -115,7 +115,7 @@ module.exports.create = (req, res, next) => {
             });
         }
     }).then(() => {
-        return User.scope('includeDefaultStudyLanguage').findOne({
+        return User.findOne({
             where: {
                 id: cache.user.get(k.Attr.Id)
             },
