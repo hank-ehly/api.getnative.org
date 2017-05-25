@@ -33,6 +33,11 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             defaultValue: false
         },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: ''
+        },
         picture_url: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -83,8 +88,33 @@ module.exports = function(sequelize, DataTypes) {
         });
     };
 
-    User.findOrCreateFromPassportProfile = function() {
-        return {};
+    User.findOrCreateFromPassportProfile = async function(profile) {
+        const User = sequelize.models[k.Model.User];
+
+        const language = await sequelize.models[k.Model.Language].find({
+            where: {
+                code: 'en'
+            },
+            attributes: [
+                k.Attr.Id
+            ]
+        });
+
+        let user = await User.create({
+            default_study_language_id: language.get(k.Attr.Id),
+            email: _.first(profile.emails).value,
+            name: profile.displayName
+        });
+
+        user = User.scope('includeDefaultStudyLanguage').find({
+            where: {
+                default_study_language_id: language.get(k.Attr.Id),
+                email: _.first(profile.emails).value,
+                name: profile.displayName
+            }
+        });
+
+        return user;
     };
 
     User.prototype.calculateStudySessionStatsForLanguage = function(lang) {

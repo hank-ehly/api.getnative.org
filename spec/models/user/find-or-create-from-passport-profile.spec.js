@@ -24,23 +24,17 @@ const it         = mocha.it;
 const _          = require('lodash');
 
 describe('User.findOrCreateFromPassportProfile', function() {
-    let profile, languages, authAdapterTypes;
+    let languages, authAdapterTypes, profile;
 
     before(async function() {
-        languages = await Language.bulkCreate([
-            {
-                name: 'English',
-                code: 'en'
-            },
-            {
-                name: '日本語',
-                code: 'ja'
-            }
-        ]);
+        this.timeout(SpecUtil.defaultTimeout);
 
-        authAdapterTypes = await AuthAdapterType.bulkCreate([
-            {name: 'facebook'}, {name: 'twitter'}, {name: 'local'}
-        ]);
+        await SpecUtil.seedAllUndo();
+
+        [languages, authAdapterTypes] = [
+            await Language.bulkCreate([{name: 'English', code: 'en'}, {name: '日本語', code: 'ja'}]),
+            await AuthAdapterType.bulkCreate([{name: 'facebook'}, {name: 'twitter'}, {name: 'local'}])
+        ];
     });
 
     beforeEach(function() {
@@ -57,8 +51,17 @@ describe('User.findOrCreateFromPassportProfile', function() {
     });
 
     afterEach(async function() {
-        await Identity.destroy();
-        await User.destroy();
+        await Identity.destroy({
+            where: {
+                auth_adapter_user_id: profile.id
+            }
+        });
+
+        await User.destroy({
+            where: {
+                email: _.first(profile.emails).value
+            }
+        });
     });
 
     describe('in all situations', function() {
@@ -97,11 +100,11 @@ describe('User.findOrCreateFromPassportProfile', function() {
         });
 
         it('should return a User record with an picture_url string attribute', async function() {
-            assert(SpecUtil.isValidURL(user.get(k.Attr.PictureUrl)));
+            assert(_.isString(user.get(k.Attr.PictureUrl)));
         });
 
         it('should return a User record with a default_study_language plain object attribute', async function() {
-            assert(_.isPlainObject(user.get(k.Attr.DefaultStudyLanguage)));
+            assert(_.isPlainObject(user.get({plain: true})[k.Attr.DefaultStudyLanguage]));
         });
 
         it('should return a User record with a default_study_language.code string attribute', async function() {
@@ -197,26 +200,26 @@ describe('User.findOrCreateFromPassportProfile', function() {
 
     describe('given an profile object', function() {
         it('should throw a ReferenceError if profile.id is missing', function() {
-            assert.throws(function() {
-                User.findOrCreateFromPassportProfile(_.omit(profile, k.Attr.Id));
+            assert.throws(async function() {
+                await User.findOrCreateFromPassportProfile(_.omit(profile, k.Attr.Id));
             }, ReferenceError);
         });
 
         it('should throw a ReferenceError if profile.provider is missing', function() {
-            assert.throws(function() {
-                User.findOrCreateFromPassportProfile(_.omit(profile, 'provider'));
+            assert.throws(async function() {
+                await User.findOrCreateFromPassportProfile(_.omit(profile, 'provider'));
             }, ReferenceError);
         });
 
         it('should throw a ReferenceError if profile.displayName is missing', function() {
-            assert.throws(function() {
-                User.findOrCreateFromPassportProfile(_.omit(profile, 'displayName'));
+            assert.throws(async function() {
+                await User.findOrCreateFromPassportProfile(_.omit(profile, 'displayName'));
             }, ReferenceError);
         });
 
         it('should throw a ReferenceError if profile.emails is missing', function() {
-            assert.throws(function() {
-                User.findOrCreateFromPassportProfile(_.omit(profile, 'emails'));
+            assert.throws(async function() {
+                await User.findOrCreateFromPassportProfile(_.omit(profile, 'emails'));
             }, ReferenceError);
         });
     });
