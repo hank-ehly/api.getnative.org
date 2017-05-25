@@ -30,15 +30,11 @@ describe('Language.findIdForCode', function() {
         assert.equal(languageId, _.find(languages, {code: 'ja'}).get(k.Attr.Id));
     });
 
-    // it('should throw a ReferenceError if no language code is provided', function() {
-    //     assert.throws(function() {
-    //        Language.findIdForCode();
-    //     }, ReferenceError);
-    // });
-    //
-    // it('should throw a TypeError if the provided language code is not a string', function() {
-    //     assert.throws(async function() {
-    //         await Language.findIdForCode(5);
-    //     }, TypeError);
-    // });
+    it('should throw a ReferenceError if no language code is provided', async function() {
+        assert(await SpecUtil.throwsAsync(Language.findIdForCode, ReferenceError));
+    });
+
+    it('should throw a TypeError if the provided language code is not a string', async function() {
+        assert(await SpecUtil.throwsAsync(Language.findIdForCode.bind(null, 5), TypeError));
+    });
 });
