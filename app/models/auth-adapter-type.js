@@ -7,8 +7,10 @@
 
 const k = require('../../config/keys.json');
 
+const _ = require('lodash');
+
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define(k.Model.AuthAdapterType, {
+    const AuthAdapterType = sequelize.define(k.Model.AuthAdapterType, {
         name: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -18,4 +20,26 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'auth_adapter_types',
         underscored: true
     });
+
+    AuthAdapterType.findIdForProvider = async function(provider) {
+        if (!provider) {
+            throw new ReferenceError('argument provider is undefined');
+        }
+        else if (!_.isString(provider)) {
+            throw new TypeError('argument provider must be a string');
+        }
+
+        const record = await AuthAdapterType.find({
+            where: {
+                name: provider
+            },
+            attributes: [
+                k.Attr.Id
+            ]
+        });
+
+        return record.get(k.Attr.Id);
+    };
+
+    return AuthAdapterType;
 };

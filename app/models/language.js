@@ -38,7 +38,7 @@ module.exports = function(sequelize, DataTypes) {
             throw new TypeError('argument code must be a string');
         }
 
-        const record = await sequelize.models[k.Model.Language].find({
+        const record = await Language.find({
             where: {
                 code: code
             },
