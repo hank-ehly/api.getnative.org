@@ -122,6 +122,25 @@ describe('User.findOrCreateFromPassportProfile', function() {
 
             assert(user);
         });
+
+        it('should create a new Identity record linked to the new user record', async function() {
+            const user = await User.find({
+                where: {
+                    email: _.first(profile.emails).value,
+                    name: profile.displayName
+                }
+            });
+
+            const identity = await Identity.find({
+                where: {
+                    user_id: user.get(k.Attr.Id),
+                    auth_adapter_user_id: profile.id,
+                    auth_adapter_type_id: _.find(authAdapterTypes, {name: profile.provider}).get(k.Attr.Id)
+                }
+            });
+
+            assert(identity);
+        });
     });
 
     describe('given an existing User with no matching Identity', function() {
@@ -166,6 +185,10 @@ describe('User.findOrCreateFromPassportProfile', function() {
 
             assert(identity);
         });
+
+        it('should not create an additional User record', async function() {
+            assert.equal(await User.count(), 1);
+        });
     });
 
     describe('given an existing User with an existing Identity', function() {
@@ -187,9 +210,17 @@ describe('User.findOrCreateFromPassportProfile', function() {
             const user = await User.findOrCreateFromPassportProfile(profile);
             assert(user.get(k.Attr.Id));
         });
+
+        it('should not create an additional User record', async function() {
+            assert.equal(await User.count(), 1);
+        });
+
+        it('should not create an additional Identity record', async function() {
+            assert.equal(await Identity.count(), 1);
+        });
     });
 
-    describe('given an profile object', function() {
+    describe('given a profile object', function() {
         it('should throw a ReferenceError if profile.id is missing', async function() {
             const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, k.Attr.Id));
             assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
