@@ -51,17 +51,8 @@ describe('User.findOrCreateFromPassportProfile', function() {
     });
 
     afterEach(async function() {
-        await Identity.destroy({
-            where: {
-                auth_adapter_user_id: profile.id
-            }
-        });
-
-        await User.destroy({
-            where: {
-                email: _.first(profile.emails).value
-            }
-        });
+        await Identity.destroy({where: {}, force: true});
+        await User.destroy({where: {}, force: true});
     });
 
     describe('in all situations', function() {
@@ -133,7 +124,7 @@ describe('User.findOrCreateFromPassportProfile', function() {
         });
     });
 
-    describe('given an existing User without a matching Identity', function() {
+    describe('given an existing User with no matching Identity', function() {
         let user;
 
         beforeEach(async function() {
@@ -199,28 +190,24 @@ describe('User.findOrCreateFromPassportProfile', function() {
     });
 
     describe('given an profile object', function() {
-        it('should throw a ReferenceError if profile.id is missing', function() {
-            assert.throws(async function() {
-                await User.findOrCreateFromPassportProfile(_.omit(profile, k.Attr.Id));
-            }, ReferenceError);
+        it('should throw a ReferenceError if profile.id is missing', async function() {
+            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, k.Attr.Id));
+            assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
         });
 
-        it('should throw a ReferenceError if profile.provider is missing', function() {
-            assert.throws(async function() {
-                await User.findOrCreateFromPassportProfile(_.omit(profile, 'provider'));
-            }, ReferenceError);
+        it('should throw a ReferenceError if profile.provider is missing', async function() {
+            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, 'provider'));
+            assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
         });
 
-        it('should throw a ReferenceError if profile.displayName is missing', function() {
-            assert.throws(async function() {
-                await User.findOrCreateFromPassportProfile(_.omit(profile, 'displayName'));
-            }, ReferenceError);
+        it('should throw a ReferenceError if profile.displayName is missing', async function() {
+            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, 'displayName'));
+            assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
         });
 
-        it('should throw a ReferenceError if profile.emails is missing', function() {
-            assert.throws(async function() {
-                await User.findOrCreateFromPassportProfile(_.omit(profile, 'emails'));
-            }, ReferenceError);
+        it('should throw a ReferenceError if profile.emails is missing', async function() {
+            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, 'emails'));
+            assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
         });
     });
 });

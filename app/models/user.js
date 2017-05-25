@@ -59,18 +59,14 @@ module.exports = function(sequelize, DataTypes) {
             models[k.Model.User].hasMany(models[k.Model.StudySession], {as: 'study_sessions'});
             models[k.Model.User].belongsTo(models[k.Model.Language], {as: k.Attr.DefaultStudyLanguage})
         },
-        scopes: {
-            includeDefaultStudyLanguage: function() {
-                return {
-                    include: [
-                        {
-                            model: sequelize.models[k.Model.Language],
-                            attributes: [k.Attr.Name, k.Attr.Code],
-                            as: k.Attr.DefaultStudyLanguage
-                        }
-                    ]
+        defaultScope: {
+            include: [
+                {
+                    model: sequelize.models[k.Model.Language],
+                    attributes: [k.Attr.Name, k.Attr.Code],
+                    as: k.Attr.DefaultStudyLanguage
                 }
-            }
+            ]
         }
     });
 
@@ -89,28 +85,35 @@ module.exports = function(sequelize, DataTypes) {
     };
 
     User.findOrCreateFromPassportProfile = async function(profile) {
-        const User = sequelize.models[k.Model.User];
+        if (!profile.id || !profile.provider || !profile.displayName || !profile.emails) {
+            throw new ReferenceError('arguments id, provider, displayName and emails must be present');
+        }
 
-        const language = await sequelize.models[k.Model.Language].find({
+        const languageId = await sequelize.models[k.Model.Language].findIdForCode('en');
+
+        let user = await User.find({
             where: {
-                code: 'en'
-            },
-            attributes: [
-                k.Attr.Id
-            ]
+                email: _.first(profile.emails).value
+            }
         });
 
-        let user = await User.create({
-            default_study_language_id: language.get(k.Attr.Id),
-            email: _.first(profile.emails).value,
-            name: profile.displayName
-        });
-
-        user = User.scope('includeDefaultStudyLanguage').find({
-            where: {
-                default_study_language_id: language.get(k.Attr.Id),
+        if (!user) {
+            user = await User.create({
+                default_study_language_id: languageId,
                 email: _.first(profile.emails).value,
                 name: profile.displayName
+            });
+
+            user = await user.reload();
+        }
+
+        const authAdapterTypeId = await sequelize.models[k.Model.AuthAdapterType].findIdForProvider(profile.provider);
+
+        await sequelize.models[k.Model.Identity].findOrCreate({
+            where: {
+                user_id: user.get(k.Attr.Id),
+                auth_adapter_user_id: profile.id,
+                auth_adapter_type_id: authAdapterTypeId
             }
         });
 
