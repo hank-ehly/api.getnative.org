@@ -13,7 +13,7 @@ const Video   = models.Video;
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        const promises = [User.min('id'), User.max('id'), Video.min('id'), Video.max('id')];
+        const promises = [User.unscoped().min('id'), User.unscoped().max('id'), Video.min('id'), Video.max('id')];
 
         return Promise.all(promises).spread((minUserId, maxUserId, minVideoId, maxVideoId) => {
             const studySessions = [];

@@ -20,12 +20,13 @@ module.exports = {
             const records = _.times(count, () => {
                 return {
                     browser_notifications_enabled: chance.bool(),
+                    default_study_language_id: _.sample(languages).get(k.Attr.Id),
                     email: chance.email(),
                     email_notifications_enabled: chance.bool(),
                     email_verified: chance.bool({likelihood: 80}),
-                    default_study_language_id: _.sample(languages).get(k.Attr.Id),
-                    picture_url: 'https://dummyimage.com/100x100.png/5fa2dd/ffffff',
-                    is_silhouette_picture: chance.bool()
+                    is_silhouette_picture: chance.bool(),
+                    name: chance.name(),
+                    picture_url: 'https://dummyimage.com/100x100.png/5fa2dd/ffffff'
                 }
             });
 

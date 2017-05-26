@@ -15,7 +15,7 @@ const _       = require('lodash');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        const promises = [Video.min('id'), Video.max('id'), User.min('id'), User.max('id')];
+        const promises = [Video.min('id'), Video.max('id'), User.unscoped().min('id'), User.unscoped().max('id')];
 
         return Promise.all(promises).spread((minVideoId, maxVideoId, minUserId, maxUserId) => {
             const cuedVideos = [];
