@@ -5,9 +5,9 @@
  * Created by henryehly on 2017/05/24.
  */
 
-const config   = require('../application').config;
 const k        = require('../keys.json');
 const User     = require('../../app/models')[k.Model.User];
+const config   = require('../application').config;
 
 const Strategy = require('passport-twitter').Strategy;
 
