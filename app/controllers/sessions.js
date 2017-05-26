@@ -13,10 +13,11 @@ const db = require('../models');
 const Credential = db[k.Model.Credential];
 const User = db[k.Model.User];
 
+// todo: handle a user with non-local identity trying to create session
 module.exports.create = (req, res, next) => {
     let cache = {};
 
-    return User.findOne({
+    return User.find({
         where: {
             email: req.body[k.Attr.Email]
         },
@@ -36,7 +37,7 @@ module.exports.create = (req, res, next) => {
 
         cache.user = user;
 
-        return Credential.findOne({
+        return Credential.find({
             where: {
                 user_id: user.get(k.Attr.Id)
             },
