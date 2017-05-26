@@ -102,6 +102,11 @@
     "NODE_ENV": "NODE_ENV",
     "NoReply": "",
     "OAuth": {
+        "Google": {
+            "ClientID": "kOAuthGoogleClientID",
+            "ClientSecret": "kOAuthGoogleClientSecret",
+            "CallbackURL": "kOAuthGoogleCallbackURL"
+        },
         "Facebook": {
             "ClientID": "kOAuthFacebookClientID",
             "ClientSecret": "kOAuthFacebookClientSecret",

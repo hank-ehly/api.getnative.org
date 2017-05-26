@@ -5,15 +5,15 @@
  * Created by henryehly on 2017/01/18.
  */
 
-const ctrl = require('../app/controllers');
-const router = require('express').Router();
-const pv = require('./param-validation');
-const k = require('../config/keys.json');
+const router         = require('express').Router();
+const ctrl           = require('../app/controllers');
+const pv             = require('./param-validation');
+const k              = require('../config/keys.json');
 
-const middleware = require('../app/middleware');
-const passport = require('passport');
+const middleware     = require('../app/middleware');
+const passport       = require('passport');
 const ValidateParams = middleware['ValidateRequestParameters'];
-const Authenticate = middleware['Authenticate'];
+const Authenticate   = middleware['Authenticate'];
 
 router.post('/sessions', ValidateParams(pv.sessions.create), ctrl.sessions.create);
 router.post('/users', ValidateParams(pv.users.create), ctrl.users.create);
@@ -22,18 +22,21 @@ router.post('/users', ValidateParams(pv.users.create), ctrl.users.create);
 router.patch('/users', ValidateParams(pv.users.update),  Authenticate, ctrl.users.update);
 
 // todo: Document
-router.get('/oauth/facebook',          passport.authenticate('facebook', {scope: ['public_profile', 'email']}));
-router.get('/oauth/facebook/callback', passport.authenticate('facebook', {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
-router.get('/oauth/twitter',           passport.authenticate('twitter', {scope: ['public_profile', 'email']}));
-router.get('/oauth/twitter/callback',  passport.authenticate('twitter', {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
+// todo: Combine
+router.get('/oauth/facebook',                passport.authenticate('facebook',                {scope: ['public_profile', 'email']}));
+router.get('/oauth/twitter',                 passport.authenticate('twitter',                 {scope: ['public_profile', 'email']}));
+router.get('/oauth/google',                  passport.authenticate('google',                  {scope: ['profile', 'email']}));
+router.get('/oauth/facebook/callback',       passport.authenticate('facebook',                {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
+router.get('/oauth/twitter/callback',        passport.authenticate('twitter',                 {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
+router.get('/oauth/google/callback',         passport.authenticate('google',                  {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
 
-// todo: Rest-ify all
+// todo: Rest-ify
 router.post( '/users/password',              ValidateParams(pv.users.updatePassword),          Authenticate, ctrl.users.updatePassword);
 router.post( '/users/email',                 ValidateParams(pv.users.updateEmail),             Authenticate, ctrl.users.updateEmail);
 router.get(  '/users/me',                    ValidateParams(pv.users.me),                      Authenticate, ctrl.users.show);
 router.get(  '/categories',                  ValidateParams(pv.categories.index),              Authenticate, ctrl.categories.index);
-router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                                     ctrl.auth.confirmEmail);
-router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                          ctrl.auth.resendConfirmationEmail);
+router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                           ctrl.auth.confirmEmail);
+router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                ctrl.auth.resendConfirmationEmail);
 router.post( '/study',                       ValidateParams(pv.study.createStudySession),      Authenticate, ctrl.study.createStudySession);
 router.post( '/study/complete',              ValidateParams(pv.study.complete),                Authenticate, ctrl.study.complete);
 router.get(  '/study/:lang/stats',           ValidateParams(pv.study.stats),                   Authenticate, ctrl.study.stats);

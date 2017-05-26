@@ -20,9 +20,10 @@ const express    = require('express');
 const morgan     = require('morgan');
 const path       = require('path');
 
+passport.use('custom', require('../passport/custom'));
 passport.use('facebook', require('../passport/facebook'));
 passport.use('twitter', require('../passport/twitter'));
-passport.use('custom', require('../passport/custom'));
+passport.use('google', require('../passport/google'));
 
 passport.serializeUser(function(user, cb) {
     cb(null, user);

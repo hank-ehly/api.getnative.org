@@ -30,6 +30,10 @@ defaults[k.OAuth.Twitter.ConsumerKey] = oauthSecrets.development.twitter.consume
 defaults[k.OAuth.Twitter.ConsumerSecret] = oauthSecrets.development.twitter.consumerSecret;
 defaults[k.OAuth.Twitter.CallbackURL] = 'http://localhost:3000/oauth/twitter/callback';
 
+defaults[k.OAuth.Google.ClientID] = oauthSecrets.development.google.clientId;
+defaults[k.OAuth.Google.ClientSecret] = oauthSecrets.development.google.clientSecret;
+defaults[k.OAuth.Google.CallbackURL] = 'http://localhost:3000/oauth/google/callback';
+
 defaults[k.GoogleCloud.ProjectId] = 'stg-get-native';
 
 module.exports = defaults;

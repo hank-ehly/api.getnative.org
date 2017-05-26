@@ -26,4 +26,8 @@ config[k.OAuth.Twitter.ConsumerKey] = oauthSecrets.staging.twitter.consumerKey;
 config[k.OAuth.Twitter.ConsumerSecret] = oauthSecrets.staging.twitter.consumerSecret;
 config[k.OAuth.Twitter.CallbackURL] = 'http://api.stg.get-native.com/oauth/twitter/callback';
 
+config[k.OAuth.Google.ClientID] = oauthSecrets.staging.google.clientId;
+config[k.OAuth.Google.ClientSecret] = oauthSecrets.staging.google.clientSecret;
+config[k.OAuth.Google.CallbackURL] = 'http://localhost:3000/oauth/google/callback';
+
 module.exports = config;
