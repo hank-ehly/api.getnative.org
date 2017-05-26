@@ -23,9 +23,9 @@ router.patch('/users', ValidateParams(pv.users.update),  Authenticate, ctrl.user
 
 // todo: Document
 router.get('/oauth/facebook',          passport.authenticate('facebook', {scope: ['public_profile', 'email']}));
-router.get('/oauth/facebook/callback', passport.authenticate('facebook', {failureRedirect: k.Client.BaseURI}), ctrl.oauth.facebookCallback);
+router.get('/oauth/facebook/callback', passport.authenticate('facebook', {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
 router.get('/oauth/twitter',           passport.authenticate('twitter', {scope: ['public_profile', 'email']}));
-router.get('/oauth/twitter/callback',  passport.authenticate('twitter', {failureRedirect: k.Client.BaseURI}), ctrl.oauth.twitterCallback);
+router.get('/oauth/twitter/callback',  passport.authenticate('twitter', {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
 
 // todo: Rest-ify all
 router.post( '/users/password',              ValidateParams(pv.users.updatePassword),          Authenticate, ctrl.users.updatePassword);

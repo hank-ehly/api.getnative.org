@@ -12,15 +12,21 @@ const k      = require('../../config/keys.json');
 
 const moment = require('moment');
 
-module.exports.facebookCallback = (req, res, next) => {
-    const userId = req.user.get(k.Attr.Id);
-    return Auth.generateTokenForUserId(userId).then(token => {
-        const tokenExpirationDate = moment().add(1, 'hours').valueOf().toString();
-        const redirectUrl = `${config.get(k.Client.BaseURI)}/oauth/facebook?token=${token}&expires=${tokenExpirationDate}`;
-        res.redirect(redirectUrl);
-    }).catch(next);
-};
+module.exports.callback = async (req, res, next) => {
+    let jsonWebToken;
 
-module.exports.twitterCallback = async (req, res, next) => {
-    res.sendStatus(404);
+    try {
+        jsonWebToken = await Auth.generateTokenForUserId(req.user.get(k.Attr.Id));
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!jsonWebToken) {
+        throw new ReferenceError('variable jsonWebToken is undefined');
+    }
+
+    const tokenExpirationDate = moment().add(1, 'hours').valueOf().toString();
+    const redirectUrl = `${config.get(k.Client.BaseURI)}/oauth/callback?token=${jsonWebToken}&expires=${tokenExpirationDate}`;
+
+    res.redirect(redirectUrl);
 };
