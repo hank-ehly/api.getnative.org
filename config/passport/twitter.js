@@ -6,8 +6,8 @@
  */
 
 const config   = require('../application').config;
-const User     = require('../../app/models')[k.Model.User];
 const k        = require('../keys.json');
+const User     = require('../../app/models')[k.Model.User];
 
 const Strategy = require('passport-twitter').Strategy;
 
