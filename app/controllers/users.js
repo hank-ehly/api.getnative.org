@@ -24,6 +24,7 @@ const mailer            = require('../../config/initializers/mailer');
 const i18n              = require('i18n');
 const _                 = require('lodash');
 
+// todo: move all this to passport custom
 module.exports.create = (req, res, next) => {
     let cache = {};
 

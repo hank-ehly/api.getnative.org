@@ -6,7 +6,6 @@
  */
 
 const k = require('../keys.json');
-const oauthSecrets = require('../secrets/oauth.json');
 
 const defaults = {};
 
@@ -19,19 +18,16 @@ defaults[k.Client.Host] = 'localhost:5555';
 defaults[k.NoReply] = 'noreply@localhost';
 defaults[k.DefaultLocale] = 'en';
 defaults[k.Client.Protocol] = 'http';
-
 defaults[k.Client.BaseURI] = 'http://localhost:5555';
 
-defaults[k.OAuth.Facebook.ClientID] = oauthSecrets.development.facebook.clientId;
-defaults[k.OAuth.Facebook.ClientSecret] = oauthSecrets.development.facebook.clientSecret;
+defaults[k.OAuth.Facebook.ClientID] = 'xxx';
+defaults[k.OAuth.Facebook.ClientSecret] = 'xxx';
 defaults[k.OAuth.Facebook.CallbackURL] = 'http://localhost:3000/oauth/facebook/callback';
-
-defaults[k.OAuth.Twitter.ConsumerKey] = oauthSecrets.development.twitter.consumerKey;
-defaults[k.OAuth.Twitter.ConsumerSecret] = oauthSecrets.development.twitter.consumerSecret;
+defaults[k.OAuth.Twitter.ConsumerKey] = 'xxx';
+defaults[k.OAuth.Twitter.ConsumerSecret] = 'xxx';
 defaults[k.OAuth.Twitter.CallbackURL] = 'http://localhost:3000/oauth/twitter/callback';
-
-defaults[k.OAuth.Google.ClientID] = oauthSecrets.development.google.clientId;
-defaults[k.OAuth.Google.ClientSecret] = oauthSecrets.development.google.clientSecret;
+defaults[k.OAuth.Google.ClientID] = 'xxx';
+defaults[k.OAuth.Google.ClientSecret] = 'xxx';
 defaults[k.OAuth.Google.CallbackURL] = 'http://localhost:3000/oauth/google/callback';
 
 defaults[k.GoogleCloud.ProjectId] = 'stg-get-native';
