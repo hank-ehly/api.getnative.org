@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 BASENAME=`basename $0`
-TMPFILE=`mktemp -t ${BASENAME}` || exit 1
+TMPFILE=`mktemp -t ${BASENAME}.XXXXXX` || exit 1
 
 echo '{"privateKey": "' >> ${TMPFILE}
 
