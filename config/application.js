@@ -8,10 +8,8 @@
 const logger  = require('./logger');
 const k       = require('./keys.json');
 
-const Promise = require('bluebird');
 const nconf   = require('nconf');
 const path    = require('path');
-const fs      = Promise.promisifyAll(require('fs'));
 const _       = require('lodash');
 
 function Config() {
@@ -42,13 +40,9 @@ function Config() {
         nconf.set(k.GoogleCloud.KeyFilename, path.resolve(__dirname, 'secrets', 'gcloud-credentials.json'));
     }
 
-    // TODO: You don't need to read these files, just convert them to JSON and add them to the config!!
-    Promise.join(fs.readFileAsync(path.resolve(__dirname, 'secrets', 'id_rsa'), 'utf8'), fs.readFileAsync(path.resolve(__dirname, 'secrets', 'id_rsa.pem'), 'utf8'), (privateKey, publicKey) => {
-        nconf.set(k.PrivateKey, privateKey);
-        nconf.set(k.PublicKey, publicKey);
-    }).catch(e => {
-        throw e;
-    });
+    const jwtKeyPair = require('./secrets/jwt-keypair.json');
+    nconf.set(k.PrivateKey, jwtKeyPair.privateKey);
+    nconf.set(k.PublicKey, jwtKeyPair.publicKey);
 }
 
 Config.prototype.get = function(key) {
