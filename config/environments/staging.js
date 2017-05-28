@@ -28,6 +28,6 @@ config[k.OAuth.Twitter.CallbackURL] = 'https://api.stg.get-native.com/oauth/twit
 
 config[k.OAuth.Google.ClientID] = oauthSecrets.staging.google.clientId;
 config[k.OAuth.Google.ClientSecret] = oauthSecrets.staging.google.clientSecret;
-config[k.OAuth.Google.CallbackURL] = 'https://localhost:3000/oauth/google/callback';
+config[k.OAuth.Google.CallbackURL] = 'https://api.stg.get-native.com/oauth/google/callback';
 
 module.exports = config;
