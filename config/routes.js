@@ -9,11 +9,12 @@ const router         = require('express').Router();
 const ctrl           = require('../app/controllers');
 const pv             = require('./param-validation');
 const k              = require('../config/keys.json');
-
 const middleware     = require('../app/middleware');
-const passport       = require('passport');
 const ValidateParams = middleware['ValidateRequestParameters'];
 const Authenticate   = middleware['Authenticate'];
+const AdminOnly      = middleware['AdminOnly'];
+
+const passport       = require('passport');
 
 router.post('/sessions', ValidateParams(pv.sessions.create), ctrl.sessions.create);
 router.post('/users', ValidateParams(pv.users.create), ctrl.users.create);
@@ -53,6 +54,6 @@ router.post( '/videos/:id/unlike',           ValidateParams(pv.videos.unlike),  
 
 // Authenticate provides the req.user. For endpoints requiring admin permissions, check the user role
 // * You may wish to join the user role table to the user table when creating req.user
-router.post( '/videos/transcribe', ValidateParams(pv.videos.transcribe), Authenticate, ctrl.videos.transcribe);
+router.post( '/videos/transcribe', ValidateParams(pv.videos.transcribe), Authenticate, AdminOnly, ctrl.videos.transcribe);
 
 module.exports = router;

@@ -64,7 +64,7 @@ module.exports.startServer = function() {
 
 module.exports.login = async function(admin = false) {
     let retObj   = await module.exports.startServer();
-    let response = await request(results.server).post('/sessions').send(admin ? module.exports.adminCredentials : module.exports.credentials);
+    let response = await request(retObj.server).post('/sessions').send(admin ? module.exports.adminCredentials : module.exports.credentials);
     retObj.authorization = ['Bearer:', response.headers[k.Header.AuthToken]].join(' ');
     retObj.response = response;
     return retObj;
