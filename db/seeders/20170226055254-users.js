@@ -31,7 +31,8 @@ module.exports = {
             });
 
             /* For testing purposes */
-            _.first(records)[k.Attr.Email] = 'test@email.com';
+            _.nth(records, 0)[k.Attr.Email] = 'test@email.com';
+            _.nth(records, 1)[k.Attr.Email] = 'admin@email.com';
 
             return queryInterface.bulkInsert('users', records);
         });

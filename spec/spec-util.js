@@ -16,8 +16,9 @@ const jwt     = require('jsonwebtoken');
 
 let maildev = null;
 
-module.exports.defaultTimeout = 30000;
-module.exports.credentials    = {email: 'test@email.com', password: 'password'};
+module.exports.defaultTimeout   = 30000;
+module.exports.credentials      = {email: 'test@email.com', password: 'password'};
+module.exports.adminCredentials = {email: 'admin@email.com', password: 'password'};
 
 module.exports.seedAll = function() {
     return new Promise(function(resolve, reject) {
@@ -61,16 +62,12 @@ module.exports.startServer = function() {
     return require('../index');
 };
 
-module.exports.login = function() {
-    let retObj;
-    return module.exports.startServer().then(function(results) {
-        retObj = results;
-        return request(results.server).post('/sessions').send(module.exports.credentials);
-    }).then(function(response) {
-        retObj.authorization = ['Bearer:', response.headers[k.Header.AuthToken]].join(' ');
-        retObj.response = response;
-        return retObj;
-    });
+module.exports.login = async function(admin = false) {
+    let retObj   = await module.exports.startServer();
+    let response = await request(results.server).post('/sessions').send(admin ? module.exports.adminCredentials : module.exports.credentials);
+    retObj.authorization = ['Bearer:', response.headers[k.Header.AuthToken]].join(' ');
+    retObj.response = response;
+    return retObj;
 };
 
 module.exports.isParsableTimestamp = function(value) {

@@ -15,12 +15,24 @@ const _       = require('lodash');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return Promise.join(User.findAll({attributes: [k.Attr.Id]}), Role.findAll({attributes: [k.Attr.Id]}), (users, roles) => {
+        return Promise.join(User.findAll({attributes: [k.Attr.Id, k.Attr.Email]}), Role.findAll({attributes: [k.Attr.Id, k.Attr.Name]}), (users, roles) => {
             const records = _.times(users.length, i => {
-                return {
-                    user_id: users[i].get(k.Attr.Id),
-                    role_id: _.sample(roles).get(k.Attr.Id)
+                let userEmail = users[i].get(k.Attr.Email);
+                let user_id = users[i].get(k.Attr.Id);
+                let role_id;
+
+                if (userEmail === 'test@email.com') {
+                    role_id = _.find(roles, {name: 'user'}).get(k.Attr.Id);
+                } else if (userEmail === 'admin@email.com') {
+                    role_id = _.find(roles, {name: 'admin'}).get(k.Attr.Id);
+                } else {
+                    role_id = _.sample(roles).get(k.Attr.Id);
                 }
+
+                return {
+                    user_id: user_id,
+                    role_id: role_id
+                };
             });
 
             return queryInterface.bulkInsert('user_roles', records);

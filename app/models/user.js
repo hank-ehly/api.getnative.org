@@ -57,7 +57,7 @@ module.exports = function(sequelize, DataTypes) {
             models[k.Model.User].hasMany(models[k.Model.CuedVideo], {as: 'cued_videos'});
             models[k.Model.User].hasMany(models[k.Model.Like], {as: 'likes'});
             models[k.Model.User].hasMany(models[k.Model.StudySession], {as: 'study_sessions'});
-            models[k.Model.User].belongsTo(models[k.Model.Language], {as: k.Attr.DefaultStudyLanguage})
+            models[k.Model.User].belongsTo(models[k.Model.Language], {as: k.Attr.DefaultStudyLanguage});
         },
         defaultScope: {
             include: [
@@ -234,6 +234,18 @@ module.exports = function(sequelize, DataTypes) {
 
             return result;
         });
+    };
+
+    User.prototype.isAdmin = async function() {
+        const result = await sequelize.query(`
+            SELECT (roles.name = 'admin') AS is_admin
+            FROM users
+            LEFT JOIN user_roles ON users.id = user_roles.user_id
+            LEFT JOIN roles ON user_roles.role_id = roles.id
+            WHERE users.id = ?;
+        `, {replacements: [this.id]});
+
+        return _.first(_.first(result))['is_admin'] === 1;
     };
 
     return User;
