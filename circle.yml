@@ -28,7 +28,6 @@ database:
 
 test:
   pre:
-    - ssh-keygen -t rsa -N "" -f config/secrets/id_rsa -q
-    - ssh-keygen -f config/secrets/id_rsa.pub -e -m pem > config/secrets/id_rsa.pem
+    - ./bin/generate-jwt-keypair.bash
   override:
     - npm test
