@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 BASENAME=`basename $0`
 TMPFILE=`mktemp -t ${BASENAME}.XXXXXX` || exit 1
@@ -6,7 +6,7 @@ TMPFILE=`mktemp -t ${BASENAME}.XXXXXX` || exit 1
 echo '{"privateKey": "' >> ${TMPFILE}
 
 ssh-keygen -t rsa -N "" -f id_rsa -q
-cat id_rsa | sed 's/$/\\\n/g' | tr -d '\n' >> ${TMPFILE}
+cat id_rsa | sed 's/$/\\n/g' | tr -d '\n' >> ${TMPFILE}
 
 echo '", "publicKey": "' >> ${TMPFILE}
 
