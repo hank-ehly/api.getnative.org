@@ -20,14 +20,14 @@ config[k.Client.BaseURI] = 'https://stg.get-native.com';
 
 config[k.OAuth.Facebook.ClientID] = oauthSecrets.staging.facebook.clientId;
 config[k.OAuth.Facebook.ClientSecret] = oauthSecrets.staging.facebook.clientSecret;
-config[k.OAuth.Facebook.CallbackURL] = 'http://api.stg.get-native.com/oauth/facebook/callback';
+config[k.OAuth.Facebook.CallbackURL] = 'https://api.stg.get-native.com/oauth/facebook/callback';
 
 config[k.OAuth.Twitter.ConsumerKey] = oauthSecrets.staging.twitter.consumerKey;
 config[k.OAuth.Twitter.ConsumerSecret] = oauthSecrets.staging.twitter.consumerSecret;
-config[k.OAuth.Twitter.CallbackURL] = 'http://api.stg.get-native.com/oauth/twitter/callback';
+config[k.OAuth.Twitter.CallbackURL] = 'https://api.stg.get-native.com/oauth/twitter/callback';
 
 config[k.OAuth.Google.ClientID] = oauthSecrets.staging.google.clientId;
 config[k.OAuth.Google.ClientSecret] = oauthSecrets.staging.google.clientSecret;
-config[k.OAuth.Google.CallbackURL] = 'http://localhost:3000/oauth/google/callback';
+config[k.OAuth.Google.CallbackURL] = 'https://localhost:3000/oauth/google/callback';
 
 module.exports = config;
