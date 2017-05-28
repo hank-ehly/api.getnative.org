@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 BASENAME=`basename $0`
 TMPFILE=`mktemp -t ${BASENAME}.XXXXXX` || exit 1
 
