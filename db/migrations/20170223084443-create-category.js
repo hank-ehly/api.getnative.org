@@ -31,7 +31,7 @@ module.exports = {
             }
         }, {
             engine: 'InnoDB',
-            charset: 'utf8'
+            charset: 'utf8mb4'
         });
     },
     down: function(queryInterface, Sequelize) {
