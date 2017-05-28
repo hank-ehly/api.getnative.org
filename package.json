@@ -1,6 +1,6 @@
 {
   "name": "api.get-native.com",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Source code for api.get-native.com",
   "main": "index.js",
   "scripts": {
