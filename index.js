@@ -30,15 +30,6 @@ if (config.get(k.ENVIRONMENT) === k.Env.Development) {
 
 module.exports = Promise.all(initPromises).spread(server => {
     logger.info('Initialization successful');
-
-    process.on('SIGINT', function() {
-        server.close(function() {
-            db.sequelize.close(function(err) {
-                process.exit(err ? 1 : 0);
-            });
-        });
-    });
-
     return {
         server: server,
         db: db,
