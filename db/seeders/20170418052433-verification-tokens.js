@@ -31,7 +31,7 @@ module.exports = {
 
                 verificationTokens.push({
                     user_id: user.get(k.Attr.Id),
-                    token: Auth.generateVerificationToken(),
+                    token: Auth.generateRandomHash(),
                     expiration_date: expirationDate
                 });
             });

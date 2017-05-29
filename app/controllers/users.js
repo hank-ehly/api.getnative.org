@@ -135,7 +135,7 @@ module.exports.create = (req, res, next) => {
 
         return VerificationToken.create({
             user_id: user.get(k.Attr.Id),
-            token: Auth.generateVerificationToken(),
+            token: Auth.generateRandomHash(),
             expiration_date: Utility.tomorrow()
         });
     }).then(verificationToken => {

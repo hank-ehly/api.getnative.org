@@ -131,7 +131,7 @@ module.exports.resendConfirmationEmail = async (req, res, next) => {
     try {
         verificationToken = await VerificationToken.create({
             user_id: user.get(k.Attr.Id),
-            token: Auth.generateVerificationToken(),
+            token: Auth.generateRandomHash(),
             expiration_date: Utility.tomorrow()
         });
     } catch (e) {

@@ -50,7 +50,7 @@ describe('VerificationToken', function() {
         it(`should return true if the tokens' expiration_date is less than the current date`, function() {
             return VerificationToken.create({
                 user_id: user[k.Attr.Id],
-                token: Auth.generateVerificationToken(),
+                token: Auth.generateRandomHash(),
                 expiration_date: moment().subtract(1, 'days').toDate()
             }).then(function(token) {
                 assert(token.isExpired());
@@ -60,7 +60,7 @@ describe('VerificationToken', function() {
         it(`should return false if the tokens' expiration_date is greater than the current date`, function() {
             return VerificationToken.create({
                 user_id: user[k.Attr.Id],
-                token: Auth.generateVerificationToken(),
+                token: Auth.generateRandomHash(),
                 expiration_date: moment().add(1, 'days').toDate()
             }).then(function(token) {
                 assert(!token.isExpired());

@@ -53,7 +53,7 @@ describe('clean (VerificationToken)', function() {
 
             return VerificationToken.create({
                 user_id: userId,
-                token: Auth.generateVerificationToken(),
+                token: Auth.generateRandomHash(),
                 expiration_date: moment().add(1, 'days').toDate()
             });
         }).then(function() {

@@ -78,17 +78,17 @@ describe('Auth', function() {
         });
     });
 
-    describe('generateVerificationToken', function() {
+    describe('generateRandomHash', function() {
         it(`should return a string`, function() {
-            assert(_.isString(Auth.generateVerificationToken()));
+            assert(_.isString(Auth.generateRandomHash()));
         });
 
         it(`should return a string that is 32 characters in length`, function() {
-            assert.equal(Auth.generateVerificationToken().length, 32);
+            assert.equal(Auth.generateRandomHash().length, 32);
         });
 
         it(`should generate unique tokens`, function() {
-            assert.notEqual(Auth.generateVerificationToken(), Auth.generateVerificationToken());
+            assert.notEqual(Auth.generateRandomHash(), Auth.generateRandomHash());
         });
     });
 
@@ -106,19 +106,19 @@ describe('Auth', function() {
         });
 
         it(`should return a valid URL string`, function() {
-            const token = Auth.generateVerificationToken();
+            const token = Auth.generateRandomHash();
             const url = Auth.generateConfirmationURLForToken(token);
             assert(SpecUtil.isValidURL(url));
         });
 
         it(`should return a string containing the verification token`, function() {
-            const token = Auth.generateVerificationToken();
+            const token = Auth.generateRandomHash();
             const url = Auth.generateConfirmationURLForToken(token);
             assert(_.includes(url, token));
         });
 
         it(`should return a url with the correct scheme, hostname, pathname and query`, function() {
-            const token  = Auth.generateVerificationToken();
+            const token  = Auth.generateRandomHash();
             const actual = Auth.generateConfirmationURLForToken(token);
 
             const expected = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/confirm_email?token=${token}`;

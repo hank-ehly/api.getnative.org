@@ -18,18 +18,27 @@ const _ = require('lodash');
 
 logger.info(`Initializing ${_.toUpper(config.get(k.ENVIRONMENT))} environment`);
 
-const initializationPromises = [
+const initPromises = [
     server(), db.sequelize.authenticate(), Promise.promisify(mailer.verify)()
 ];
 
 if (config.get(k.ENVIRONMENT) === k.Env.Development) {
     const MailDev = require('maildev');
     const mailServer = new MailDev();
-    initializationPromises.push(Promise.promisify(mailServer.listen)());
+    initPromises.push(Promise.promisify(mailServer.listen)());
 }
 
-module.exports = Promise.all(initializationPromises).spread(server => {
+module.exports = Promise.all(initPromises).spread(server => {
     logger.info('Initialization successful');
+
+    process.on('SIGINT', function() {
+        server.close(function() {
+            db.sequelize.close(function(err) {
+                process.exit(err ? 1 : 0);
+            });
+        });
+    });
+
     return {
         server: server,
         db: db,

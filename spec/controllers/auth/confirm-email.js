@@ -39,7 +39,7 @@ describe('POST /confirm_email', function() {
                 user = _.toPlainObject(result[0][0]);
                 return db[k.Model.VerificationToken].create({
                     user_id: user[k.Attr.Id],
-                    token: Auth.generateVerificationToken(),
+                    token: Auth.generateRandomHash(),
                     expiration_date: moment().add(1, 'days').toDate()
                 });
             }).then(function(_token) {
@@ -91,7 +91,7 @@ describe('POST /confirm_email', function() {
         it(`should respond with 404 Not Found if the verification token is expired`, function(done) {
             db[k.Model.VerificationToken].create({
                 user_id: user.id,
-                token: Auth.generateVerificationToken(),
+                token: Auth.generateRandomHash(),
                 expiration_date: moment().subtract(1, 'days').toDate()
             }).then(function(_token) {
                 request(server).post(`/confirm_email`).send({token: _token.get(k.Attr.Token)}).expect(404, done);

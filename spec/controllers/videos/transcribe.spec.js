@@ -24,7 +24,7 @@ const Promise = require('bluebird');
 describe('POST /videos/transcribe', function() {
     let authorization = null;
     let server = null;
-    let file = path.resolve(__dirname, '..', '..', 'fixtures', 'empty.txt');
+    let file = path.resolve(__dirname, '..', '..', 'fixtures', 'video.mov');
     let url = '/videos/transcribe';
     let db = null;
 

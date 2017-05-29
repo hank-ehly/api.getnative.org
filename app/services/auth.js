@@ -110,7 +110,7 @@ module.exports.verifyPassword = (pwhash, password) => {
     }
 };
 
-module.exports.generateVerificationToken = () => {
+module.exports.generateRandomHash = () => {
     return crypto.randomBytes(16).toString('hex');
 };
 

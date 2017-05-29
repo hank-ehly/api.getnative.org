@@ -61,7 +61,8 @@
         "TokenExpired": "TokenExpired",
         "UserMissing": "UserMissing",
         "UserAlreadyVerified": "UserAlreadyVerified",
-        "ResourceNotFound": "ResourceNotFound"
+        "ResourceNotFound": "ResourceNotFound",
+        "FileMissing": "FileMissing"
     },
     "ENVIRONMENT": "kENVIRONMENT",
     "Env": {

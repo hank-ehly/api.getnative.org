@@ -12,7 +12,8 @@
         "TokenExpired": "Token has expired",
         "UserMissing": "No user with this email exists",
         "UserAlreadyVerified": "This user is already verified",
-        "ResourceNotFound": "No resource was found for the given conditions"
+        "ResourceNotFound": "No resource was found for the given conditions",
+        "FileMissing": "Required file missing from request"
     },
     "lang": "en",
     "password-updated": {

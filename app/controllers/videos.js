@@ -6,9 +6,11 @@
  */
 
 const k               = require('../../config/keys.json');
+const logger          = require('../../config/logger');
 const services        = require('../services');
 const ResponseWrapper = services['ResponseWrapper'];
 const GetNativeError  = services['GetNativeError'];
+const Speech          = services['Speech'];
 const db              = require('../models');
 const ModelHelper     = services['Model'](db);
 const Subcategory     = db[k.Model.Subcategory];
@@ -18,7 +20,10 @@ const Speaker         = db[k.Model.Speaker];
 const Video           = db[k.Model.Video];
 const Like            = db[k.Model.Like];
 
+const exec            = require('child_process').exec;
 const Promise         = require('bluebird');
+const formidable      = require('formidable');
+const _               = require('lodash');
 
 module.exports.index = (req, res, next) => {
     const conditions = {};
@@ -170,5 +175,21 @@ module.exports.dequeue = (req, res, next) => {
 };
 
 module.exports.transcribe = (req, res, next) => {
-    res.sendStatus(204);
+    const form = new formidable.IncomingForm();
+
+    form.parse(req, async (err, fields, files) => {
+        if (err) {
+            return next(err);
+        }
+        else if (_.size(files) === 0) {
+            res.status(400);
+            return next(new GetNativeError(k.Error.FileMissing));
+        }
+
+        const transcript = await Speech.transcribeVideo(files.file.path);
+
+        res.status(200).send({
+            transcription: transcript
+        });
+    });
 };
