@@ -186,7 +186,7 @@ module.exports.transcribe = (req, res, next) => {
             return next(new GetNativeError(k.Error.FileMissing));
         }
 
-        const transcript = await Speech.transcribeVideo(files.file.path);
+        const transcript = await Speech.transcribeVideo(files.file.path, req.query[k.Attr.LanguageCode] || 'en-US');
 
         res.status(200).send({
             transcription: transcript

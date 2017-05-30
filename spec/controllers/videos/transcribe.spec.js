@@ -66,6 +66,10 @@ describe('POST /videos/transcribe', function() {
                 request(server).post(url).set('authorization', authorization).attach('file', file).expect(404, done);
             });
         });
+
+        it('should respond with 400 Bad Request if the language_code query parameter is not an accepted google speech language code', function() {
+            request(server).post(url).set('authorization', authorization).attach('file', file).query({language_code: 'xx-XX'}).expect(400, done);
+        });
     });
 
     describe('success', function() {
@@ -82,6 +86,10 @@ describe('POST /videos/transcribe', function() {
         });
 
         it('should respond with 200 OK for a successful request', function(done) {
+            request(server).post(url).set('authorization', authorization).attach('file', file).query({language_code: 'en-US'}).expect(200, done);
+        });
+
+        it('should respond with 200 OK for a successful request without a language_code query parameter', function(done) {
             request(server).post(url).set('authorization', authorization).attach('file', file).expect(200, done);
         });
 

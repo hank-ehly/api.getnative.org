@@ -38,5 +38,11 @@ describe('Speech', function() {
             const asyncTest = Speech.transcribeVideo.bind(null, file, _.stubObject());
             assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
         });
+
+        it('should throw a ReferenceError if no languageCode is provided', async function() {
+            const file = path.resolve(__dirname, '..', 'fixtures', 'video.mov');
+            const asyncTest = Speech.transcribeVideo.bind(null, file);
+            assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
+        });
     });
 });

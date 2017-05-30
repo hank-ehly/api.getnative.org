@@ -13,6 +13,7 @@ const regex = {
 };
 
 const validLangCodes = ['en', 'ja'];
+const GoogleCloudSpeechLanguageCodes = require('./google-cloud-speech-language-codes.json');
 
 module.exports = {
     users: {
@@ -210,6 +211,9 @@ module.exports = {
         transcribe: {
             headers: {
                 authorization: Joi.string().required()
+            },
+            query: {
+                language_code: Joi.string().lowercase().valid(GoogleCloudSpeechLanguageCodes)
             }
         },
         unlike: {

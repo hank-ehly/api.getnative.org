@@ -27,7 +27,7 @@ if (![k.Env.Test, k.Env.CircleCI].includes(config.get(k.ENVIRONMENT))) {
     };
 }
 
-module.exports.transcribeVideo = async function(filepath, languageCode = 'en-US') {
+module.exports.transcribeVideo = async function(filepath, languageCode) {
     if (!filepath) {
         throw new ReferenceError('argument filepath is missing');
     }
