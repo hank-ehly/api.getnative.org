@@ -6,6 +6,7 @@
  */
 
 const SpecUtil = require('../../spec-util');
+const k = require('../../../config/keys.json');
 
 const Promise  = require('bluebird');
 const request  = require('supertest');
@@ -38,20 +39,6 @@ describe('GET /categories', function() {
         return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
     });
 
-    describe('response.headers', function() {
-        it('should respond with an X-GN-Auth-Token header', function() {
-            return request(server).get('/categories').set('authorization', authorization).then(function(response) {
-                assert(response.header['x-gn-auth-token'].length > 0);
-            });
-        });
-
-        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
-            return request(server).get('/categories').set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isParsableTimestamp(+response.header['x-gn-auth-expire']));
-            });
-        });
-    });
-
     describe('response.failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).get('/categories').expect(401, done);
@@ -59,6 +46,18 @@ describe('GET /categories', function() {
     });
 
     describe('response.success', function() {
+        it('should respond with an X-GN-Auth-Token header', function() {
+            return request(server).get('/categories').set('authorization', authorization).then(function(response) {
+                assert(response.header[k.Header.AuthToken].length > 0);
+            });
+        });
+
+        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
+            return request(server).get('/categories').set('authorization', authorization).then(function(response) {
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
+            });
+        });
+
         it('should return a 200 response for a valid request', function(done) {
             request(server).get('/categories').set('authorization', authorization).expect(200, done);
         });

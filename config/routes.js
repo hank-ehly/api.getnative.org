@@ -36,6 +36,7 @@ router.post( '/users/password',              ValidateParams(pv.users.updatePassw
 router.post( '/users/email',                 ValidateParams(pv.users.updateEmail),             Authenticate, ctrl.users.updateEmail);
 router.get(  '/users/me',                    ValidateParams(pv.users.me),                      Authenticate, ctrl.users.show);
 router.get(  '/categories',                  ValidateParams(pv.categories.index),              Authenticate, ctrl.categories.index);
+router.get(  '/categories/:id',              ValidateParams(pv.categories.show),               Authenticate, AdminOnly, ctrl.categories.show);
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                           ctrl.auth.confirmEmail);
 router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                ctrl.auth.resendConfirmationEmail);
 router.post( '/study',                       ValidateParams(pv.study.createStudySession),      Authenticate, ctrl.study.createStudySession);
@@ -51,9 +52,6 @@ router.post( '/videos/:id/dequeue',          ValidateParams(pv.videos.dequeue), 
 router.post( '/videos/:id/like',             ValidateParams(pv.videos.like),                   Authenticate, ctrl.videos.like);
 router.post( '/videos/:id/queue',            ValidateParams(pv.videos.queue),                  Authenticate, ctrl.videos.queue);
 router.post( '/videos/:id/unlike',           ValidateParams(pv.videos.unlike),                 Authenticate, ctrl.videos.unlike);
-
-// Authenticate provides the req.user. For endpoints requiring admin permissions, check the user role
-// * You may wish to join the user role table to the user table when creating req.user
-router.post( '/videos/transcribe', ValidateParams(pv.videos.transcribe), Authenticate, AdminOnly, ctrl.videos.transcribe);
+router.post( '/videos/transcribe',           ValidateParams(pv.videos.transcribe),             Authenticate, AdminOnly, ctrl.videos.transcribe);
 
 module.exports = router;

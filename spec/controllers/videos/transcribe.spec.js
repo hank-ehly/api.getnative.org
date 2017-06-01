@@ -19,7 +19,6 @@ const beforeEach = mocha.beforeEach;
 const describe = mocha.describe;
 const it = mocha.it;
 const path = require('path');
-const Promise = require('bluebird');
 
 describe('POST /videos/transcribe', function() {
     let authorization = null;
@@ -30,7 +29,7 @@ describe('POST /videos/transcribe', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(async function() {
@@ -43,7 +42,7 @@ describe('POST /videos/transcribe', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     afterEach(function(done) {

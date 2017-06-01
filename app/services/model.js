@@ -6,7 +6,7 @@
  */
 
 module.exports = (db) => {
-    const Utility = require('../services').Utility;
+    const Utility = require('./utility');
     const module  = {};
 
     module.getDateAttrForTableColumnTZOffset = function(table, column, tzOffset) {

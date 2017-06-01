@@ -74,7 +74,8 @@
     "Header": {
         "AccessControlAllowOrigin": "allow-origin",
         "AuthExpire": "x-gn-auth-expire",
-        "AuthToken": "x-gn-auth-token"
+        "AuthToken": "x-gn-auth-token",
+        "Authorization": "authorization"
     },
     "Model": {
         "AuthAdapterType": "AuthAdapterType",

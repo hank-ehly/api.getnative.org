@@ -73,6 +73,14 @@ module.exports = {
             headers: {
                 authorization: Joi.string().required()
             }
+        },
+        show: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1).required()
+            }
         }
     },
     sessions: {
