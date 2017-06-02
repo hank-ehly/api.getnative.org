@@ -37,6 +37,7 @@ router.post( '/users/email',                 ValidateParams(pv.users.updateEmail
 router.get(  '/users/me',                    ValidateParams(pv.users.me),                      Authenticate, ctrl.users.show);
 router.get(  '/categories',                  ValidateParams(pv.categories.index),              Authenticate, ctrl.categories.index);
 router.get(  '/categories/:id',              ValidateParams(pv.categories.show),               Authenticate, AdminOnly, ctrl.categories.show);
+router.patch('/categories/:id',              ValidateParams(pv.categories.update),             Authenticate, AdminOnly, ctrl.categories.update);
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                           ctrl.auth.confirmEmail);
 router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                ctrl.auth.resendConfirmationEmail);
 router.post( '/study',                       ValidateParams(pv.study.createStudySession),      Authenticate, ctrl.study.createStudySession);

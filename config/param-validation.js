@@ -81,6 +81,17 @@ module.exports = {
             params: {
                 id: Joi.number().integer().min(1).required()
             }
+        },
+        update: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1).required()
+            },
+            body: {
+                email: Joi.string().min(1)
+            }
         }
     },
     sessions: {
