@@ -62,7 +62,8 @@
         "UserMissing": "UserMissing",
         "UserAlreadyVerified": "UserAlreadyVerified",
         "ResourceNotFound": "ResourceNotFound",
-        "FileMissing": "FileMissing"
+        "FileMissing": "FileMissing",
+        "CreateResourceFailure": "CreateResourceFailure"
     },
     "ENVIRONMENT": "kENVIRONMENT",
     "Env": {

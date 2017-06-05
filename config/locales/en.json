@@ -13,7 +13,8 @@
         "UserMissing": "No user with this email exists",
         "UserAlreadyVerified": "This user is already verified",
         "ResourceNotFound": "No resource was found for the given conditions",
-        "FileMissing": "Required file missing from request"
+        "FileMissing": "Required file missing from request",
+        "CreateResourceFailure": "Failed to create resource"
     },
     "lang": "en",
     "password-updated": {

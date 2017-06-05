@@ -69,6 +69,14 @@ module.exports = {
         }
     },
     categories: {
+        create: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            body: {
+                name: Joi.string().min(1).max(50).required()
+            }
+        },
         index: {
             headers: {
                 authorization: Joi.string().required()

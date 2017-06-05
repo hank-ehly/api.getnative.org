@@ -124,3 +124,24 @@ module.exports.update = async (req, res, next) => {
 
     return res.sendStatus(204);
 };
+
+module.exports.create = async (req, res, next) => {
+    let category;
+
+    try {
+        category = await Category.create({
+            name: req.body[k.Attr.Name]
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!category) {
+        res.status(500);
+        return next(new GetNativeError(k.Error.CreateResourceFailure));
+    }
+
+    res.set(k.Header.Location, `/categories/${category.get(k.Attr.Id)}`);
+
+    return res.sendStatus(201);
+};
