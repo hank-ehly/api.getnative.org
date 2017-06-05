@@ -65,6 +65,20 @@ describe('PATCH /categories/:id', function() {
             request(server).patch('/categories/' + 99999).set(k.Header.Authorization, authorization).send({name: newCategoryName})
                 .expect(404, done);
         });
+
+        it('should respond with 400 Bad Request if the name body parameter is not a string', function(done) {
+            request(server).patch(`/categories/${categoryId}`)
+                .send({name: _.stubObject()})
+                .set(k.Header.Authorization, authorization)
+                .expect(400, done);
+        });
+
+        it('should respond with 400 Bad Request if the name body parameter length is 0', function(done) {
+            request(server).patch(`/categories/${categoryId}`)
+                .send({name: _.stubString()})
+                .set(k.Header.Authorization, authorization)
+                .expect(400, done);
+        });
     });
 
     describe('success', function() {

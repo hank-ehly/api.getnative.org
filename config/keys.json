@@ -75,7 +75,8 @@
         "AccessControlAllowOrigin": "allow-origin",
         "AuthExpire": "x-gn-auth-expire",
         "AuthToken": "x-gn-auth-token",
-        "Authorization": "authorization"
+        "Authorization": "authorization",
+        "Location": "location"
     },
     "Model": {
         "AuthAdapterType": "AuthAdapterType",

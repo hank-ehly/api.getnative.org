@@ -39,6 +39,7 @@ router.get(  '/categories',                  ValidateParams(pv.categories.index)
 router.get(  '/categories/:id',              ValidateParams(pv.categories.show),               Authenticate, AdminOnly, ctrl.categories.show);
 router.patch('/categories/:id',              ValidateParams(pv.categories.update),             Authenticate, AdminOnly, ctrl.categories.update);
 router.get(  '/categories/:category_id/subcategories/:subcategory_id', ValidateParams(pv.subcategories.show), Authenticate, AdminOnly, ctrl.subcategories.show);
+router.patch('/categories/:category_id/subcategories/:subcategory_id', ValidateParams(pv.subcategories.update), Authenticate, AdminOnly, ctrl.subcategories.update);
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                           ctrl.auth.confirmEmail);
 router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                ctrl.auth.resendConfirmationEmail);
 router.post( '/study',                       ValidateParams(pv.study.createStudySession),      Authenticate, ctrl.study.createStudySession);

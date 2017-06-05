@@ -90,7 +90,7 @@ module.exports = {
                 id: Joi.number().integer().min(1).required()
             },
             body: {
-                email: Joi.string().min(1)
+                name: Joi.string().min(1)
             }
         }
     },
@@ -182,6 +182,19 @@ module.exports = {
             params: {
                 category_id: Joi.number().integer().min(1).required(),
                 subcategory_id: Joi.number().integer().min(1).required()
+            }
+        },
+        update: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                category_id: Joi.number().integer().min(1).required(),
+                subcategory_id: Joi.number().integer().min(1).required()
+            },
+            body: {
+                category_id: Joi.number().integer().min(1),
+                name: Joi.string().min(1)
             }
         }
     },
