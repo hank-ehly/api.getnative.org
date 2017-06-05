@@ -174,6 +174,15 @@ module.exports = {
             query: {
                 count: Joi.number().integer().min(1)
             }
+        },
+        show: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                category_id: Joi.number().integer().min(1).required(),
+                subcategory_id: Joi.number().integer().min(1).required()
+            }
         }
     },
     videos: {
