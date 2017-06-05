@@ -13,7 +13,7 @@ const k = require('../../config/keys.json');
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': config.get(k.Header.AccessControlAllowOrigin),
-    'Access-Control-Expose-Headers': 'X-GN-Auth-Token, X-GN-Auth-Expire',
+    'Access-Control-Expose-Headers': 'X-GN-Auth-Token, X-GN-Auth-Expire, Location',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'PATCH'
 };
