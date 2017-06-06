@@ -66,7 +66,7 @@ describe('POST /videos/transcribe', function() {
             });
         });
 
-        it('should respond with 400 Bad Request if the language_code query parameter is not an accepted google speech language code', function() {
+        it('should respond with 400 Bad Request if the language_code query parameter is not an accepted google speech language code', function(done) {
             request(server).post(url).set('authorization', authorization).attach('file', file).query({language_code: 'xx-XX'}).expect(400, done);
         });
     });
