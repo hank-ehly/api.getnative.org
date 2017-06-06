@@ -20,8 +20,16 @@ module.exports = {
 
         for (let subcategory of subcategories) {
             for (let language of languages) {
+
+                let name;
+                if (language.get(k.Attr.Code) === 'ja') {
+                    name = chance.string({pool: 'あいうえおかきくけこさしすせそまみむめもらりるれろぱぴぷぺぽばびぶべぼはひふへほ'});
+                } else {
+                    name = chance.string({pool: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'});
+                }
+
                 subcategoriesLocalized.push({
-                    name: `${language.get(k.Attr.Code)}_${subcategory.get(k.Attr.Id)}_${chance.word()}`,
+                    name: name,
                     language_id: language.get(k.Attr.Id),
                     subcategory_id: subcategory.get(k.Attr.Id)
                 });

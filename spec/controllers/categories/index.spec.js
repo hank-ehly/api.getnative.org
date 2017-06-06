@@ -8,26 +8,28 @@
 const SpecUtil = require('../../spec-util');
 const k = require('../../../config/keys.json');
 
-const Promise  = require('bluebird');
-const request  = require('supertest');
-const assert   = require('assert');
-const _        = require('lodash');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
+const request = require('supertest');
+const assert = require('assert');
+const _ = require('lodash');
 
 describe('GET /categories', function() {
-    let server        = null;
+    let server = null;
     let authorization = null;
+    let db = null;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(_) {
-            server        = _.server;
-            authorization = _.authorization;
-        });
+        const results = await SpecUtil.login();
+        server = results.server;
+        authorization = results.authorization;
+        db = results.db;
     });
 
     afterEach(function(done) {
@@ -36,12 +38,16 @@ describe('GET /categories', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('response.failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).get('/categories').expect(401, done);
+        });
+
+        it('should respond with 400 Bad Request if the provided lang query parameter is not a valid language code', function(done) {
+            request(server).get('/categories').query({lang: 'foobar'}).set('authorization', authorization).expect(400, done);
         });
     });
 
@@ -136,6 +142,26 @@ describe('GET /categories', function() {
                 let recordsLength = _.first(response.body.records).subcategories.records.length;
                 assert(count === recordsLength);
             });
+        });
+
+        it('should localize category names based on the lang query parameter if it is present', async function() {
+            const response = await request(server).get('/categories').query({lang: 'ja'}).set('authorization', authorization);
+            assert(/[^a-z]/i.test(_.first(response.body.records)[k.Attr.Name]));
+        });
+
+        it('should localize category names based on the user.interface_language if no lang parameter is present', async function() {
+            const response = await request(server).get('/categories').set('authorization', authorization);
+            assert(/[a-z]/i.test(_.first(response.body.records)[k.Attr.Name]));
+        });
+
+        it('should localize subcategory names based on the lang query parameter if it is present', async function() {
+            const response = await request(server).get('/categories').query({lang: 'ja'}).set('authorization', authorization);
+            assert(/[^a-z]/i.test(_.first(_.first(response.body.records).subcategories.records)[k.Attr.Name]));
+        });
+
+        it('should localize subcategory names based on the user.interface_language if no lang parameter is present', async function() {
+            const response = await request(server).get('/categories').set('authorization', authorization);
+            assert(/[a-z]/i.test(_.first(_.first(response.body.records).subcategories.records)[k.Attr.Name]));
         });
     });
 });

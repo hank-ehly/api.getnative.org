@@ -8,7 +8,10 @@
 const k = require('../../config/keys.json');
 const db = require('../models');
 const Category = db[k.Model.Category];
+const CategoryLocalized = db[k.Model.CategoryLocalized];
 const Subcategory = db[k.Model.Subcategory];
+const SubcategoryLocalized = db[k.Model.SubcategoryLocalized];
+const Language = db[k.Model.Language];
 const services = require('../services');
 const ResponseWrapper = services['ResponseWrapper'];
 const GetNativeError = services['GetNativeError'];
@@ -17,16 +20,52 @@ const ModelHelper = services['Model'](db);
 const _ = require('lodash');
 
 module.exports.index = async (req, res, next) => {
-    let categories;
+    let categories, interfaceLanguageId;
+
+    if (req.query.lang) {
+        let requestedLanguage;
+        try {
+            requestedLanguage = await Language.find({
+                where: {
+                    code: req.query.lang
+                },
+                attributes: [k.Attr.Id]
+            });
+        } catch (e) {
+            return next(e);
+        }
+
+        if (requestedLanguage) {
+            interfaceLanguageId = requestedLanguage.get(k.Attr.Id)
+        } else {
+            interfaceLanguageId = req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Id)
+        }
+    } else {
+        interfaceLanguageId = req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Id)
+    }
 
     try {
         categories = await Category.findAll({
-            attributes: [k.Attr.Id, k.Attr.Name],
+            attributes: [k.Attr.Id],
             include: [
+                {
+                    model: CategoryLocalized,
+                    as: 'categories_localized',
+                    attributes: [k.Attr.Name],
+                    where: {language_id: interfaceLanguageId}
+                },
                 {
                     model: Subcategory,
                     as: 'subcategories',
-                    attributes: [k.Attr.Id, k.Attr.Name]
+                    attributes: [k.Attr.Id],
+                    include: [
+                        {
+                            model: SubcategoryLocalized,
+                            as: 'subcategories_localized',
+                            attributes: [k.Attr.Name],
+                            where: {language_id: interfaceLanguageId}
+                        }
+                    ]
                 }
             ]
         });
@@ -39,7 +78,17 @@ module.exports.index = async (req, res, next) => {
     });
 
     categories = _.map(categories, category => {
+        category.name = _.first(category.categories_localized)[k.Attr.Name];
+        delete category.categories_localized;
+
+        category.subcategories = _.map(category.subcategories, subcategory => {
+            subcategory.name = _.first(subcategory.subcategories_localized)[k.Attr.Name];
+            delete subcategory.subcategories_localized;
+            return subcategory;
+        });
+
         category.subcategories = _.zipObject(['records', 'count'], [category.subcategories, category.subcategories.length]);
+
         return category;
     });
 

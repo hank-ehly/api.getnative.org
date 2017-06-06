@@ -16,7 +16,7 @@ module.exports = {
     up: function(queryInterface, Sequelize) {
         const count = [k.Env.Test, k.Env.CircleCI].includes(process.env.NODE_ENV) ? 5 : 500;
 
-        return Language.findAll({attributes: [k.Attr.Id]}).then(languages => {
+        return Language.findAll({attributes: [k.Attr.Id, k.Attr.Code]}).then(languages => {
             const records = _.times(count, () => {
                 return {
                     browser_notifications_enabled: chance.bool(),
@@ -32,8 +32,11 @@ module.exports = {
             });
 
             /* For testing purposes */
+            const englishLanguageId = _.find(languages, {code: 'en'}).get(k.Attr.Id);
             _.nth(records, 0)[k.Attr.Email] = 'test@email.com';
             _.nth(records, 1)[k.Attr.Email] = 'admin@email.com';
+            _.nth(records, 0).interface_language_id = englishLanguageId;
+            _.nth(records, 1).interface_language_id = englishLanguageId;
 
             return queryInterface.bulkInsert('users', records);
         });

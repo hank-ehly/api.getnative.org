@@ -80,6 +80,9 @@ module.exports = {
         index: {
             headers: {
                 authorization: Joi.string().required()
+            },
+            query: {
+                lang: Joi.string().lowercase().valid(validLangCodes)
             }
         },
         show: {

@@ -64,12 +64,12 @@ module.exports = function(sequelize, DataTypes) {
             include: [
                 {
                     model: sequelize.models[k.Model.Language],
-                    attributes: [k.Attr.Name, k.Attr.Code],
+                    attributes: [k.Attr.Id, k.Attr.Name, k.Attr.Code],
                     as: k.Attr.DefaultStudyLanguage
                 },
                 {
                     model: sequelize.models[k.Model.Language],
-                    attributes: [k.Attr.Name, k.Attr.Code],
+                    attributes: [k.Attr.Id, k.Attr.Name, k.Attr.Code],
                     as: k.Attr.InterfaceLanguage
                 }
             ]
