@@ -20,8 +20,8 @@ module.exports = {
         for (let writingQuestion of writingQuestions) {
             for (let language of languages) {
                 writingQuestionsLocalized.push({
-                    text: chance.sentence().replace(/\.$/, '?'),
-                    example_answer: chance.paragraph(),
+                    text: [language.get(k.Attr.Code), '_', chance.sentence().replace(/\.$/, '?')].join(''),
+                    example_answer: [language.get(k.Attr.Code), '_', chance.paragraph()].join(''),
                     language_id: language.get(k.Attr.Id),
                     writing_question_id: writingQuestion.get(k.Attr.Id)
                 });

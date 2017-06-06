@@ -6,35 +6,36 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const k        = require('../../../config/keys.json');
+const k = require('../../../config/keys.json');
 
-const Promise  = require('bluebird');
-const request  = require('supertest');
-const assert   = require('assert');
-const _        = require('lodash');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
+const request = require('supertest');
+const assert = require('assert');
+const _ = require('lodash');
 
+// todo: Move to writing questions controller
 describe('GET /subcategories/:id/writing_questions', function() {
     let authorization = null;
-    let server        = null;
-    let db            = null;
-    let id            = null;
+    let server = null;
+    let db = null;
+    let id = null;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(result) {
-            authorization = result.authorization;
-            server        = result.server;
-            db            = result.db;
 
-            return db.Subcategory.findOne({attributes: [k.Attr.Id]});
-        }).then(function(subcategory) {
-            id = subcategory.get(k.Attr.Id);
-        });
+        const results = await SpecUtil.login();
+        authorization = results.authorization;
+        server = results.server;
+        db = results.db;
+
+        const subcategory = await db[k.Model.Subcategory].find({attributes: [k.Attr.Id]});
+        id = subcategory.get(k.Attr.Id);
     });
 
     afterEach(function(done) {
@@ -43,7 +44,7 @@ describe('GET /subcategories/:id/writing_questions', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('response.headers', function() {
@@ -76,6 +77,10 @@ describe('GET /subcategories/:id/writing_questions', function() {
 
         it(`should respond with 400 Bad Request if the 'count' value is 0`, function(done) {
             request(server).get(`/subcategories/${id}/writing_questions?count=0`).set('authorization', authorization).expect(400, done);
+        });
+
+        it('should respond with 404 Not Found if no WritingQuestion records can be found for the subcategory id', function(done) {
+            request(server).get(`/subcategories/99999999/writing_questions`).set('authorization', authorization).expect(404, done);
         });
     });
 
@@ -120,12 +125,6 @@ describe('GET /subcategories/:id/writing_questions', function() {
             });
         });
 
-        it(`should return 0 writing questions if a subcategory with the specified :id does not exist`, function() {
-            return request(server).get(`/subcategories/999999999/writing_questions`).set('authorization', authorization).then(function(response) {
-                assert.equal(response.body.count, 0);
-            });
-        });
-
         it(`should return all the writing_questions records for the specified subcategory`, function() {
             return request(server).get(`/subcategories/${id}/writing_questions`).set('authorization', authorization).then(function(response) {
                 const q = `SELECT COUNT(id) AS count FROM writing_questions WHERE subcategory_id = ?`;
@@ -139,8 +138,28 @@ describe('GET /subcategories/:id/writing_questions', function() {
 
         it(`should return as many or fewer writing answer records as specified by the 'count' query parameter`, function() {
             return request(server).get(`/subcategories/${id}/writing_questions?count=2`).set('authorization', authorization).then(function(response) {
-                assert(_(response.body.count).lte(2));
+                assert(_.lte(response.body.count, 2));
             });
+        });
+
+        it('should localize the records[N].example_answer based on the lang query param if present', async function() {
+            const response = await request(server).get(`/subcategories/${id}/writing_questions`).query({lang: 'ja'}).set('authorization', authorization);
+            assert(_.startsWith(_.first(response.body.records)[k.Attr.ExampleAnswer], 'ja'));
+        });
+
+        it('should localize the records[N].example_answer based on the user interface language if the lang query param is not present', async function() {
+            const response = await request(server).get(`/subcategories/${id}/writing_questions`).set('authorization', authorization);
+            assert(_.startsWith(_.first(response.body.records)[k.Attr.ExampleAnswer], 'en'));
+        });
+
+        it('should localize the records[N].text based on the lang query param if present', async function() {
+            const response = await request(server).get(`/subcategories/${id}/writing_questions`).query({lang: 'ja'}).set('authorization', authorization);
+            assert(_.startsWith(_.first(response.body.records)[k.Attr.Text], 'ja'));
+        });
+
+        it('should localize the records[N].text based on the user interface language if the lang query param is not present', async function() {
+            const response = await request(server).get(`/subcategories/${id}/writing_questions`).set('authorization', authorization);
+            assert(_.startsWith(_.first(response.body.records)[k.Attr.Text], 'en'));
         });
     });
 });

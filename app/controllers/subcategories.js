@@ -8,6 +8,8 @@
 const k = require('../../config/keys.json');
 const db = require('../models');
 const WritingQuestion = db[k.Model.WritingQuestion];
+const WritingQuestionLocalized = db[k.Model.WritingQuestionLocalized];
+const Language = db[k.Model.Language];
 const services = require('../services');
 const ModelHelper = services['Model'](db);
 const GetNativeError = services['GetNativeError'];
@@ -15,13 +17,52 @@ const Subcategory = db[k.Model.Subcategory];
 
 const _ = require('lodash');
 
-module.exports.writingQuestions = (req, res, next) => {
+module.exports.writingQuestions = async (req, res, next) => {
+    let questions, interfaceLanguageId;
+
+    // todo: DRY
+    if (req.query.lang) {
+        let requestedLanguage;
+        try {
+            const predicate = {
+                where: {
+                    code: req.query.lang
+                },
+                attributes: [k.Attr.Id]
+            };
+
+            requestedLanguage = await Language.find(predicate);
+        } catch (e) {
+            return next(e);
+        }
+
+        if (requestedLanguage) {
+            interfaceLanguageId = requestedLanguage.get(k.Attr.Id)
+        } else {
+            interfaceLanguageId = req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Id)
+        }
+    } else {
+        interfaceLanguageId = req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Id)
+    }
+
     const conditions = {
         where: {
             subcategory_id: req.params[k.Attr.Id]
         },
         attributes: [
-            k.Attr.Id, k.Attr.Text, k.Attr.ExampleAnswer
+            k.Attr.Id
+        ],
+        include: [
+            {
+                model: WritingQuestionLocalized,
+                as: 'writing_questions_localized',
+                attributes: [
+                    k.Attr.Text, k.Attr.ExampleAnswer
+                ],
+                where: {
+                    language_id: interfaceLanguageId
+                }
+            }
         ]
     };
 
@@ -29,11 +70,29 @@ module.exports.writingQuestions = (req, res, next) => {
         conditions.limit = +req.query.count;
     }
 
-    return WritingQuestion.findAll(conditions).then(questions => {
-        const json = _.invokeMap(questions, 'get', {plain: true});
-        const body = _.zipObject(['records', 'count'], [json, json.length]);
-        res.status(200).send(body);
-    }).catch(next);
+    try {
+        questions = await WritingQuestion.findAll(conditions);
+    } catch (e) {
+        return next(e);
+    }
+
+    if (_.size(questions) === 0) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    questions = _.invokeMap(questions, 'get', {plain: true});
+
+    questions = _.map(questions, question => {
+        question[k.Attr.Text] = _.first(question.writing_questions_localized)[k.Attr.Text];
+        question[k.Attr.ExampleAnswer] = _.first(question.writing_questions_localized)[k.Attr.ExampleAnswer];
+        delete question.writing_questions_localized;
+        return question;
+    });
+
+    questions = _.zipObject(['records', 'count'], [questions, questions.length]);
+
+    return res.status(200).send(questions);
 };
 
 module.exports.show = async (req, res, next) => {
