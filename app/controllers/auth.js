@@ -26,7 +26,7 @@ module.exports.confirmEmail = async (req, res, next) => {
     let verificationToken, user, jsonWebToken;
 
     try {
-        verificationToken = await VerificationToken.findOne({
+        verificationToken = await VerificationToken.find({
             where: {
                 token: req.body.token
             }
@@ -52,7 +52,7 @@ module.exports.confirmEmail = async (req, res, next) => {
             }
         });
 
-        user = await User.findOne({
+        user = await User.find({
             where: {
                 id: verificationToken[k.Attr.UserId]
             },
@@ -110,7 +110,7 @@ module.exports.resendConfirmationEmail = async (req, res, next) => {
     }
 
     try {
-        user = await User.findOne({
+        user = await User.find({
             where: {email: req.body[k.Attr.Email]}
         });
     } catch (e) {

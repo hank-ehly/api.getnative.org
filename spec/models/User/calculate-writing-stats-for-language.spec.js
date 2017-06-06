@@ -46,9 +46,10 @@ describe('User.calculateWritingStatsForLanguage', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Language.findOne().then(function(language) {
+        return Language.find().then(function(language) {
             return User.create({
                 default_study_language_id: language.get(k.Attr.Id),
+                interface_language_id: language.get(k.Attr.Id),
                 email: chance.email()
             });
         }).then(function(_user) {
@@ -78,8 +79,8 @@ describe('User.calculateWritingStatsForLanguage', function() {
         const studyTime             = 300;
         const numberOfStudySessions = 2;
 
-        const englishVideoPromise  = Video.findOne({attributes: [k.Attr.Id], where: {language_id: englishLanguageId}});
-        const japaneseVideoPromise = Video.findOne({attributes: [k.Attr.Id], where: {language_id: japaneseLanguageId}});
+        const englishVideoPromise  = Video.find({attributes: [k.Attr.Id], where: {language_id: englishLanguageId}});
+        const japaneseVideoPromise = Video.find({attributes: [k.Attr.Id], where: {language_id: japaneseLanguageId}});
 
         return Promise.join(englishVideoPromise, japaneseVideoPromise, function(englishVideo, japaneseVideo) {
             const englishRecords = _.times(numberOfStudySessions, function(i) {
@@ -105,7 +106,7 @@ describe('User.calculateWritingStatsForLanguage', function() {
             const createEnglishStudySessions  = StudySession.bulkCreate(englishRecords);
             const createJapaneseStudySessions = StudySession.bulkCreate(japaneseRecords);
 
-            return Promise.all([createEnglishStudySessions, createJapaneseStudySessions, WritingQuestion.findOne()]);
+            return Promise.all([createEnglishStudySessions, createJapaneseStudySessions, WritingQuestion.find()]);
         }).spread(function(englishStudySessions, japaneseStudySessions, writingQuestion) {
             const writingQuestionId = writingQuestion.get(k.Attr.Id);
             const word = _.constant('word ');
@@ -152,12 +153,12 @@ describe('User.calculateWritingStatsForLanguage', function() {
     });
 
     it(`should return the WPM of the writing answer in the specified language with the most words for the user`, function() {
-        const englishVideoPromise = Video.findOne({
+        const englishVideoPromise = Video.find({
             attributes: [k.Attr.Id],
             where: {language_id: englishLanguageId}
         });
 
-        const japaneseVideoPromise = Video.findOne({
+        const japaneseVideoPromise = Video.find({
             attributes: [k.Attr.Id],
             where: {language_id: japaneseLanguageId}
         });
@@ -186,7 +187,7 @@ describe('User.calculateWritingStatsForLanguage', function() {
             const createEnglishStudySessions  = StudySession.bulkCreate(englishRecords);
             const createJapaneseStudySessions = StudySession.bulkCreate(japaneseRecords);
 
-            return Promise.all([createEnglishStudySessions, createJapaneseStudySessions, WritingQuestion.findOne()]);
+            return Promise.all([createEnglishStudySessions, createJapaneseStudySessions, WritingQuestion.find()]);
         }).spread(function(englishStudySessions, japaneseStudySessions, writingQuestion) {
             const writingQuestionId = writingQuestion.get(k.Attr.Id);
             const word = _.constant('word ');

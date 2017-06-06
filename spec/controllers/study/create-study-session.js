@@ -50,7 +50,7 @@ describe('POST /study', function() {
             }).then(function() {
                 return Promise.join(db[k.Model.CuedVideo].destroy(byUserId), db[k.Model.StudySession].destroy(byUserId));
             }).then(function() {
-                return db[k.Model.Video].findOne();
+                return db[k.Model.Video].find();
             }).then(function(video) {
                 reqBody = {
                     video_id: video.get(k.Attr.Id),
@@ -161,7 +161,7 @@ describe('POST /study', function() {
 
         it(`should instantiate a new study_sessions record`, function() {
             return request(server).post('/study').set('authorization', authorization).send(reqBody).then(function() {
-                return db[k.Model.StudySession].findOne({
+                return db[k.Model.StudySession].find({
                     where: {
                         user_id: user.id,
                         video_id: reqBody.video_id
@@ -174,7 +174,7 @@ describe('POST /study', function() {
 
         it(`should instantiate a new queued video record linking the current user and video being studied`, function() {
             return request(server).post('/study').set('authorization', authorization).send(reqBody).then(function() {
-                return db[k.Model.CuedVideo].findOne({
+                return db[k.Model.CuedVideo].find({
                     where: {
                         user_id: user.id,
                         video_id: reqBody.video_id

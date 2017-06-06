@@ -79,7 +79,7 @@ describe('POST /videos/:id/queue', function() {
 
         it(`should add the appropriate video to the appropriate queue`, function() {
             return request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/queue`).set('authorization', authorization).then(function(response) {
-                return db[k.Model.CuedVideo].findOne({
+                return db[k.Model.CuedVideo].find({
                     where: {
                         user_id: user[k.Attr.Id],
                         video_id: sampleVideo[k.Attr.Id]

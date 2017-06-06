@@ -150,6 +150,7 @@ describe('User.findOrCreateFromPassportProfile', function() {
             user = await User.create({
                 email: _.first(profile.emails).value,
                 default_study_language_id: _.sample(languages).get(k.Attr.Id),
+                interface_language_id: _.sample(languages).get(k.Attr.Id),
                 name: profile.displayName
             });
 
@@ -196,6 +197,7 @@ describe('User.findOrCreateFromPassportProfile', function() {
             const user = await User.create({
                 email: _.first(profile.emails).value,
                 default_study_language_id: _.sample(languages).get(k.Attr.Id),
+                interface_language_id: _.sample(languages).get(k.Attr.Id),
                 name: profile.displayName
             });
 

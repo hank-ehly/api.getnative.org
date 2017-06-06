@@ -5,21 +5,23 @@
  * Created by henryehly on 2017/04/19.
  */
 
-const SpecUtil      = require('../../spec-util');
-const config        = require('../../../config/application').config;
-const Auth          = require('../../../app/services').Auth;
-const k             = require('../../../config/keys.json');
+const SpecUtil = require('../../spec-util');
+const config = require('../../../config/application').config;
+const Auth = require('../../../app/services').Auth;
+const k = require('../../../config/keys.json');
 
-const request       = require('supertest');
-const assert        = require('assert');
-const chance        = require('chance').Chance();
-const i18n          = require('i18n');
-const _             = require('lodash');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
+const request = require('supertest');
+const assert = require('assert');
+const chance = require('chance').Chance();
+const i18n = require('i18n');
+const _ = require('lodash');
 
 describe('POST /resend_confirmation_email', function() {
     let server = null;
-    let user   = null;
-    let db     = null;
+    let user = null;
+    let db = null;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -30,11 +32,12 @@ describe('POST /resend_confirmation_email', function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.startServer().then(function(initGroup) {
             server = initGroup.server;
-            db     = initGroup.db;
+            db = initGroup.db;
 
-            return db[k.Model.Language].findOne().then(function(language) {
+            return db[k.Model.Language].find().then(function(language) {
                 return db[k.Model.User].create({
                     default_study_language_id: language.get(k.Attr.Id),
+                    interface_language_id: language.get(k.Attr.Id),
                     email: 'test-' + chance.email()
                 });
             }).then(function(_user) {
@@ -77,10 +80,11 @@ describe('POST /resend_confirmation_email', function() {
         });
 
         it(`should respond with 422 Unprocessable Entity if the user linked to the specified email address is already confirmed`, function(done) {
-            db[k.Model.Language].findOne().then(function(language) {
+            db[k.Model.Language].find().then(function(language) {
                 return db[k.Model.User].create({
                     email_verified: true,
                     default_study_language_id: language.get(k.Attr.Id),
+                    interface_language_id: language.get(k.Attr.Id),
                     email: 'test-' + chance.email()
                 });
             }).then(function(_user) {
@@ -89,10 +93,11 @@ describe('POST /resend_confirmation_email', function() {
         });
 
         it(`should contains the appropriate error response object if the user is already confirmed`, function() {
-            return db[k.Model.Language].findOne().then(function(language) {
+            return db[k.Model.Language].find().then(function(language) {
                 return db[k.Model.User].create({
                     email_verified: true,
                     default_study_language_id: language.get(k.Attr.Id),
+                    interface_language_id: language.get(k.Attr.Id),
                     email: 'test-' + chance.email()
                 });
             }).then(function(_user) {
@@ -111,7 +116,7 @@ describe('POST /resend_confirmation_email', function() {
 
         it(`should create a new VerificationToken linked to the user`, function() {
             return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
-                return db[k.Model.VerificationToken].findOne({where: {user_id: user.id}});
+                return db[k.Model.VerificationToken].find({where: {user_id: user.id}});
             }).then(function(token) {
                 assert(token);
             });
@@ -119,7 +124,7 @@ describe('POST /resend_confirmation_email', function() {
 
         it(`should send an email to the specified address if it is linked to an user`, function() {
             return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
-                return db[k.Model.VerificationToken].findOne({
+                return db[k.Model.VerificationToken].find({
                     where: {
                         user_id: user.id
                     }
@@ -136,7 +141,7 @@ describe('POST /resend_confirmation_email', function() {
         // .query({ action: 'edit', city: 'London' })
         it(`should send an email containing the confirmation URL (with the correct VerificationToken token)`, function() {
             return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
-                return db[k.Model.VerificationToken].findOne({
+                return db[k.Model.VerificationToken].find({
                     where: {
                         user_id: user.id
                     }

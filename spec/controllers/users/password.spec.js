@@ -128,7 +128,7 @@ describe('POST /users/password', function() {
     describe('other', function() {
         it(`should change the users' password`, function() {
             return request(server).post('/users/password').set('authorization', authorization).send(validBody).then(function() {
-                return db[k.Model.Credential].findOne({
+                return db[k.Model.Credential].find({
                     where: {
                         user_id: user[k.Attr.Id]
                     }

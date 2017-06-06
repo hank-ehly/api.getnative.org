@@ -172,7 +172,7 @@ describe('POST /confirm_email', function() {
 
         it(`should change the user email_verified value to true if verification succeeds`, function() {
             return request(server).post(`/confirm_email`).send({token: token}).then(function() {
-                return db[k.Model.User].findById(user[k.Attr.Id]);
+                return db[k.Model.User].findByPrimary(user[k.Attr.Id]);
             }).then(function(a) {
                 assert.equal(a.get(k.Attr.EmailVerified), true);
             });
@@ -180,7 +180,7 @@ describe('POST /confirm_email', function() {
 
         it(`should change the user email_notifications_enabled value to true if verification succeeds`, function() {
             return request(server).post(`/confirm_email`).send({token: token}).then(function() {
-                return db[k.Model.User].findById(user[k.Attr.Id]);
+                return db[k.Model.User].findByPrimary(user[k.Attr.Id]);
             }).then(function(a) {
                 assert.equal(a.get(k.Attr.EmailNotificationsEnabled), true);
             });

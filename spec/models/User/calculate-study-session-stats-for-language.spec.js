@@ -45,9 +45,10 @@ describe('User.calculateStudySessionStatsForLanguage', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Language.findOne().then(function(language) {
+        return Language.find().then(function(language) {
             return User.create({
                 default_study_language_id: language.get(k.Attr.Id),
+                interface_language_id: language.get(k.Attr.Id),
                 email: chance.email()
             });
         }).then(function(_user) {
@@ -78,12 +79,12 @@ describe('User.calculateStudySessionStatsForLanguage', function() {
         const japaneseStudyTime     = 420;
         const numberOfStudySessions = 5;
 
-        const englishVideoPromise = Video.findOne({
+        const englishVideoPromise = Video.find({
             attributes: [k.Attr.Id],
             where: {language_id: englishLanguageId}
         });
 
-        const japaneseVideoPromise = Video.findOne({
+        const japaneseVideoPromise = Video.find({
             attributes: [k.Attr.Id],
             where: {language_id: japaneseLanguageId}
         });
@@ -127,12 +128,12 @@ describe('User.calculateStudySessionStatsForLanguage', function() {
         const numberOfEnglishStudySessions  = 5;
         const numberOfJapaneseStudySessions = 7;
 
-        const englishVideoPromise = Video.findOne({
+        const englishVideoPromise = Video.find({
             attributes: [k.Attr.Id],
             where: {language_id: englishLanguageId}
         });
 
-        const japaneseVideoPromise = Video.findOne({
+        const japaneseVideoPromise = Video.find({
             attributes: [k.Attr.Id],
             where: {language_id: japaneseLanguageId}
         });

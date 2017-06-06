@@ -32,13 +32,13 @@ describe('POST /study/writing_answers', function() {
             server        = result.server;
             db            = result.db;
 
-            return db.Video.findOne().then(function(video) {
+            return db.Video.find().then(function(video) {
                 return Promise.all([
                     db.StudySession.create({
                         user_id: result.response.body[k.Attr.Id],
                         video_id: video.get(k.Attr.Id),
                         study_time: 300
-                    }), db.WritingQuestion.findOne({plain: true})
+                    }), db.WritingQuestion.find({plain: true})
                 ]);
             }).spread(function(studySession, writingQuestion) {
                 const hash = crypto.randomBytes(8).toString('hex');

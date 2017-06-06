@@ -88,7 +88,7 @@ describe('Video', function() {
 
     describe('relatedToVideo', function() {
         it(`should return videos who belong to the same category as the specified video`, function() {
-            return Video.findOne().then(function(video) {
+            return Video.find().then(function(video) {
                 const expectedSubcategoryIds = db.sequelize.query(`
                     SELECT id FROM subcategories WHERE category_id IN (
                         SELECT category_id FROM subcategories WHERE id = (

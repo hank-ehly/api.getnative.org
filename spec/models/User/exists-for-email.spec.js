@@ -36,6 +36,7 @@ describe('User.existsForEmail', function() {
         return Language.find().then(function(language) {
             return User.create({
                 default_study_language_id: language.get(k.Attr.Id),
+                interface_language_id: language.get(k.Attr.Id),
                 email: chance.email()
             });
         }).then(function(_user) {

@@ -31,7 +31,7 @@ describe('POST /study/complete', function() {
             server        = result.server;
             db            = result.db;
 
-            return db.Video.findOne().then(function(video) {
+            return db.Video.find().then(function(video) {
                 return db.StudySession.create({
                     video_id: video.get(k.Attr.Id),
                     user_id: result.response.body.id,
@@ -94,7 +94,7 @@ describe('POST /study/complete', function() {
 
         it(`should mark the study session record as complete`, function() {
             return request(server).post('/study/complete').set('authorization', authorization).send(reqBody).then(function() {
-                return db.StudySession.findById(reqBody.id, {attributes: [k.Attr.IsCompleted]});
+                return db.StudySession.findByPrimary(reqBody.id, {attributes: [k.Attr.IsCompleted]});
             }).then(function(studySession) {
                 assert(studySession.is_completed);
             });

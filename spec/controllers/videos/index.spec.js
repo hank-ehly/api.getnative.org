@@ -289,7 +289,7 @@ describe('GET /videos', function() {
         });
 
         it(`should return videos if a category_id is specified`, function() {
-            return db[k.Model.Category].findOne({attributes: ['id']}).then(function(category) {
+            return db[k.Model.Category].find({attributes: ['id']}).then(function(category) {
                 return request(server).get(`/videos?category_id=${category.get('id')}`).set('authorization', authorization).then(function(response) {
                     assert(_.isNumber(response.body.count));
                     assert(_.isArray(response.body.records));
@@ -301,7 +301,7 @@ describe('GET /videos', function() {
             return request(server).get(`/videos`).set('authorization', authorization).then(function(response) {
                 let firstVideoId = _.first(response.body.records)[k.Attr.Id];
                 return db.sequelize.query(`SELECT language_id FROM videos WHERE videos.id = ${firstVideoId} LIMIT 1`).spread(function(result) {
-                    return db[k.Model.Language].findOne({where: {code: 'en'}, attributes: [k.Attr.Id]}).then(function(language) {
+                    return db[k.Model.Language].find({where: {code: 'en'}, attributes: [k.Attr.Id]}).then(function(language) {
                         assert.equal(_.first(result).language_id, language.get(k.Attr.Id));
                     });
                 });
@@ -309,7 +309,7 @@ describe('GET /videos', function() {
         });
 
         it(`should return videos of a specific subcategory`, function() {
-            return db[k.Model.Subcategory].findOne({attributes: ['id']}).then(function(subcategory) {
+            return db[k.Model.Subcategory].find({attributes: ['id']}).then(function(subcategory) {
                 const id = subcategory.get('id');
                 return request(server).get(`/videos?subcategory_id=${id}`).set('authorization', authorization).then(function(response) {
                     _.forEach(response.body.records, function(record) {
@@ -322,7 +322,7 @@ describe('GET /videos', function() {
         it(`should return videos of a specific category`, function() {
             let categoryId = null;
 
-            db[k.Model.Category].findOne({attributes: ['id']}).then(function(category) {
+            db[k.Model.Category].find({attributes: ['id']}).then(function(category) {
                 categoryId = category.get('id');
                 return db[k.Model.Subcategory].findAll({
                     attributes: ['id'],

@@ -48,7 +48,7 @@ describe('clean (VerificationToken)', function() {
     it(`should not delete VerificationToken records whose expiration date is in the future`, function(done) {
         this.timeout(SpecUtil.defaultTimeout);
 
-        User.findOne().then(function(user) {
+        User.find().then(function(user) {
             let userId = user.get(k.Attr.Id);
 
             return VerificationToken.create({

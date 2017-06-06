@@ -36,9 +36,10 @@ describe('VerificationToken', function() {
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
 
-        return Language.findOne().then(function(language) {
+        return Language.find().then(function(language) {
             return User.create({
                 default_study_language_id: language.get(k.Attr.Id),
+                interface_language_id: language.get(k.Attr.Id),
                 email: chance.email()
             });
         }).then(function(_user) {

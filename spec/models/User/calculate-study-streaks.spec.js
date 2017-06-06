@@ -45,9 +45,10 @@ describe('calculateStudyStreaks', function() {
 
     beforeEach(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Language.findOne().then(function(language) {
+        return Language.find().then(function(language) {
             return User.create({
                 default_study_language_id: language.get(k.Attr.Id),
+                interface_language_id: language.get(k.Attr.Id),
                 email: chance.email()
             });
         }).then(function(_user) {
@@ -74,8 +75,8 @@ describe('calculateStudyStreaks', function() {
     });
 
     it(`should return the longest number of consecutive days the user has studied for the specified language`, function() {
-        const japaneseVideoPromise = Video.findOne({attributes: [k.Attr.Id], where: {language_id: japaneseLanguageId}});
-        const englishVideoPromise  = Video.findOne({attributes: [k.Attr.Id], where: {language_id: englishLanguageId}});
+        const japaneseVideoPromise = Video.find({attributes: [k.Attr.Id], where: {language_id: japaneseLanguageId}});
+        const englishVideoPromise  = Video.find({attributes: [k.Attr.Id], where: {language_id: englishLanguageId}});
 
         return Promise.join(japaneseVideoPromise, englishVideoPromise, function(japaneseVideo, englishVideo) {
             const englishStudyDates = [
@@ -132,8 +133,8 @@ describe('calculateStudyStreaks', function() {
     });
 
     it(`should return the number of days the user has consecutively studied for the specified language`, function() {
-        const japaneseVideoPromise = Video.findOne({attributes: [k.Attr.Id], where: {language_id: japaneseLanguageId}});
-        const englishVideoPromise  = Video.findOne({attributes: [k.Attr.Id], where: {language_id: englishLanguageId}});
+        const japaneseVideoPromise = Video.find({attributes: [k.Attr.Id], where: {language_id: japaneseLanguageId}});
+        const englishVideoPromise  = Video.find({attributes: [k.Attr.Id], where: {language_id: englishLanguageId}});
 
         return Promise.join(japaneseVideoPromise, englishVideoPromise, function(japaneseVideo, englishVideo) {
             const oneDay             = 1000 * 60 * 60 * 24;

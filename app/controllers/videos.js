@@ -28,7 +28,7 @@ const _               = require('lodash');
 module.exports.index = (req, res, next) => {
     const conditions = {};
 
-    return Language.findOne({where: {code: req.body.lang || 'en'}}).then(language => {
+    return Language.find({where: {code: req.body.lang || 'en'}}).then(language => {
         conditions.language_id = language.get(k.Attr.Id);
 
         return Subcategory.findIdsForCategoryIdOrSubcategoryId(req.query);
@@ -83,7 +83,7 @@ module.exports.show = (req, res, next) => {
         limit: 3
     }).catch(next);
 
-    const video = Video.scope('includeTranscripts').findById(+req.params[k.Attr.Id], {
+    const video = Video.scope('includeTranscripts').findByPrimary(+req.params[k.Attr.Id], {
         include: [
             {model: Speaker, attributes: [k.Attr.Id, k.Attr.Description, k.Attr.Name, k.Attr.PictureUrl], as: 'speaker'},
             {model: Subcategory, attributes: [k.Attr.Id, k.Attr.Name], as: 'subcategory'},
@@ -115,7 +115,7 @@ module.exports.show = (req, res, next) => {
 };
 
 module.exports.like = (req, res, next) => {
-    return Video.findById(parseInt(req.params[k.Attr.Id])).then(video => {
+    return Video.findByPrimary(parseInt(req.params[k.Attr.Id])).then(video => {
         if (!video) {
             throw new GetNativeError(k.Error.ResourceNotFound);
         }
@@ -133,7 +133,7 @@ module.exports.like = (req, res, next) => {
 };
 
 module.exports.unlike = (req, res, next) => {
-    return Video.findById(parseInt(req.params[k.Attr.Id])).then(video => {
+    return Video.findByPrimary(parseInt(req.params[k.Attr.Id])).then(video => {
         if (!video) {
             throw new GetNativeError(k.Error.ResourceNotFound);
         }

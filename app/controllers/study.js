@@ -99,7 +99,7 @@ module.exports.complete = (req, res, next) => {
 };
 
 module.exports.createWritingAnswer = (req, res, next) => {
-    return StudySession.findById(req.body[k.Attr.StudySessionId], {attributes: [k.Attr.StudyTime]}).then(studySession => {
+    return StudySession.findByPrimary(req.body[k.Attr.StudySessionId], {attributes: [k.Attr.StudyTime]}).then(studySession => {
         const minutes = ((studySession.get(k.Attr.StudyTime) / 4) / 60);
         const wordCount = req.body[k.Attr.WordCount];
         const wordsPerMinute = _.round(wordCount / minutes);
