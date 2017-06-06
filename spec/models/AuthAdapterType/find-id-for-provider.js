@@ -11,8 +11,8 @@ const AuthAdapterType = db[k.Model.AuthAdapterType];
 const SpecUtil        = require('../../spec-util.js');
 
 const assert          = require('assert');
-const mocha           = require('mocha');
-const it              = mocha.it;
+const m = require('mocha');
+const [describe, it, before] = [m.describe, m.it, m.before];
 const _               = require('lodash');
 
 describe('AuthAdapterType.findIdForProvider', function() {

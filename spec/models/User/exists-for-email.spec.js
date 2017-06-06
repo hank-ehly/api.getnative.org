@@ -15,13 +15,8 @@ const Language = db[k.Model.Language];
 const Promise = require('bluebird');
 const chance = require('chance').Chance();
 const assert = require('assert');
-const mocha = require('mocha');
-const describe = mocha.describe;
-const before = mocha.before;
-const beforeEach = mocha.beforeEach;
-const after = mocha.after;
-const afterEach = mocha.afterEach;
-const it = mocha.it;
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 
 describe('User.existsForEmail', function() {
     let user = null;

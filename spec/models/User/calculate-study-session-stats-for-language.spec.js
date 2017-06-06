@@ -19,13 +19,8 @@ const Promise         = require('bluebird');
 const assert          = require('assert');
 const chance          = require('chance').Chance();
 const _               = require('lodash');
-const mocha           = require('mocha');
-const beforeEach      = mocha.beforeEach;
-const afterEach       = mocha.afterEach;
-const describe        = mocha.describe;
-const before          = mocha.before;
-const after           = mocha.after;
-const it              = mocha.it;
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 
 describe('User.calculateStudySessionStatsForLanguage', function() {
     let user = null;

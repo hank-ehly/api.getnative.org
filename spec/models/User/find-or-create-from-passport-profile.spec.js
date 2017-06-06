@@ -16,11 +16,8 @@ const AuthAdapterType = db[k.Model.AuthAdapterType];
 const chance     = require('chance').Chance();
 const assert     = require('assert');
 const mocha      = require('mocha');
-const beforeEach = mocha.beforeEach;
-const afterEach  = mocha.afterEach;
-const describe   = mocha.describe;
-const before     = mocha.before;
-const it         = mocha.it;
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const _          = require('lodash');
 
 describe('User.findOrCreateFromPassportProfile', function() {

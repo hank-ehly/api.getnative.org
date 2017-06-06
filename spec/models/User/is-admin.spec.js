@@ -10,10 +10,8 @@ const k = require('../../../config/keys.json');
 const User = require('../../../app/models')[k.Model.User];
 
 const assert = require('assert');
-const mocha = require('mocha');
-const it = mocha.it;
-const describe = mocha.describe;
-const before = mocha.before;
+const m = require('mocha');
+const [describe, it, before] = [m.describe, m.it, m.before];
 
 describe('User.prototype.isAdmin', function() {
     let adminUser, normalUser;
