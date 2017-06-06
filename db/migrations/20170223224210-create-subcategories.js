@@ -1,5 +1,5 @@
 /**
- * 20170224002409-create-collocation
+ * 20170223224209-create-subcategories
  * get-native.com
  *
  * Created by henryehly on 2017/02/24.
@@ -7,26 +7,22 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('collocations', {
+        return queryInterface.createTable('subcategories', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            description: {
-                type: Sequelize.STRING,
+            category_id: {
+                type: Sequelize.INTEGER,
                 allowNull: false,
-                defaultValue: ''
-            },
-            text: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            ipa_spelling: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                defaultValue: ''
+                references: {
+                    model: 'categories',
+                    key: 'id'
+                },
+                onUpdate: 'restrict',
+                onDelete: 'restrict'
             },
             created_at: {
                 allowNull: false,
@@ -44,6 +40,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('collocations');
+        return queryInterface.dropTable('subcategories');
     }
 };

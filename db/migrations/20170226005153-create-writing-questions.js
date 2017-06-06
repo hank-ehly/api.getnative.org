@@ -1,33 +1,28 @@
 /**
- * 20170224002134-create-study-session
+ * 20170226005153-create-writing-questions
  * get-native.com
  *
- * Created by henryehly on 2017/02/24.
+ * Created by henryehly on 2017/02/26.
  */
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('study_sessions', {
+        return queryInterface.createTable('writing_questions', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            study_time: {
-                allowNull: false,
-                type: Sequelize.INTEGER,
-                defaultValue: 0
-            },
             created_at: {
                 allowNull: false,
                 type: Sequelize.DATE,
                 defaultValue: Sequelize.fn('NOW')
             },
-            is_completed: {
-                type: Sequelize.BOOLEAN,
+            updated_at: {
                 allowNull: false,
-                defaultValue: 0
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.fn('NOW')
             }
         }, {
             engine: 'InnoDB',
@@ -35,6 +30,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('study_sessions');
+        return queryInterface.dropTable('writing_questions');
     }
 };

@@ -1,5 +1,5 @@
 /**
- * 20170223084443-create-category
+ * 20170224002451-create-transcripts
  * get-native.com
  *
  * Created by henryehly on 2017/02/24.
@@ -7,17 +7,16 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('categories', {
+        return queryInterface.createTable('transcripts', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            name: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                defaultValue: ''
+            text: {
+                type: Sequelize.TEXT,
+                allowNull: false
             },
             created_at: {
                 allowNull: false,
@@ -35,6 +34,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('categories');
+        return queryInterface.dropTable('transcripts');
     }
 };

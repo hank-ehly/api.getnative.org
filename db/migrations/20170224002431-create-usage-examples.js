@@ -1,5 +1,5 @@
 /**
- * 20170224002431-create-usage-example
+ * 20170224002431-create-usage-examples
  * get-native.com
  *
  * Created by henryehly on 2017/02/24.

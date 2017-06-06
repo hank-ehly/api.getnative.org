@@ -1,5 +1,5 @@
 /**
- * 20170224013819-create-follower
+ * 20170223224211-create-subcategories-localized
  * get-native.com
  *
  * Created by henryehly on 2017/02/24.
@@ -7,28 +7,40 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('followers', {
-            speaker_id: {
+        return queryInterface.createTable('subcategories_localized', {
+            subcategory_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'speakers'
+                    model: 'subcategories',
+                    key: 'id'
                 },
                 onUpdate: 'restrict',
                 onDelete: 'restrict',
                 primaryKey: true
             },
-            user_id: {
+            language_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'users'
+                    model: 'languages',
+                    key: 'id'
                 },
                 onUpdate: 'restrict',
                 onDelete: 'restrict',
                 primaryKey: true
+            },
+            name: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                defaultValue: ''
             },
             created_at: {
+                allowNull: false,
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.fn('NOW')
+            },
+            updated_at: {
                 allowNull: false,
                 type: Sequelize.DATE,
                 defaultValue: Sequelize.fn('NOW')
@@ -38,8 +50,7 @@ module.exports = {
             charset: 'utf8mb4'
         });
     },
-
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('followers');
+        return queryInterface.dropTable('subcategories_localized');
     }
 };

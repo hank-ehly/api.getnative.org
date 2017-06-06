@@ -1,5 +1,5 @@
 /**
- * 20170223235508-create-language
+ * 20170224002134-create-study-sessions
  * get-native.com
  *
  * Created by henryehly on 2017/02/24.
@@ -7,32 +7,27 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('languages', {
+        return queryInterface.createTable('study_sessions', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            name: {
-                type: Sequelize.STRING,
+            study_time: {
                 allowNull: false,
-                defaultValue: ''
-            },
-            code: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                defaultValue: ''
+                type: Sequelize.INTEGER,
+                defaultValue: 0
             },
             created_at: {
                 allowNull: false,
                 type: Sequelize.DATE,
                 defaultValue: Sequelize.fn('NOW')
             },
-            updated_at: {
+            is_completed: {
+                type: Sequelize.BOOLEAN,
                 allowNull: false,
-                type: Sequelize.DATE,
-                defaultValue: Sequelize.fn('NOW')
+                defaultValue: 0
             }
         }, {
             engine: 'InnoDB',
@@ -40,6 +35,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('languages');
+        return queryInterface.dropTable('study_sessions');
     }
 };

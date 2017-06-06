@@ -1,36 +1,46 @@
 /**
- * 20170224015734-create-like
+ * 20170223084445-create-categories-localized
  * get-native.com
  *
- * Created by henryehly on 2017/02/24.
+ * Created by henryehly on 2017/06/06.
  */
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('likes', {
-            video_id: {
+        return queryInterface.createTable('categories_localized', {
+            category_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'videos',
+                    model: 'categories',
                     key: 'id'
                 },
                 onUpdate: 'restrict',
                 onDelete: 'restrict',
                 primaryKey: true
             },
-            user_id: {
+            language_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'users',
+                    model: 'languages',
                     key: 'id'
                 },
                 onUpdate: 'restrict',
                 onDelete: 'restrict',
                 primaryKey: true
+            },
+            name: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                defaultValue: ''
             },
             created_at: {
+                allowNull: false,
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.fn('NOW')
+            },
+            updated_at: {
                 allowNull: false,
                 type: Sequelize.DATE,
                 defaultValue: Sequelize.fn('NOW')
@@ -40,8 +50,7 @@ module.exports = {
             charset: 'utf8mb4'
         });
     },
-
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('likes');
+        return queryInterface.dropTable('categories_localized');
     }
 };

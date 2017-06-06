@@ -1,5 +1,5 @@
 /**
- * 20170223224209-create-subcategory
+ * 20170213225508-create-languages
  * get-native.com
  *
  * Created by henryehly on 2017/02/24.
@@ -7,24 +7,19 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('subcategories', {
+        return queryInterface.createTable('languages', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            category_id: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
-                references: {
-                    model: 'categories',
-                    key: 'id'
-                },
-                onUpdate: 'restrict',
-                onDelete: 'restrict'
-            },
             name: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                defaultValue: ''
+            },
+            code: {
                 type: Sequelize.STRING,
                 allowNull: false,
                 defaultValue: ''
@@ -45,6 +40,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('subcategories');
+        return queryInterface.dropTable('languages');
     }
 };

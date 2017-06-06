@@ -23,7 +23,6 @@ module.exports = {
 
                 for (let j = 0; j < numCollocations; j++) {
                     collocations.push({
-                        description: chance.sentence(),
                         text: chance.sentence({
                             words: chance.integer({
                                 min: 1,

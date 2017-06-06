@@ -9,20 +9,6 @@ const k = require('../../config/keys.json');
 
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define(k.Model.Speaker, {
-        description: {
-            type: DataTypes.TEXT,
-            allowNull: false
-        },
-        location: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: ''
-        },
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: ''
-        },
         picture_url: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -37,10 +23,10 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'speakers',
         underscored: true,
         associations: function(models) {
-            models[k.Model.Speaker].belongsTo(models[k.Model.Gender]);
-            models[k.Model.Speaker].belongsTo(models[k.Model.Language]);
+            models[k.Model.Speaker].belongsTo(models[k.Model.Gender], {as: 'gender'});
             models[k.Model.Speaker].hasMany(models[k.Model.Follower], {as: 'followers'});
             models[k.Model.Speaker].hasMany(models[k.Model.Video], {as: 'videos'});
+            models[k.Model.Speaker].hasMany(models[k.Model.SpeakerLocalized], {as: 'speakers_localized'});
         }
     });
 };

@@ -1,5 +1,5 @@
 /**
- * 20170224014712-create-cued-video
+ * 20170224013819-create-followers
  * get-native.com
  *
  * Created by henryehly on 2017/02/24.
@@ -7,13 +7,12 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('cued_videos', {
-            video_id: {
+        return queryInterface.createTable('followers', {
+            speaker_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'videos',
-                    key: 'id'
+                    model: 'speakers'
                 },
                 onUpdate: 'restrict',
                 onDelete: 'restrict',
@@ -23,8 +22,7 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'users',
-                    key: 'id'
+                    model: 'users'
                 },
                 onUpdate: 'restrict',
                 onDelete: 'restrict',
@@ -42,6 +40,6 @@ module.exports = {
     },
 
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('cued_videos');
+        return queryInterface.dropTable('followers');
     }
 };

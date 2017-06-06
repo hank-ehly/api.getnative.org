@@ -1,18 +1,34 @@
 /**
- * 20170224002531-create-speaker
+ * 20170606021525-create-speakers-localized
  * get-native.com
  *
- * Created by henryehly on 2017/02/24.
+ * Created by henryehly on 2017/06/06.
  */
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('speakers', {
-            id: {
+        return queryInterface.createTable('speakers_localized', {
+            language_id: {
+                type: Sequelize.INTEGER,
                 allowNull: false,
-                autoIncrement: true,
-                primaryKey: true,
-                type: Sequelize.INTEGER
+                references: {
+                    model: 'languages',
+                    key: 'id'
+                },
+                onUpdate: 'restrict',
+                onDelete: 'restrict',
+                primaryKey: true
+            },
+            speaker_id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'speakers',
+                    key: 'id'
+                },
+                onUpdate: 'restrict',
+                onDelete: 'restrict',
+                primaryKey: true
             },
             description: {
                 type: Sequelize.TEXT,
@@ -27,16 +43,6 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
                 defaultValue: ''
-            },
-            picture_url: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                defaultValue: ''
-            },
-            is_silhouette_picture: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: 1
             },
             created_at: {
                 allowNull: false,
@@ -54,6 +60,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('speakers');
+        return queryInterface.dropTable('speakers_localized');
     }
 };

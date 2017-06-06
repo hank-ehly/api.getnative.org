@@ -1,5 +1,5 @@
 /**
- * 20170224002054-create-notification
+ * 20170224000651-create-videos
  * get-native.com
  *
  * Created by henryehly on 2017/02/24.
@@ -7,19 +7,34 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('notifications', {
+        return queryInterface.createTable('videos', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            title: {
+            length: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                defaultValue: 0
+            },
+            picture_url: {
                 type: Sequelize.STRING,
                 allowNull: false,
                 defaultValue: ''
             },
-            content: {
+            loop_count: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                defaultValue: 0
+            },
+            video_url: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                defaultValue: ''
+            },
+            description: {
                 type: Sequelize.TEXT,
                 allowNull: false
             },
@@ -39,6 +54,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('notifications');
+        return queryInterface.dropTable('videos');
     }
 };

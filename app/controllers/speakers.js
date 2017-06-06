@@ -12,7 +12,7 @@ module.exports.show = async (req, res, next) => {
     let speaker;
 
     try {
-        speaker = await Speaker.findById(req.params[k.Attr.Id], {
+        speaker = await Speaker.findByPrimary(req.params[k.Attr.Id], {
             attributes: {
                 exclude: [
                     k.Attr.CreatedAt, k.Attr.UpdatedAt
