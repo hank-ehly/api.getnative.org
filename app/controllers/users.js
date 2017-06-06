@@ -205,12 +205,14 @@ module.exports.update = async (req, res, next) => {
     }
 
     try {
-        [updateCount] = await req.user.update(changes);
+        [updateCount] = await User.update(changes, {
+            where: {
+                id: req.user[k.Attr.Id]
+            }
+        })
     } catch (e) {
         return next(e);
     }
-
-    console.log('******* YOU ARE HERE');
 
     if (updateCount === 0) {
         res.status(404);

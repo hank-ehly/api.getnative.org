@@ -6,22 +6,25 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const request  = require('supertest');
-const assert   = require('assert');
-const k        = require('../../../config/keys.json');
+const k = require('../../../config/keys.json');
 
-const _        = require('lodash');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
+const request = require('supertest');
+const assert = require('assert');
+const _ = require('lodash');
 
 describe('PATCH /users', function() {
     let authorization = null;
-    let server        = null;
-    let user          = null;
-    let db            = null;
+    let server = null;
+    let user = null;
+    let db = null;
 
     const context = {
         email_notifications_enabled: false,
         browser_notifications_enabled: false,
-        default_study_language_id: 0
+        default_study_language_id: 0,
+        interface_language_id: 0
     };
 
     const validBody = {email_notifications_enabled: true};
@@ -31,29 +34,30 @@ describe('PATCH /users', function() {
         return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(results) {
-            authorization = results.authorization;
-            server        = results.server;
-            user          = results.response.body;
-            db            = results.db;
 
-            return db[k.Model.Language].findOne({
-                where: {
-                    code: 'en'
-                },
-                attributes: [
-                    k.Attr.Id
-                ]
-            }).then(function(language) {
-                context.default_study_language_id = language.get(k.Attr.Id);
-                return db[k.Model.User].update(context, {
-                    where: {
-                        id: user[k.Attr.Id]
-                    }
-                });
-            });
+        const results = await SpecUtil.login();
+        authorization = results.authorization;
+        server = results.server;
+        user = results.response.body;
+        db = results.db;
+
+        const language = await db[k.Model.Language].find({
+            where: {
+                code: 'en'
+            },
+            attributes: [
+                k.Attr.Id
+            ]
+        });
+
+        context.default_study_language_id = context.interface_language_id = language.get(k.Attr.Id);
+
+        return db[k.Model.User].update(context, {
+            where: {
+                id: user[k.Attr.Id]
+            }
         });
     });
 
@@ -66,7 +70,7 @@ describe('PATCH /users', function() {
         return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
-    describe('response.headers', function() {
+    describe('response.success', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return request(server).patch('/users').set('authorization', authorization).send(validBody).then(function(response) {
                 assert(_.gt(response.header[k.Header.AuthToken].length, 0));
@@ -78,9 +82,7 @@ describe('PATCH /users', function() {
                 assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
         });
-    });
 
-    describe('response.success', function() {
         it(`should return 204 No Content for a valid request`, function(done) {
             request(server).patch('/users').set('authorization', authorization).send(validBody).expect(204, done);
         });
@@ -95,6 +97,54 @@ describe('PATCH /users', function() {
                 // behind the scenes: this.body = res.body !== undefined ? res.body : {};
                 assert.equal(_.size(response.body), 0);
             });
+        });
+
+        it(`should change the users' email_notifications_enabled setting`, function() {
+            return request(server).patch('/users').set('authorization', authorization).send({email_notifications_enabled: true})
+                .then(function() {
+                    return db[k.Model.User].findByPrimary(user.id).then(function(_user) {
+                        assert.equal(_user.email_notifications_enabled, true);
+                    });
+                });
+        });
+
+        it(`should change the users' browser_notifications_enabled setting`, function() {
+            return request(server).patch('/users').send({browser_notifications_enabled: true}).set('authorization', authorization)
+                .then(function() {
+                    return db[k.Model.User].findByPrimary(user.id).then(function(_user) {
+                        assert.equal(_user.browser_notifications_enabled, true);
+                    });
+                });
+        });
+
+        it(`should change the users' default_study_language_id setting`, function() {
+            return db[k.Model.Language].find({
+                where: {code: 'ja'},
+                attributes: [k.Attr.Id]
+            }).then(function(language) {
+                return request(server).patch('/users').set('authorization', authorization).send({
+                    default_study_language_code: 'ja'
+                }).then(function() {
+                    return db[k.Model.User].findByPrimary(user[k.Attr.Id]).then(function(_user) {
+                        assert.equal(_user.default_study_language_id, language[k.Attr.Id]);
+                    });
+                });
+            });
+        });
+
+        it(`should change the users interface_language_id`, async function() {
+            const language = await db[k.Model.Language].find({
+                where: {code: 'ja'},
+                attributes: [k.Attr.Id]
+            });
+
+            await request(server).patch('/users').set('authorization', authorization).send({
+                interface_language_code: 'ja'
+            });
+
+            const __user = await db[k.Model.User].findByPrimary(user[k.Attr.Id]);
+
+            assert.equal(__user.get('interface_language_id'), language.get(k.Attr.Id));
         });
     });
 
@@ -120,35 +170,11 @@ describe('PATCH /users', function() {
                 default_study_language_code: 'not_a_lang_code'
             }).expect(400, done);
         });
-    });
 
-    describe('other', function() {
-        it(`should change the users' email_notifications_enabled setting`, function() {
-            return request(server).patch('/users').set('authorization', authorization).send({email_notifications_enabled: true}).then(function() {
-                return db[k.Model.User].findById(user.id).then(function(_user) {
-                    assert.equal(_user.email_notifications_enabled, true);
-                });
-            });
-        });
-
-        it(`should change the users' browser_notifications_enabled setting`, function() {
-            return request(server).patch('/users').send({browser_notifications_enabled: true}).set('authorization', authorization).then(function() {
-                return db[k.Model.User].findById(user.id).then(function(_user) {
-                    assert.equal(_user.browser_notifications_enabled, true);
-                });
-            });
-        });
-
-        it(`should change the users' default_study_language_id setting`, function() {
-            return db[k.Model.Language].findOne({where: {code: 'ja'}, attributes: [k.Attr.Id]}).then(function(language) {
-                return request(server).patch('/users').set('authorization', authorization).send({
-                    default_study_language_code: 'ja'
-                }).then(function() {
-                    return db[k.Model.User].findById(user[k.Attr.Id]).then(function(_user) {
-                        assert.equal(_user.default_study_language_id, language[k.Attr.Id]);
-                    });
-                });
-            });
+        it(`should return 400 Bad Request if the interface_language_code request parameter is not valid`, function(done) {
+            request(server).patch('/users').set('authorization', authorization).send({
+                interface_language_code: 'not_a_lang_code'
+            }).expect(400, done);
         });
     });
 });
