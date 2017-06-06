@@ -5,6 +5,7 @@
     },
     "Attr": {
         "Answer": "answer",
+        "Location": "location",
         "UserId": "user_id",
         "BrowserNotificationsEnabled": "browser_notifications_enabled",
         "Code": "code",

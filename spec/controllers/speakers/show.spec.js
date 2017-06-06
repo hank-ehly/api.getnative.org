@@ -5,37 +5,37 @@
  * Created by henryehly on 2017/03/16.
  */
 
-const Speaker  = require('../../../app/models')['Speaker'];
+const Speaker = require('../../../app/models')['Speaker'];
 const SpecUtil = require('../../spec-util');
-const k        = require('../../../config/keys.json');
+const k = require('../../../config/keys.json');
 
-const request  = require('supertest');
-const Promise  = require('bluebird');
-const assert   = require('assert');
-const url      = require('url');
-const _        = require('lodash');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
+const request = require('supertest');
+const assert = require('assert');
+const url = require('url');
+const _ = require('lodash');
 
 describe('GET /speakers/:id', function() {
-    let server        = null;
+    let server = null;
     let authorization = null;
-    let testSpeaker   = null;
+    let testSpeaker = null;
 
     before(function(done) {
         this.timeout(SpecUtil.defaultTimeout);
         Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]).then(function() {
-            Speaker.findOne().then(function(speaker) {
+            Speaker.find().then(function(speaker) {
                 testSpeaker = speaker.toJSON();
                 done();
             }).catch(done);
         });
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(result) {
-            server        = result.server;
-            authorization = result.authorization;
-        });
+        const result = await SpecUtil.login();
+        server = result.server;
+        authorization = result.authorization;
     });
 
     afterEach(function(done) {
@@ -47,7 +47,17 @@ describe('GET /speakers/:id', function() {
         return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
-    describe('response.headers', function() {
+    describe('response.failure', function() {
+        it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
+            request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).expect(401, done);
+        });
+
+        it('should respond with 404 Not Found if the requested speaker does not exist', function(done) {
+            request(server).get('/speakers/99999999').set('authorization', authorization).expect(404, done);
+        });
+    });
+
+    describe('response.success', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(response) {
                 assert(response.header[k.Header.AuthToken].length > 0);
@@ -59,15 +69,7 @@ describe('GET /speakers/:id', function() {
                 assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
         });
-    });
 
-    describe('response.failure', function() {
-        it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
-            request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).expect(401, done);
-        });
-    });
-
-    describe('response.success', function() {
         it('should return a single object', () => {
             return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 assert(_.isPlainObject(speaker.body));
@@ -128,6 +130,36 @@ describe('GET /speakers/:id', function() {
             return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 assert(_.isBoolean(speaker.body.is_silhouette_picture));
             });
+        });
+
+        it('should localize the speaker description based on the lang query parameter if it is present', async function() {
+            const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).query({lang: 'ja'}).set('authorization', authorization);
+            assert(_.startsWith(response.body[k.Attr.Description], 'ja'));
+        });
+
+        it('should localize the speaker description based on the user preferred interface language if no lang query parameter is present', async function() {
+            const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization);
+            assert(_.startsWith(response.body[k.Attr.Description], 'en'));
+        });
+
+        it('should localize the speaker name based on the lang query parameter if it is present', async function() {
+            const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).query({lang: 'ja'}).set('authorization', authorization);
+            assert(_.startsWith(response.body[k.Attr.Name], 'ja'));
+        });
+
+        it('should localize the speaker name based on the user preferred interface language if no lang query parameter is present', async function() {
+            const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization);
+            assert(_.startsWith(response.body[k.Attr.Name], 'en'));
+        });
+
+        it('should localize the speaker location based on the lang query parameter if it is present', async function() {
+            const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).query({lang: 'ja'}).set('authorization', authorization);
+            assert(_.startsWith(response.body[k.Attr.Location], 'ja'));
+        });
+
+        it('should localize the speaker location based on the user preferred interface language if no lang query parameter is present', async function() {
+            const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization);
+            assert(_.startsWith(response.body[k.Attr.Location], 'en'));
         });
     });
 });

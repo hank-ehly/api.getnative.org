@@ -28,17 +28,16 @@ module.exports = {
 
         for (let speaker of speakers) {
             const gender = speaker.get('gender').get(k.Attr.Name).toLowerCase();
-            const name = chance.name({gender: gender});
             const location = chance.country({full: true});
             const description = chance.paragraph({sentences: 2});
 
             for (let language of languages) {
                 speakersLocalized.push({
-                    name: name,
-                    location: language.get(k.Attr.Code) + '-location',
+                    name:        language.get(k.Attr.Code) + '_' + chance.name({gender: gender}),
+                    location:    language.get(k.Attr.Code) + '_' + location,
                     language_id: language.get(k.Attr.Id),
-                    description: description,
-                    speaker_id: speaker.get(k.Attr.Id)
+                    description: language.get(k.Attr.Code) + '_' + description,
+                    speaker_id:  speaker.get(k.Attr.Id)
                 });
             }
         }
