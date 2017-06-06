@@ -1,6 +1,6 @@
 /**
  * 20170224020149-add-language-id-to-videos
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/02/24.
  */

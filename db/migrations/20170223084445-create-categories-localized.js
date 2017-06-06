@@ -1,6 +1,6 @@
 /**
  * 20170223084445-create-categories-localized
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/06/06.
  */

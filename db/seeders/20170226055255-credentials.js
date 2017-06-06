@@ -1,6 +1,6 @@
 /**
  * 20170226055254-credentials
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/05/14.
  */

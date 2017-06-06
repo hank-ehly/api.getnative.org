@@ -1,6 +1,6 @@
 /**
  * 20170327013738-add-unique-index-to-users-email
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/03/27.
  */

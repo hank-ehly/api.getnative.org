@@ -1,6 +1,6 @@
 /**
  * 20170226045320-genders
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/05/13.
  */

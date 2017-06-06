@@ -1,6 +1,6 @@
 /**
  * 20170226223232-notifications
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/02/27.
  */

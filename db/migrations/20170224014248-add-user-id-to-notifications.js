@@ -1,6 +1,6 @@
 /**
  * 20170224014248-add-user-id-to-notifications
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/02/24.
  */

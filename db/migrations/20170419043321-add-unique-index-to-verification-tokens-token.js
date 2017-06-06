@@ -1,6 +1,6 @@
 /**
  * 20170419043321-add-unique-index-to-verification-tokens-token
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/04/19.
  */

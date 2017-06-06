@@ -1,6 +1,6 @@
 /**
  * 20170226055254-users
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/02/26.
  */
@@ -21,6 +21,7 @@ module.exports = {
                 return {
                     browser_notifications_enabled: chance.bool(),
                     default_study_language_id: _.sample(languages).get(k.Attr.Id),
+                    interface_language_id: _.sample(languages).get(k.Attr.Id),
                     email: chance.email(),
                     email_notifications_enabled: chance.bool(),
                     email_verified: chance.bool({likelihood: 80}),

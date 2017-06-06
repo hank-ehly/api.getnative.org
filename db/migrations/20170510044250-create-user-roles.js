@@ -1,6 +1,6 @@
 /**
  * 20170510044250-create-user-roles
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/05/10.
  */

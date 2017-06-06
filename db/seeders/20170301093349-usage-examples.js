@@ -1,6 +1,6 @@
 /**
  * 20170301093349-usage-examples
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/03/01.
  */

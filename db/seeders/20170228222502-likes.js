@@ -1,6 +1,6 @@
 /**
  * 20170228222502-likes
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/03/01.
  */

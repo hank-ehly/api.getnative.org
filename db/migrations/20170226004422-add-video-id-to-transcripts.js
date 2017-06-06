@@ -1,6 +1,6 @@
 /**
  * 20170226004422-add-video-id-to-transcripts
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/02/26.
  */

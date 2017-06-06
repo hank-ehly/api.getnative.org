@@ -1,6 +1,6 @@
 /**
  * 20170418052433-verification-tokens
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/04/18.
  */

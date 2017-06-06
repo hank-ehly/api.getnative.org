@@ -58,6 +58,7 @@ module.exports = function(sequelize, DataTypes) {
             models[k.Model.User].hasMany(models[k.Model.Like], {as: 'likes'});
             models[k.Model.User].hasMany(models[k.Model.StudySession], {as: 'study_sessions'});
             models[k.Model.User].belongsTo(models[k.Model.Language], {as: k.Attr.DefaultStudyLanguage});
+            models[k.Model.User].belongsTo(models[k.Model.Language], {as: k.Attr.InterfaceLanguage});
         },
         defaultScope: {
             include: [

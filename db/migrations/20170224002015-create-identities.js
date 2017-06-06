@@ -1,6 +1,6 @@
 /**
  * 20170224002015-create-identities
- * get-native.com
+ * api.get-native.com
  *
  * Created by henryehly on 2017/05/13.
  */

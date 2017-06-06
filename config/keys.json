@@ -12,6 +12,7 @@
         "CreatedAt": "created_at",
         "DefaultStudyLanguageCode": "default_study_language_code",
         "DefaultStudyLanguage": "default_study_language",
+        "InterfaceLanguage": "interface_language",
         "Role": "role",
         "Description": "description",
         "Email": "email",
