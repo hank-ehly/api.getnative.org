@@ -5,16 +5,18 @@
  * Created by henryehly on 2017/03/08.
  */
 
-const Utility  = require('../../../app/services')['Utility'];
+const Utility = require('../../../app/services')['Utility'];
 const SpecUtil = require('../../spec-util');
+const k = require('../../../config/keys.json');
 
-const Promise  = require('bluebird');
-const assert   = require('assert');
-const request  = require('supertest');
-const _        = require('lodash');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
+const assert = require('assert');
+const request = require('supertest');
+const _ = require('lodash');
 
 describe('POST /sessions', function() {
-    let server   = null;
+    let server = null;
     let response = null;
 
     before(function() {
@@ -24,7 +26,7 @@ describe('POST /sessions', function() {
 
     beforeEach(function() {
         return SpecUtil.login().then(function(initGroup) {
-            server   = initGroup.server;
+            server = initGroup.server;
             response = initGroup.response;
         });
     });
@@ -40,11 +42,11 @@ describe('POST /sessions', function() {
 
     describe('response.headers', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
-            assert(response.headers['x-gn-auth-token'].length > 0);
+            assert(response.headers[k.Header.AuthToken].length > 0);
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
-            assert(SpecUtil.isParsableTimestamp(+response.headers['x-gn-auth-expire']));
+            assert(SpecUtil.isParsableTimestamp(+response.headers[k.Header.AuthExpire]));
         });
     });
 
@@ -70,47 +72,59 @@ describe('POST /sessions', function() {
         });
 
         it('should respond with an object containing the user\'s ID', function() {
-            assert(_.isNumber(response.body.id));
+            assert(_.isNumber(response.body[k.Attr.Id]));
         });
 
         it('should respond with an object containing the user\'s email address', function() {
-            assert(SpecUtil.isValidEmail(response.body.email));
+            assert(SpecUtil.isValidEmail(response.body[k.Attr.Email]));
         });
 
         it('should respond with an object containing the user\'s preference for receiving browser notifications', function() {
-            assert(_.isBoolean(response.body.browser_notifications_enabled));
+            assert(_.isBoolean(response.body[k.Attr.BrowserNotificationsEnabled]));
         });
 
         it(`should not include the user password in the response`, function() {
-            assert(!response.body.password);
+            assert(!response.body[k.Attr.Password]);
         });
 
         it('should respond with an object containing the user\'s preference for receiving email notifications', function() {
-            assert(_.isBoolean(response.body.email_notifications_enabled));
+            assert(_.isBoolean(response.body[k.Attr.EmailNotificationsEnabled]));
         });
 
         it('should respond with an object containing the user\'s email validity status', function() {
-            assert(_.isBoolean(response.body.email_verified));
+            assert(_.isBoolean(response.body[k.Attr.EmailVerified]));
         });
 
         it('should respond with an object containing a top level default_study_language object', function() {
-            assert(_.isPlainObject(response.body.default_study_language));
+            assert(_.isPlainObject(response.body[k.Attr.DefaultStudyLanguage]));
         });
 
         it('should respond with an object containing a top level default_study_language.name string', function() {
-            assert(_.isString(response.body.default_study_language.name));
+            assert(_.isString(response.body[k.Attr.DefaultStudyLanguage].name));
         });
 
         it('should respond with an object containing a top level default_study_language.code string', function() {
-            assert(_.isString(response.body.default_study_language.code));
+            assert(_.isString(response.body[k.Attr.DefaultStudyLanguage].code));
+        });
+
+        it('should respond with an object containing a top level interface_language object', function() {
+            assert(_.isPlainObject(response.body[k.Attr.InterfaceLanguage]));
+        });
+
+        it('should respond with an object containing a top level interface_language.name string', function() {
+            assert(_.isString(response.body[k.Attr.InterfaceLanguage].name));
+        });
+
+        it('should respond with an object containing a top level interface_language.code string', function() {
+            assert(_.isString(response.body[k.Attr.InterfaceLanguage].code));
         });
 
         it('should respond with an object containing the user\'s profile picture URL', function() {
-            assert(SpecUtil.isValidURL(response.body.picture_url));
+            assert(SpecUtil.isValidURL(response.body[k.Attr.PictureUrl]));
         });
 
         it('should respond with an object containing the user\'s preference for using the profile picture or silhouette image', function() {
-            assert(_.isBoolean(response.body.is_silhouette_picture));
+            assert(_.isBoolean(response.body[k.Attr.IsSilhouettePicture]));
         });
     });
 });
