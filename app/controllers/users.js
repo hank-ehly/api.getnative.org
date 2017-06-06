@@ -19,7 +19,6 @@ const AuthAdapterType   = db[k.Model.AuthAdapterType];
 const Language          = db[k.Model.Language];
 const VerificationToken = db[k.Model.VerificationToken];
 
-const Promise           = require('bluebird');
 const mailer            = require('../../config/initializers/mailer');
 const i18n              = require('i18n');
 const _                 = require('lodash');
@@ -30,21 +29,21 @@ module.exports.create = (req, res, next) => {
 
     return User.existsForEmail(req.body[k.Attr.Email]).then(alreadyExists => {
         if (alreadyExists) {
-            return User.findOne({
+            return User.find({
                 where: {
                     email: req.body[k.Attr.Email]
                 }
             }).then(user => {
                 cache.user = user;
 
-                return AuthAdapterType.findOne({
+                return AuthAdapterType.find({
                     where: {
                         name: 'local'
                     }
                 });
             }).then(authAdapterType => {
                 return Promise.all([
-                    authAdapterType, Identity.findOne({
+                    authAdapterType, Identity.find({
                         where: {
                             auth_adapter_type_id: authAdapterType.get(k.Attr.Id),
                             user_id: cache.user.get(k.Attr.Id)
@@ -56,7 +55,7 @@ module.exports.create = (req, res, next) => {
                     throw new GetNativeError(k.Error.UserAlreadyExists);
                 }
 
-                return User.findOne({
+                return User.find({
                     where: {
                         email: req.body[k.Attr.Email]
                     }
@@ -82,13 +81,14 @@ module.exports.create = (req, res, next) => {
                 });
             });
         } else {
-            return Language.findOne({
+            return Language.find({
                 where: {
                     code: 'en'
                 }
             }).then(language => {
                 return User.create({
                     default_study_language_id: language.get(k.Attr.Id),
+                    interface_language_id: language.get(k.Attr.Id),
                     email: req.body[k.Attr.Email]
                 });
             }).then(user => {
@@ -103,7 +103,7 @@ module.exports.create = (req, res, next) => {
                     password: Auth.hashPassword(req.body[k.Attr.Password])
                 });
             }).then(credential => {
-                return AuthAdapterType.findOne({
+                return AuthAdapterType.find({
                     where: {
                         name: 'local'
                     }
@@ -116,7 +116,7 @@ module.exports.create = (req, res, next) => {
             });
         }
     }).then(() => {
-        return User.findOne({
+        return User.find({
             where: {
                 id: cache.user.get(k.Attr.Id)
             },
@@ -177,38 +177,47 @@ module.exports.show = (req, res) => {
     res.send(normalizedUserObj);
 };
 
-module.exports.update = (req, res, next) => {
-    const attr = _.transform(req.body, function(result, value, key) {
-        if ([k.Attr.EmailNotificationsEnabled, k.Attr.BrowserNotificationsEnabled, k.Attr.DefaultStudyLanguageCode].includes(key)) {
+module.exports.update = async (req, res, next) => {
+    let updateCount;
+
+    const changes = _.transform(req.body, (result, value, key) => {
+        const acceptableKeys = [
+            k.Attr.EmailNotificationsEnabled, k.Attr.BrowserNotificationsEnabled, k.Attr.DefaultStudyLanguageCode, 'interface_language_code'
+        ];
+
+        if (acceptableKeys.includes(key)) {
             result[key] = value;
         }
     }, {});
 
-    if (_.size(attr) === 0) {
-        res.sendStatus(304);
+    if (_.size(changes) === 0) {
+        return res.sendStatus(304);
     }
 
-    let promises = [];
-    if (attr[k.Attr.DefaultStudyLanguageCode]) {
-        const languagePromise = Language.findOne({
-            where: {
-                code: attr[k.Attr.DefaultStudyLanguageCode]
-            }
-        });
-
-        promises.push(languagePromise);
+    if (changes[k.Attr.DefaultStudyLanguageCode]) {
+        changes.default_study_language_id = await Language.findIdForCode(changes[k.Attr.DefaultStudyLanguageCode]);
+        delete changes[k.Attr.DefaultStudyLanguageCode];
     }
 
-    return Promise.all(promises).spread(language => {
-        if (language) {
-            delete attr[k.Attr.DefaultStudyLanguageCode];
-            attr.default_study_language_id = language.get(k.Attr.Id);
-        }
+    if (changes.interface_language_code) {
+        changes.interface_language_id = await Language.findIdForCode(changes.interface_language_code);
+        delete changes.interface_language_code;
+    }
 
-        return req.user.update(attr);
-    }).then(() => {
-        return res.sendStatus(204);
-    }).catch(next);
+    try {
+        [updateCount] = await req.user.update(changes);
+    } catch (e) {
+        return next(e);
+    }
+
+    console.log('******* YOU ARE HERE');
+
+    if (updateCount === 0) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    return res.sendStatus(204);
 };
 
 module.exports.updatePassword = (req, res, next) => {

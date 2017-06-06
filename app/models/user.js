@@ -106,6 +106,7 @@ module.exports = function(sequelize, DataTypes) {
         if (!user) {
             user = await User.create({
                 default_study_language_id: languageId,
+                interface_language_id: languageId,
                 email: _.first(profile.emails).value,
                 name: profile.displayName
             });

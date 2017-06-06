@@ -12,7 +12,6 @@ const k = require('../../config/keys.json');
 const User = require('../../app/models')[k.Model.User];
 const Language = require('../../app/models')[k.Model.Language];
 
-const Promise = require('bluebird');
 const _ = require('lodash');
 
 function CustomStrategy() {
@@ -26,11 +25,11 @@ CustomStrategy.prototype.authenticate = function(req) {
     try {
         token = Utility.extractAuthTokenFromRequest(req);
     } catch (e) {
-        self.error(e);
+        return self.error(e);
     }
 
     return Auth.verifyToken(token).then(decodedToken => {
-        return Promise.join(User.findById(decodedToken.sub), Auth.refreshToken(decodedToken));
+        return Promise.all([User.findByPrimary(decodedToken.sub), Auth.refreshToken(decodedToken)]);
     }).spread((user, refreshedToken) => {
         Auth.setAuthHeadersOnResponseWithToken(req.res, refreshedToken);
 

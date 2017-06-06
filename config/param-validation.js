@@ -30,7 +30,8 @@ module.exports = {
             body: {
                 email_notifications_enabled: Joi.boolean(),
                 browser_notifications_enabled: Joi.boolean(),
-                default_study_language_code: Joi.string().lowercase().valid(validLangCodes)
+                default_study_language_code: Joi.string().lowercase().valid(validLangCodes),
+                interface_language_code: Joi.string().lowercase().valid(validLangCodes)
             }
         },
         updatePassword: {
