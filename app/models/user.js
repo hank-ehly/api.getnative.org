@@ -66,6 +66,11 @@ module.exports = function(sequelize, DataTypes) {
                     model: sequelize.models[k.Model.Language],
                     attributes: [k.Attr.Name, k.Attr.Code],
                     as: k.Attr.DefaultStudyLanguage
+                },
+                {
+                    model: sequelize.models[k.Model.Language],
+                    attributes: [k.Attr.Name, k.Attr.Code],
+                    as: k.Attr.InterfaceLanguage
                 }
             ]
         }
