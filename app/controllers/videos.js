@@ -19,6 +19,9 @@ const CuedVideo = db[k.Model.CuedVideo];
 const Language = db[k.Model.Language];
 const Speaker = db[k.Model.Speaker];
 const SpeakerLocalized = db[k.Model.SpeakerLocalized];
+const Transcript = db[k.Model.Transcript];
+const Collocation = db[k.Model.Collocation];
+const UsageExample = db[k.Model.UsageExample];
 const Video = db[k.Model.Video];
 const Like = db[k.Model.Like];
 
@@ -123,7 +126,10 @@ module.exports.index = async (req, res, next) => {
     return res.send(videos)
 };
 
-module.exports.show = (req, res, next) => {
+module.exports.show = async (req, res, next) => {
+    const interfaceLanguageCode = _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code));
+    const interfaceLanguageId = await Language.findIdForCode(interfaceLanguageCode);
+
     const likeCount = Video.getLikeCount(db, req.params.id);
     const liked     = Video.isLikedByUser(db, req.params.id, req.user[k.Attr.Id]);
     const cued      = Video.isCuedByUser(db, req.params.id, req.user[k.Attr.Id]);
@@ -131,37 +137,127 @@ module.exports.show = (req, res, next) => {
     const relatedCreatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
     const relatedCued      = Video.getCuedAttributeForUserId(req.user[k.Attr.Id]);
 
+    const relatedInclude = [
+        {
+            model: Speaker,
+            as: 'speaker',
+            attributes: [k.Attr.Id],
+            include: [
+                {
+                    model: SpeakerLocalized,
+                    as: 'speakers_localized',
+                    attributes: [k.Attr.Name],
+                    where: {language_id: interfaceLanguageId}
+                }
+            ]
+        }, {
+            model: Subcategory,
+            as: 'subcategory',
+            attributes: [k.Attr.Id],
+            include: [
+                {
+                    model: SubcategoryLocalized,
+                    as: 'subcategories_localized',
+                    attributes: [k.Attr.Name],
+                    where: {language_id: interfaceLanguageId}
+                }
+            ]
+        }
+    ];
+
     const relatedVideos = Video.scope([
-        {method: ['includeSubcategoryNameAndId', Subcategory]},
-        {method: ['includeSpeakerName', Speaker]},
-        {method: ['relatedToVideo', req.params.id]},
-        'orderByRandom'
+        {method: ['relatedToVideo', +req.params[k.Attr.Id]]}, 'orderByRandom'
     ]).findAll({
         attributes: [k.Attr.Id, relatedCreatedAt, k.Attr.Length, k.Attr.PictureUrl, k.Attr.LoopCount, relatedCued],
-        include: [{model: Language, attributes: [k.Attr.Name, k.Attr.Code], as: 'language'}],
+        include: relatedInclude,
         limit: 3
     }).catch(next);
 
-    const video = Video.scope('includeTranscripts').findByPrimary(+req.params[k.Attr.Id], {
-        include: [
-            {model: Speaker, attributes: [k.Attr.Id, k.Attr.Description, k.Attr.Name, k.Attr.PictureUrl], as: 'speaker'},
-            {model: Subcategory, attributes: [k.Attr.Id, k.Attr.Name], as: 'subcategory'},
-            {model: Language, attributes: [k.Attr.Name, k.Attr.Code], as: 'language'}
-        ],
-        attributes: [k.Attr.Description, k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length]
+    const videoInclude = [
+        {
+            model: Speaker,
+            attributes: [k.Attr.Id, k.Attr.PictureUrl],
+            as: 'speaker',
+            include: {
+                model: SpeakerLocalized,
+                as: 'speakers_localized',
+                attributes: [k.Attr.Description, k.Attr.Name],
+                where: {language_id: interfaceLanguageId}
+            }
+
+        }, {
+            model: Subcategory,
+            attributes: [k.Attr.Id],
+            as: 'subcategory',
+            include: {
+                model: SubcategoryLocalized,
+                as: 'subcategories_localized',
+                attributes: [k.Attr.Name],
+                where: {language_id: interfaceLanguageId}
+            }
+        }, {
+            model: Language,
+            attributes: [k.Attr.Name, k.Attr.Code],
+            as: 'language'
+        }, {
+            model: Transcript,
+            attributes: [k.Attr.Id, k.Attr.Text],
+            as: 'transcripts',
+            include: [
+                {
+                    model: Collocation,
+                    attributes: [k.Attr.Text, k.Attr.IPASpelling],
+                    as: 'collocations',
+                    include: {
+                        model: UsageExample,
+                        attributes: [k.Attr.Text],
+                        as: 'usage_examples'
+                    }
+                }, {
+                    model: Language,
+                    attributes: [k.Attr.Name, k.Attr.Code],
+                    as: 'language'
+                }
+            ]
+        }
+    ];
+
+    const video = Video.findByPrimary(+req.params[k.Attr.Id], {
+        attributes: [k.Attr.Description, k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length],
+        include: videoInclude
     }).catch(next);
 
     return Promise.join(likeCount, liked, cued, relatedVideos, video, (likeCount, liked, cued, relatedVideos, video) => {
-        video = video.get({plain: true});
+        video = video.get({
+            plain: true
+        });
 
         video.like_count = likeCount;
         video.liked      = liked;
         video.cued       = cued;
 
-        video.related_videos = ResponseWrapper.wrap(relatedVideos.map(r => {
-            r = r.get({plain: true});
-            r.cued = r.cued === 1;
-            return r;
+        video.speaker[k.Attr.Name] = _.first(video.speaker.speakers_localized)[k.Attr.Name];
+        video.speaker[k.Attr.Description] = _.first(video.speaker.speakers_localized)[k.Attr.Description];
+        delete video.speaker.speakers_localized;
+
+        video.subcategory[k.Attr.Name] = _.first(video.subcategory.subcategories_localized)[k.Attr.Name];
+        delete video.subcategory.subcategories_localized;
+
+        video.related_videos = _.invokeMap(relatedVideos, 'get', {
+            plain: true
+        });
+
+        video.related_videos = ResponseWrapper.wrap(video.related_videos.map(rv => {
+            rv.cued = rv.cued === 1;
+
+            rv.speaker[k.Attr.Name] = _.first(rv.speaker.speakers_localized)[k.Attr.Name];
+            delete rv.speaker.speakers_localized;
+            delete rv.speaker[k.Attr.Id];
+
+            rv.subcategory[k.Attr.Name] = _.first(rv.subcategory.subcategories_localized)[k.Attr.Name];
+            delete rv.subcategory.subcategories_localized;
+
+            return rv;
         }));
 
         video.transcripts = ResponseWrapper.wrap(video.transcripts.map(t => {

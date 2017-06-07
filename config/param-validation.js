@@ -220,6 +220,7 @@ module.exports = {
                 category_id: Joi.number().integer().min(1),
                 subcategory_id: Joi.number().integer().min(1),
                 lang: Joi.string().lowercase().valid(validLangCodes),
+                interface_lang: Joi.string().lowercase().valid(validLangCodes),
                 count: Joi.number().integer().min(1).max(9),
                 q: Joi.string().lowercase().max(100),
                 cued_only: Joi.boolean(),
@@ -234,7 +235,8 @@ module.exports = {
                 id: Joi.number().integer().min(1).required()
             },
             query: {
-                time_zone_offset: Joi.string().regex(regex.timeZoneOffset)
+                time_zone_offset: Joi.string().regex(regex.timeZoneOffset),
+                lang: Joi.string().lowercase().valid(validLangCodes)
             }
         },
         dequeue: {

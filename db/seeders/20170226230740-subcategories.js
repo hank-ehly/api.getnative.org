@@ -15,7 +15,7 @@ module.exports = {
         const categories = await db[k.Model.Category].findAll(), subcategories = [];
 
         for (let i = 0; i < categories.length; i++) {
-            let subcategoriesCount = _.random(1, 5);
+            let subcategoriesCount = _.random(3, 5);
             for (let j = 0; j < subcategoriesCount; j++) {
                 subcategories.push({
                     category_id: categories[i].get(k.Attr.Id)

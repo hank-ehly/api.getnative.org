@@ -88,7 +88,7 @@ module.exports = function(sequelize, DataTypes) {
                             include: [
                                 {
                                     model: sequelize.model(k.Model.Collocation),
-                                    attributes: [k.Attr.Text, k.Attr.Description, k.Attr.IPASpelling],
+                                    attributes: [k.Attr.Text, k.Attr.IPASpelling],
                                     as: 'collocations',
                                     include: {
                                         model: sequelize.model(k.Model.UsageExample),

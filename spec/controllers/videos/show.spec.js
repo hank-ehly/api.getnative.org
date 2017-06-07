@@ -9,11 +9,8 @@ const SpecUtil = require('../../spec-util');
 const Utility  = require('../../../app/services')['Utility'];
 const k        = require('../../../config/keys.json');
 
-const mocha = require('mocha');
-const before = mocha.before;
-const after = mocha.after;
-const beforeEach = mocha.beforeEach;
-const afterEach = mocha.afterEach;
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const Promise  = require('bluebird');
 const request  = require('supertest');
 const assert   = require('assert');
@@ -40,7 +37,7 @@ describe('GET /videos/:id', function() {
             db            = result.db;
 
             return db.sequelize.query('SELECT id FROM videos LIMIT 1').spread(r => {
-                videoId = _.first(r).id;
+                videoId = _.first(r)[k.Attr.Id];
             });
         });
     });
@@ -54,21 +51,7 @@ describe('GET /videos/:id', function() {
         return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
     });
 
-    describe('response.headers', function() {
-        it('should respond with an X-GN-Auth-Token header', function() {
-            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
-            });
-        });
-
-        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
-            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
-            });
-        });
-    });
-
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).get(`/videos/${videoId}`).expect(401, done);
         });
@@ -82,7 +65,19 @@ describe('GET /videos/:id', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
+        it('should respond with an X-GN-Auth-Token header', function() {
+            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
+                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
+            });
+        });
+
+        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
+            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
+            });
+        });
+
         it(`should return a 200 OK response given a valid request`, function(done) {
             request(server).get(`/videos/${videoId}`).set('authorization', authorization).expect(200, done);
         });
@@ -287,42 +282,27 @@ describe('GET /videos/:id', function() {
             });
         });
 
-        it(`should contain a 'related_videos.records[N].language' object`, function() {
-            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isPlainObject(_.first(response.body.related_videos.records).language));
-            });
-        });
-
-        it(`should contain a 'related_videos.records[N].language.name' string`, function() {
-            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isString(_.first(response.body.related_videos.records).language.name));
-            });
-        });
-
-        it(`should contain a 'related_videos.records[N].language.code' string`, function() {
-            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isString(_.first(response.body.related_videos.records).language.code));
-            });
-        });
-
-        it(`should return related videos whose category is the same as the video being shown`, function() {
-            const expectedSubcategoryIds = db.sequelize.query(`
+        it(`should return related videos whose category is the same as the video being shown`, async function() {
+            let [expectedSubcategoryIds] = await db.sequelize.query(`
                 SELECT id FROM subcategories WHERE category_id IN (
                     SELECT category_id FROM subcategories WHERE id = (
                         SELECT subcategory_id FROM videos WHERE id = ?
                     )
                 )
-            `, {replacements: [videoId]}).spread(function(results) {
-                return _.map(results, 'id');
-            });
+            `, {replacements: [videoId]});
 
-            const actualSubcategoryIds = request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                return _.map(response.body.related_videos.records, 'subcategory.id');
-            });
+            expectedSubcategoryIds = _.map(expectedSubcategoryIds, 'id');
 
-            return Promise.join(expectedSubcategoryIds, actualSubcategoryIds, function(expected, actual) {
-                assert.equal(_.difference(actual, expected).length, 0);
-            });
+            const response = await request(server).get(`/videos/${videoId}`).set('authorization', authorization);
+            const actualSubcategoryIds = _.map(response.body.related_videos.records, 'subcategory.id');
+
+            console.log(response.body.related_videos.records);
+
+            console.log('Expected:', expectedSubcategoryIds);
+            console.log('Actual:', actualSubcategoryIds);
+            console.log('Difference:', _.size(_.difference(expectedSubcategoryIds, actualSubcategoryIds)));
+
+            assert.equal(_.size(_.difference(expectedSubcategoryIds, actualSubcategoryIds)), 0);
         });
 
         it(`should return different related videos if the same video is requested twice`, function() {
@@ -436,12 +416,6 @@ describe('GET /videos/:id', function() {
             });
         });
 
-        it(`should contain a non-null 'transcripts.records[N].collocations.records[N].description' string`, function() {
-            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isString(_.first(_.first(response.body.transcripts.records).collocations.records).description));
-            });
-        });
-
         it(`should contain a non-null 'transcripts.records[N].collocations.records[N].ipa_spelling' string`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
                 assert(_.isString(_.first(_.first(response.body.transcripts.records).collocations.records).ipa_spelling));
@@ -478,5 +452,37 @@ describe('GET /videos/:id', function() {
                 assert(_.isString(_.first(_.first(_.first(response.body.transcripts.records).collocations.records).usage_examples.records).text));
             });
         });
+
+        it('should localize the subcategory name based on the lang query parameter if present', async function() {
+            const response = await request(server).get(`/videos/${videoId}`).query({lang: 'ja'}).set('authorization', authorization);
+            assert(/[^a-z]/i.test(response.body.subcategory[k.Attr.Name]));
+        });
+
+        it('should localize the subcategory name based on the user preferred interface language if the lang query parameter is missing', async function() {
+            const response = await request(server).get(`/videos/${videoId}`).set('authorization', authorization);
+            assert(/[a-z]/i.test(response.body.subcategory[k.Attr.Name]));
+        });
+
+        it('should localize the speaker name based on the lang query parameter if present', async function() {
+            const response = await request(server).get(`/videos/${videoId}`).query({lang: 'ja'}).set('authorization', authorization);
+            assert(_.startsWith(response.body.speaker[k.Attr.Name], 'ja'));
+        });
+
+        it('should localize the speaker name based on the user preferred interface language if the lang query parameter is missing', async function() {
+            const response = await request(server).get(`/videos/${videoId}`).set('authorization', authorization);
+            assert(_.startsWith(response.body.speaker[k.Attr.Name], 'en'));
+        });
+
+        it('should localize the speaker name based on the lang query parameter if present', async function() {
+            const response = await request(server).get(`/videos/${videoId}`).query({lang: 'ja'}).set('authorization', authorization);
+            assert(_.startsWith(response.body.speaker[k.Attr.Description], 'ja'));
+        });
+
+        it('should localize the speaker name based on the user preferred interface language if the lang query parameter is missing', async function() {
+            const response = await request(server).get(`/videos/${videoId}`).set('authorization', authorization);
+            assert(_.startsWith(response.body.speaker[k.Attr.Description], 'en'));
+        });
+
+        // todo: Localize video.description
     });
 });
