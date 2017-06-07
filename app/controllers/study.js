@@ -8,7 +8,9 @@
 const k               = require('../../config/keys.json');
 const db              = require('../models');
 const WritingAnswer   = db[k.Model.WritingAnswer];
+const Language = db[k.Model.Language];
 const WritingQuestion = db[k.Model.WritingQuestion];
+const WritingQuestionLocalized = db[k.Model.WritingQuestionLocalized];
 const QueuedVideo     = db[k.Model.CuedVideo];
 const StudySession    = db[k.Model.StudySession];
 const User            = db[k.Model.User];
@@ -40,8 +42,10 @@ module.exports.stats = (req, res, next) => {
     }).catch(next);
 };
 
-module.exports.writing_answers = (req, res, next) => {
+module.exports.writing_answers = async (req, res, next) => {
     const createdAt = ModelService.getDateAttrForTableColumnTZOffset(k.Model.WritingAnswer, k.Attr.CreatedAt, req.query.time_zone_offset);
+
+    const languageId = await Language.findIdForCode(req.params.lang);
 
     return WritingAnswer.scope([
         'newestFirst',
@@ -54,7 +58,15 @@ module.exports.writing_answers = (req, res, next) => {
             {
                 model: WritingQuestion,
                 as: 'writing_question',
-                attributes: ['text']
+                attributes: [k.Attr.Id],
+                include: [{
+                    model: WritingQuestionLocalized,
+                    as: 'writing_questions_localized',
+                    attributes: [k.Attr.Text],
+                    where: {
+                        language_id: languageId
+                    }
+                }]
             }
         ],
         limit: 10
@@ -62,6 +74,11 @@ module.exports.writing_answers = (req, res, next) => {
         const answersAsJson = ResponseWrapper.wrap(answers.map(a => {
             let json = a.get({plain: true});
             json.lang = req.params.lang;
+
+            json.writing_question[k.Attr.Text] = _.first(json.writing_question.writing_questions_localized)[k.Attr.Text];
+            delete json.writing_question.writing_questions_localized;
+            delete json.writing_question[k.Attr.Id];
+
             return json;
         }));
 

@@ -8,7 +8,8 @@
 const SpecUtil = require('../../spec-util');
 const k        = require('../../../config/keys.json');
 
-const Promise  = require('bluebird');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const request  = require('supertest');
 const assert   = require('assert');
 const _        = require('lodash');
@@ -21,7 +22,7 @@ describe('GET /study/:lang/writing_answers', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -40,24 +41,10 @@ describe('GET /study/:lang/writing_answers', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
-    describe('response.headers', function() {
-        it('should respond with an X-GN-Auth-Token header', function() {
-            return request(server).get('/study/en/writing_answers').set('authorization', authorization).then(function(response) {
-                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
-            });
-        });
-
-        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
-            return request(server).get('/study/en/writing_answers').set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
-            });
-        });
-    });
-
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).get('/study/en/writing_answers').expect(401, done);
         });
@@ -82,7 +69,19 @@ describe('GET /study/:lang/writing_answers', function() {
         // todo: invalid or unintelligible time_zone_offset
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
+        it('should respond with an X-GN-Auth-Token header', function() {
+            return request(server).get('/study/en/writing_answers').set('authorization', authorization).then(function(response) {
+                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
+            });
+        });
+
+        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
+            return request(server).get('/study/en/writing_answers').set('authorization', authorization).then(function(response) {
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
+            });
+        });
+
         it('should receive a 200 OK response', function(done) {
             request(server).get('/study/en/writing_answers').set('authorization', authorization).expect(200, done);
         });
@@ -218,6 +217,13 @@ describe('GET /study/:lang/writing_answers', function() {
                     });
                 });
             });
+        });
+
+        it('should localize the writing question text based on the language of the video to which the answer is linked', async function() {
+            const langCode = 'ja';
+            const response = await request(server).get(`/study/${langCode}/writing_answers`).set('authorization', authorization);
+            const text = _.first(response.body.records)['writing_question'].text;
+            assert(_.startsWith(_.first(response.body.records)['writing_question'].text, langCode));
         });
     });
 });
