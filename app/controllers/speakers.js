@@ -17,26 +17,19 @@ const _ = require('lodash');
 module.exports.show = async (req, res, next) => {
     let speaker;
 
-    const interfaceLanguageCode = _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code));
-    const interfaceLanguageId = await Language.findIdForCode(interfaceLanguageCode);
+    const interfaceLanguageId = await Language.findIdForCode(
+        _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code))
+    );
 
     try {
         speaker = await Speaker.findByPrimary(req.params[k.Attr.Id], {
-            attributes: {
-                exclude: [
-                    k.Attr.CreatedAt, k.Attr.UpdatedAt
-                ]
-            },
+            attributes: {exclude: [k.Attr.CreatedAt, k.Attr.UpdatedAt]},
             include: [
                 {
                     model: SpeakerLocalized,
                     as: 'speakers_localized',
-                    attributes: [
-                        k.Attr.Description, k.Attr.Location, k.Attr.Name
-                    ],
-                    where: {
-                        language_id: interfaceLanguageId
-                    }
+                    attributes: [k.Attr.Description, k.Attr.Location, k.Attr.Name],
+                    where: {language_id: interfaceLanguageId}
                 }
             ]
         });
@@ -53,9 +46,9 @@ module.exports.show = async (req, res, next) => {
         plain: true
     });
 
-    speaker[k.Attr.Name] = _.first(speaker.speakers_localized)[k.Attr.Name];
+    speaker[k.Attr.Name]        = _.first(speaker.speakers_localized)[k.Attr.Name];
     speaker[k.Attr.Description] = _.first(speaker.speakers_localized)[k.Attr.Description];
-    speaker[k.Attr.Location] = _.first(speaker.speakers_localized)[k.Attr.Location];
+    speaker[k.Attr.Location]    = _.first(speaker.speakers_localized)[k.Attr.Location];
 
     delete speaker.speakers_localized;
 

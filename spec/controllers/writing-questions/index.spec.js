@@ -152,14 +152,14 @@ describe('GET /videos/:id/writing_questions', function() {
             const japaneseLanguageId = await db[k.Model.Language].findIdForCode('ja');
             const japaneseVideoId = (await db[k.Model.Video].find({where: {language_id: japaneseLanguageId}, attributes: [k.Attr.Id]})).get(k.Attr.Id);
             const response = await request(server).get(`/videos/${japaneseVideoId}/writing_questions`).set('authorization', authorization);
-            assert(_.startsWith(_.first(response.body.records)[k.Attr.ExampleAnswer], 'ja'));
+            assert(/[^a-z]/i.test(_.first(response.body.records)[k.Attr.ExampleAnswer]));
         });
 
         it('should localize the records[N].text based on the language of the video being studied', async function() {
             const japaneseLanguageId = await db[k.Model.Language].findIdForCode('ja');
             const japaneseVideoId = (await db[k.Model.Video].find({where: {language_id: japaneseLanguageId}, attributes: [k.Attr.Id]})).get(k.Attr.Id);
             const response = await request(server).get(`/videos/${japaneseVideoId}/writing_questions`).set('authorization', authorization);
-            assert(_.startsWith(_.first(response.body.records)[k.Attr.Text], 'ja'));
+            assert(/[^a-z]/i.test(_.first(response.body.records)[k.Attr.Text]));
         });
     });
 });

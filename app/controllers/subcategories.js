@@ -10,10 +10,10 @@ const db = require('../models');
 const WritingQuestion = db[k.Model.WritingQuestion];
 const WritingQuestionLocalized = db[k.Model.WritingQuestionLocalized];
 const Language = db[k.Model.Language];
+const Subcategory = db[k.Model.Subcategory];
 const services = require('../services');
 const ModelHelper = services['Model'](db);
 const GetNativeError = services['GetNativeError'];
-const Subcategory = db[k.Model.Subcategory];
 
 const _ = require('lodash');
 
@@ -23,16 +23,13 @@ module.exports.show = async (req, res, next) => {
     const subcategoryCreatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Subcategory, k.Attr.CreatedAt);
     const subcategoryUpdatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Subcategory, k.Attr.UpdatedAt);
 
+    const subcategoryPredicate = {
+        where: {id: +req.params.subcategory_id, category_id: +req.params.category_id},
+        attributes: [k.Attr.Id, k.Attr.Name, subcategoryCreatedAt, subcategoryUpdatedAt]
+    };
+
     try {
-        subcategory = await Subcategory.find({
-            where: {
-                id: +req.params.subcategory_id,
-                category_id: +req.params.category_id
-            },
-            attributes: [
-                k.Attr.Id, k.Attr.Name, subcategoryCreatedAt, subcategoryUpdatedAt
-            ]
-        });
+        subcategory = await Subcategory.find(subcategoryPredicate);
     } catch (e) {
         return next(e);
     }
@@ -64,13 +61,12 @@ module.exports.update = async (req, res, next) => {
         return res.sendStatus(304);
     }
 
+    const subcategoryPredicate = {
+        where: {id: req.params.subcategory_id, category_id: req.params.category_id}
+    };
+
     try {
-        [updateCount] = await Subcategory.update(changes, {
-            where: {
-                id: req.params.subcategory_id,
-                category_id: req.params.category_id
-            }
-        });
+        [updateCount] = await Subcategory.update(changes, subcategoryPredicate);
     } catch (e) {
         return next(e);
     }

@@ -14,48 +14,55 @@ const Credential = db[k.Model.Credential];
 const User = db[k.Model.User];
 
 // todo: handle a user with non-local identity trying to create session
-module.exports.create = (req, res, next) => {
-    let cache = {};
+module.exports.create = async (req, res, next) => {
+    let user, credential, token;
 
-    return User.find({
-        where: {
-            email: req.body[k.Attr.Email]
-        },
-        attributes: [
-            k.Attr.Id,
-            k.Attr.Email,
-            k.Attr.BrowserNotificationsEnabled,
-            k.Attr.EmailNotificationsEnabled,
-            k.Attr.EmailVerified,
-            k.Attr.PictureUrl,
-            k.Attr.IsSilhouettePicture
-        ]
-    }).then(user => {
-        if (!user) {
-            throw new GetNativeError(k.Error.UserNamePasswordIncorrect);
-        }
-
-        cache.user = user;
-
-        return Credential.find({
-            where: {
-                user_id: user.get(k.Attr.Id)
-            },
+    try {
+        user = await User.find({
+            where: {email: req.body[k.Attr.Email]},
             attributes: [
-                k.Attr.Password
+                k.Attr.Id, k.Attr.Email, k.Attr.BrowserNotificationsEnabled, k.Attr.EmailNotificationsEnabled, k.Attr.EmailVerified,
+                k.Attr.PictureUrl, k.Attr.IsSilhouettePicture
             ]
         });
-    }).then(credential => {
-        if (!credential || !Auth.verifyPassword(credential.get(k.Attr.Password), req.body[k.Attr.Password])) {
-            throw new GetNativeError(k.Error.UserNamePasswordIncorrect);
-        }
+    } catch (e) {
+        return next(e);
+    }
 
-        return Auth.generateTokenForUserId(cache.user.get(k.Attr.Id));
-    }).then(token => {
-        Auth.setAuthHeadersOnResponseWithToken(res, token);
-        res.status(201).send(cache.user.get({plain: true}));
-    }).catch(GetNativeError, e => {
+    if (!user) {
         res.status(404);
-        next(e);
-    }).catch(next);
+        return next(new GetNativeError(k.Error.UserNamePasswordIncorrect));
+    }
+
+    try {
+        credential = await Credential.find({
+            where: {user_id: user.get(k.Attr.Id)},
+            attributes: [k.Attr.Password]
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!credential || !Auth.verifyPassword(credential.get(k.Attr.Password), req.body[k.Attr.Password])) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.UserNamePasswordIncorrect));
+    }
+
+    try {
+        token = await Auth.generateTokenForUserId(user.get(k.Attr.Id));
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!token) {
+        throw new ReferenceError('variable token is undefined');
+    }
+
+    Auth.setAuthHeadersOnResponseWithToken(res, token);
+
+    user = user.get({
+        plain: true
+    });
+
+    return res.status(201).send(user);
 };

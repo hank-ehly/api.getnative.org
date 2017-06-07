@@ -58,39 +58,23 @@ module.exports.index = async (req, res, next) => {
         {
             model: Speaker,
             as: 'speaker',
-            attributes: [
-                k.Attr.Id
-            ],
-            include: [
-                {
-                    model: SpeakerLocalized,
-                    as: 'speakers_localized',
-                    attributes: [
-                        k.Attr.Name
-                    ],
-                    where: {
-                        language_id: interfaceLanguageId
-                    }
-                }
-            ]
+            attributes: [k.Attr.Id],
+            include: {
+                model: SpeakerLocalized,
+                as: 'speakers_localized',
+                attributes: [k.Attr.Name],
+                where: {language_id: interfaceLanguageId}
+            }
         }, {
             model: Subcategory,
             as: 'subcategory',
-            attributes: [
-                k.Attr.Id
-            ],
-            include: [
-                {
-                    model: SubcategoryLocalized,
-                    as: 'subcategories_localized',
-                    attributes: [
-                        k.Attr.Name
-                    ],
-                    where: {
-                        language_id: interfaceLanguageId
-                    }
-                }
-            ]
+            attributes: [k.Attr.Id],
+            include: {
+                model: SubcategoryLocalized,
+                as: 'subcategories_localized',
+                attributes: [k.Attr.Name],
+                where: {language_id: interfaceLanguageId}
+            }
         }
     ];
 
@@ -101,10 +85,7 @@ module.exports.index = async (req, res, next) => {
     }
 
     if (_.size(videos) === 0) {
-        return res.send({
-            records: [],
-            count: 0
-        });
+        return res.send({records: [], count: 0});
     }
 
     videos = _.invokeMap(videos, 'get', {
@@ -127,51 +108,35 @@ module.exports.index = async (req, res, next) => {
 };
 
 module.exports.show = async (req, res, next) => {
-    const interfaceLanguageCode = _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code));
-    const interfaceLanguageId = await Language.findIdForCode(interfaceLanguageCode);
+    let video, relatedVideos;
 
-    const likeCount = Video.getLikeCount(db, req.params.id);
-    const liked     = Video.isLikedByUser(db, req.params.id, req.user[k.Attr.Id]);
-    const cued      = Video.isCuedByUser(db, req.params.id, req.user[k.Attr.Id]);
-
-    const relatedCreatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
-    const relatedCued      = Video.getCuedAttributeForUserId(req.user[k.Attr.Id]);
+    const interfaceLanguageId = await Language.findIdForCode(
+        _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code))
+    );
 
     const relatedInclude = [
         {
             model: Speaker,
             as: 'speaker',
             attributes: [k.Attr.Id],
-            include: [
-                {
-                    model: SpeakerLocalized,
-                    as: 'speakers_localized',
-                    attributes: [k.Attr.Name],
-                    where: {language_id: interfaceLanguageId}
-                }
-            ]
+            include: {
+                model: SpeakerLocalized,
+                as: 'speakers_localized',
+                attributes: [k.Attr.Name],
+                where: {language_id: interfaceLanguageId}
+            }
         }, {
             model: Subcategory,
             as: 'subcategory',
             attributes: [k.Attr.Id],
-            include: [
-                {
-                    model: SubcategoryLocalized,
-                    as: 'subcategories_localized',
-                    attributes: [k.Attr.Name],
-                    where: {language_id: interfaceLanguageId}
-                }
-            ]
+            include: {
+                model: SubcategoryLocalized,
+                as: 'subcategories_localized',
+                attributes: [k.Attr.Name],
+                where: {language_id: interfaceLanguageId}
+            }
         }
     ];
-
-    const relatedVideos = Video.scope([
-        {method: ['relatedToVideo', +req.params[k.Attr.Id]]}, 'orderByRandom'
-    ]).findAll({
-        attributes: [k.Attr.Id, relatedCreatedAt, k.Attr.Length, k.Attr.PictureUrl, k.Attr.LoopCount, relatedCued],
-        include: relatedInclude,
-        limit: 3
-    }).catch(next);
 
     const videoInclude = [
         {
@@ -184,7 +149,6 @@ module.exports.show = async (req, res, next) => {
                 attributes: [k.Attr.Description, k.Attr.Name],
                 where: {language_id: interfaceLanguageId}
             }
-
         }, {
             model: Subcategory,
             attributes: [k.Attr.Id],
@@ -222,73 +186,75 @@ module.exports.show = async (req, res, next) => {
         }
     ];
 
-    const video = Video.findByPrimary(+req.params[k.Attr.Id], {
-        attributes: [k.Attr.Description, k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length],
-        include: videoInclude
-    }).catch(next);
+    const relatedCreatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
+    const relatedCued = Video.getCuedAttributeForUserId(req.user[k.Attr.Id]);
 
-    return Promise.join(likeCount, liked, cued, relatedVideos, video, (likeCount, liked, cued, relatedVideos, video) => {
-        video = video.get({
-            plain: true
+    try {
+        relatedVideos = await Video.scope([{method: ['relatedToVideo', +req.params[k.Attr.Id]]}, 'orderByRandom']).findAll({
+            attributes: [k.Attr.Id, relatedCreatedAt, k.Attr.Length, k.Attr.PictureUrl, k.Attr.LoopCount, relatedCued],
+            include: relatedInclude,
+            limit: 3
         });
 
-        video.like_count = likeCount;
-        video.liked      = liked;
-        video.cued       = cued;
-
-        video.speaker[k.Attr.Name] = _.first(video.speaker.speakers_localized)[k.Attr.Name];
-        video.speaker[k.Attr.Description] = _.first(video.speaker.speakers_localized)[k.Attr.Description];
-        delete video.speaker.speakers_localized;
-
-        video.subcategory[k.Attr.Name] = _.first(video.subcategory.subcategories_localized)[k.Attr.Name];
-        delete video.subcategory.subcategories_localized;
-
-        video.related_videos = _.invokeMap(relatedVideos, 'get', {
-            plain: true
+        video = await Video.findByPrimary(+req.params[k.Attr.Id], {
+            attributes: [k.Attr.Description, k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length],
+            include: videoInclude
         });
+    } catch (e) {
+        return next(e);
+    }
 
-        video.related_videos = ResponseWrapper.wrap(video.related_videos.map(rv => {
-            rv.cued = rv.cued === 1;
-
-            rv.speaker[k.Attr.Name] = _.first(rv.speaker.speakers_localized)[k.Attr.Name];
-            delete rv.speaker.speakers_localized;
-            delete rv.speaker[k.Attr.Id];
-
-            rv.subcategory[k.Attr.Name] = _.first(rv.subcategory.subcategories_localized)[k.Attr.Name];
-            delete rv.subcategory.subcategories_localized;
-
-            return rv;
-        }));
-
-        video.transcripts = ResponseWrapper.wrap(video.transcripts.map(t => {
-            t.collocations = ResponseWrapper.deepWrap(t.collocations, ['usage_examples']);
-            return t;
-        }));
-
-        res.send(video);
-    }).catch(next);
-};
-
-module.exports.like = (req, res, next) => {
-    return Video.findByPrimary(parseInt(req.params[k.Attr.Id])).then(video => {
-        if (!video) {
-            throw new GetNativeError(k.Error.ResourceNotFound);
-        }
-
-        return Like.create({
-            video_id: video[k.Attr.Id],
-            user_id: req.user[k.Attr.Id]
-        });
-    }).then(() => {
-        res.sendStatus(204);
-    }).catch(e => {
+    if (!video) {
         res.status(404);
-        next(e);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    video = video.get({
+        plain: true
     });
+
+    try {
+        video.like_count = await Video.getLikeCount(db, req.params.id);
+        video.liked = await Video.isLikedByUser(db, req.params.id, req.user[k.Attr.Id]);
+        video.cued = await Video.isCuedByUser(db, req.params.id, req.user[k.Attr.Id]);
+    } catch (e) {
+        return next(e);
+    }
+
+    video.speaker[k.Attr.Name] = _.first(video.speaker.speakers_localized)[k.Attr.Name];
+    video.speaker[k.Attr.Description] = _.first(video.speaker.speakers_localized)[k.Attr.Description];
+    delete video.speaker.speakers_localized;
+
+    video.subcategory[k.Attr.Name] = _.first(video.subcategory.subcategories_localized)[k.Attr.Name];
+    delete video.subcategory.subcategories_localized;
+
+    video.related_videos = _.invokeMap(relatedVideos, 'get', {
+        plain: true
+    });
+
+    video.related_videos = ResponseWrapper.wrap(video.related_videos.map(relatedVideo => {
+        relatedVideo.cued = relatedVideo.cued === 1;
+
+        relatedVideo.speaker[k.Attr.Name] = _.first(relatedVideo.speaker.speakers_localized)[k.Attr.Name];
+        delete relatedVideo.speaker.speakers_localized;
+        delete relatedVideo.speaker[k.Attr.Id];
+
+        relatedVideo.subcategory[k.Attr.Name] = _.first(relatedVideo.subcategory.subcategories_localized)[k.Attr.Name];
+        delete relatedVideo.subcategory.subcategories_localized;
+
+        return relatedVideo;
+    }));
+
+    video.transcripts = ResponseWrapper.wrap(video.transcripts.map(transcript => {
+        transcript.collocations = ResponseWrapper.deepWrap(transcript.collocations, ['usage_examples']);
+        return transcript;
+    }));
+
+    return res.send(video);
 };
 
-module.exports.unlike = async (req, res, next) => {
-    let video;
+module.exports.like = async (req, res, next) => {
+    let video, like;
 
     try {
         video = await Video.findByPrimary(parseInt(req.params[k.Attr.Id]));
@@ -301,14 +267,40 @@ module.exports.unlike = async (req, res, next) => {
         return next(new GetNativeError(k.Error.ResourceNotFound));
     }
 
+    video = video.get({
+        plain: true
+    });
+
     try {
-        await Like.destroy({
-            where: {
-                video_id: video[k.Attr.Id],
-                user_id: req.user[k.Attr.Id]
-            },
-            limit: 1
-        });
+        like = await Like.create({video_id: video[k.Attr.Id], user_id: req.user[k.Attr.Id]});
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!like) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.CreateResourceFailure));
+    }
+
+    return res.sendStatus(204);
+};
+
+module.exports.unlike = async (req, res, next) => {
+    let video;
+
+    try {
+        video = await Video.findByPrimary(+req.params[k.Attr.Id]);
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!video) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    try {
+        await Like.destroy({where: {video_id: video[k.Attr.Id], user_id: +req.user[k.Attr.Id]}, limit: 1});
     } catch (e) {
         return next(e);
     }
@@ -317,10 +309,17 @@ module.exports.unlike = async (req, res, next) => {
 };
 
 module.exports.queue = async (req, res, next) => {
+    let cuedVideo;
+
     try {
-        await CuedVideo.create({video_id: req.params.id, user_id: req.user[k.Attr.Id]});
+        cuedVideo = await CuedVideo.create({video_id: +req.params[k.Attr.Id], user_id: +req.user[k.Attr.Id]});
     } catch (e) {
         return next(e);
+    }
+
+    if (!cuedVideo) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.CreateResourceFailure));
     }
 
     return res.sendStatus(204);
@@ -328,7 +327,7 @@ module.exports.queue = async (req, res, next) => {
 
 module.exports.dequeue = async (req, res, next) => {
     try {
-        await CuedVideo.destroy({where: {video_id: req.params.id, user_id: req.user[k.Attr.Id]}, limit: 1});
+        await CuedVideo.destroy({where: {video_id: +req.params[k.Attr.Id], user_id: +req.user[k.Attr.Id]}, limit: 1});
     } catch (e) {
         return next(e);
     }
@@ -348,9 +347,6 @@ module.exports.transcribe = (req, res, next) => {
         }
 
         const transcript = await Speech.transcribeVideo(files.file.path, req.query[k.Attr.LanguageCode] || 'en-US');
-
-        return res.status(200).send({
-            transcription: transcript
-        });
+        return res.status(200).send({transcription: transcript});
     });
 };

@@ -22,34 +22,32 @@ const _ = require('lodash');
 module.exports.index = async (req, res, next) => {
     let categories;
 
-    const interfaceLanguageCode = _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code));
-    const interfaceLanguageId = await Language.findIdForCode(interfaceLanguageCode);
+    const interfaceLanguageId = await Language.findIdForCode(
+        _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code))
+    );
+
+    const include = [
+        {
+            model: CategoryLocalized,
+            as: 'categories_localized',
+            attributes: [k.Attr.Name],
+            where: {language_id: interfaceLanguageId}
+        }, {
+            model: Subcategory,
+            as: 'subcategories',
+            attributes: [k.Attr.Id],
+            include: {
+                model: SubcategoryLocalized,
+                as: 'subcategories_localized',
+                attributes: [k.Attr.Name],
+                where: {language_id: interfaceLanguageId}
+            }
+
+        }
+    ];
 
     try {
-        categories = await Category.findAll({
-            attributes: [k.Attr.Id],
-            include: [
-                {
-                    model: CategoryLocalized,
-                    as: 'categories_localized',
-                    attributes: [k.Attr.Name],
-                    where: {language_id: interfaceLanguageId}
-                },
-                {
-                    model: Subcategory,
-                    as: 'subcategories',
-                    attributes: [k.Attr.Id],
-                    include: [
-                        {
-                            model: SubcategoryLocalized,
-                            as: 'subcategories_localized',
-                            attributes: [k.Attr.Name],
-                            where: {language_id: interfaceLanguageId}
-                        }
-                    ]
-                }
-            ]
-        });
+        categories = await Category.findAll({attributes: [k.Attr.Id], include: include});
     } catch (e) {
         return next(e);
     }
@@ -69,12 +67,10 @@ module.exports.index = async (req, res, next) => {
         });
 
         category.subcategories = _.zipObject(['records', 'count'], [category.subcategories, category.subcategories.length]);
-
         return category;
     });
 
     categories = _.zipObject(['records', 'count'], [categories, categories.length]);
-
     return res.send(categories);
 };
 
@@ -86,9 +82,7 @@ module.exports.show = async (req, res, next) => {
 
     try {
         category = await Category.findByPrimary(req.params[k.Attr.Id], {
-            attributes: [
-                k.Attr.Id, k.Attr.Name, categoryCreatedAt, categoryUpdatedAt
-            ]
+            attributes: [k.Attr.Id, k.Attr.Name, categoryCreatedAt, categoryUpdatedAt]
         });
     } catch (e) {
         return next(e);
@@ -108,23 +102,18 @@ module.exports.show = async (req, res, next) => {
 
     try {
         subcategories = await Subcategory.findAll({
-            where: {
-                category_id: req.params[k.Attr.Id]
-            },
-            attributes: [
-                k.Attr.Id, k.Attr.Name, subcategoryCreatedAt, subcategoryUpdatedAt
-            ]
+            where: {category_id: req.params[k.Attr.Id]},
+            attributes: [k.Attr.Id, k.Attr.Name, subcategoryCreatedAt, subcategoryUpdatedAt]
         });
     } catch (e) {
         return next(e);
     }
 
-    if (!subcategories) {
-        subcategories = [];
+    if (_.size(subcategories) === 0) {
+        return res.send({records: [], count: 0});
     }
 
     category.subcategories = _.zipObject(['records', 'count'], [subcategories, subcategories.length]);
-
     return res.send(category);
 };
 
@@ -136,13 +125,7 @@ module.exports.update = async (req, res, next) => {
     }
 
     try {
-        [updateCount] = await Category.update({
-            name: req.body[k.Attr.Name]
-        }, {
-            where: {
-                id: req.params[k.Attr.Id]
-            }
-        });
+        [updateCount] = await Category.update({name: req.body[k.Attr.Name]}, {where: {id: req.params[k.Attr.Id]}});
     } catch (e) {
         return next(e);
     }
@@ -172,6 +155,5 @@ module.exports.create = async (req, res, next) => {
     }
 
     res.set(k.Header.Location, `/categories/${category.get(k.Attr.Id)}`);
-
     return res.sendStatus(201);
 };

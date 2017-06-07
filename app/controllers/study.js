@@ -43,47 +43,58 @@ module.exports.stats = (req, res, next) => {
 };
 
 module.exports.writing_answers = async (req, res, next) => {
-    const createdAt = ModelService.getDateAttrForTableColumnTZOffset(k.Model.WritingAnswer, k.Attr.CreatedAt, req.query.time_zone_offset);
+    let writingAnswers;
 
+    const createdAt = ModelService.getDateAttrForTableColumnTZOffset(k.Model.WritingAnswer, k.Attr.CreatedAt, req.query.time_zone_offset);
     const languageId = await Language.findIdForCode(req.params.lang);
 
-    return WritingAnswer.scope([
+    const scopes = [
         'newestFirst',
         {method: ['forUserWithLang', req.user[k.Attr.Id], req.params.lang]},
         {method: ['since', req.query.since]},
         {method: ['maxId', req.query.max_id]}
-    ]).findAll({
-        attributes: [k.Attr.Id, k.Attr.Answer, createdAt, k.Attr.StudySessionId],
-        include: [
-            {
-                model: WritingQuestion,
-                as: 'writing_question',
-                attributes: [k.Attr.Id],
-                include: [{
-                    model: WritingQuestionLocalized,
-                    as: 'writing_questions_localized',
-                    attributes: [k.Attr.Text],
-                    where: {
-                        language_id: languageId
-                    }
-                }]
-            }
-        ],
-        limit: 10
-    }).then(answers => {
-        const answersAsJson = ResponseWrapper.wrap(answers.map(a => {
-            let json = a.get({plain: true});
-            json.lang = req.params.lang;
+    ];
 
-            json.writing_question[k.Attr.Text] = _.first(json.writing_question.writing_questions_localized)[k.Attr.Text];
-            delete json.writing_question.writing_questions_localized;
-            delete json.writing_question[k.Attr.Id];
+    const include = {
+        model: WritingQuestion,
+        as: 'writing_question',
+        attributes: [k.Attr.Id],
+        include: {
+            model: WritingQuestionLocalized,
+            as: 'writing_questions_localized',
+            attributes: [k.Attr.Text],
+            where: {language_id: languageId}
+        }
+    };
 
-            return json;
-        }));
+    const attributes = [k.Attr.Id, k.Attr.Answer, createdAt, k.Attr.StudySessionId];
 
-        res.send(answersAsJson);
-    }).catch(next);
+    try {
+        writingAnswers = await WritingAnswer.scope(scopes).findAll({attributes: attributes, include: include, limit: 10});
+    } catch (e) {
+        return next(e);
+    }
+
+    if (_.size(writingAnswers) === 0) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    writingAnswers = _.invokeMap(writingAnswers, 'get', {
+        plain: true
+    });
+
+    writingAnswers = ResponseWrapper.wrap(writingAnswers.map(writingAnswer => {
+        writingAnswer.lang = req.params.lang;
+
+        writingAnswer.writing_question[k.Attr.Text] = _.first(writingAnswer.writing_question.writing_questions_localized)[k.Attr.Text];
+        delete writingAnswer.writing_question.writing_questions_localized;
+        delete writingAnswer.writing_question[k.Attr.Id];
+
+        return writingAnswer;
+    }));
+
+    return res.send(writingAnswers);
 };
 
 module.exports.createStudySession = (req, res, next) => {
@@ -109,10 +120,21 @@ module.exports.createStudySession = (req, res, next) => {
     }).catch(next);
 };
 
-module.exports.complete = (req, res, next) => {
-    return StudySession.update({is_completed: true}, {where: {id: req.body.id}}).then(function() {
-        res.sendStatus(204);
-    }).catch(next);
+module.exports.complete = async (req, res, next) => {
+    let updateCount;
+
+    try {
+        [updateCount] = await StudySession.update({is_completed: true}, {where: {id: req.body[k.Attr.Id]}});
+    } catch (e) {
+        return next(e);
+    }
+
+    if (updateCount === 0) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    return res.sendStatus(204);
 };
 
 module.exports.createWritingAnswer = (req, res, next) => {
