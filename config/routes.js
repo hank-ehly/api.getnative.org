@@ -49,7 +49,7 @@ router.get(  '/study/:lang/stats',           ValidateParams(pv.study.stats),    
 router.get(  '/study/:lang/writing_answers', ValidateParams(pv.study.writing_answers),         Authenticate, ctrl.study.writing_answers);
 router.post( '/study/writing_answers',       ValidateParams(pv.study.createWritingAnswer),     Authenticate, ctrl.study.createWritingAnswer);
 router.get(  '/speakers/:id',                ValidateParams(pv.speakers.show),                 Authenticate, ctrl.speakers.show);
-router.get(  '/subcategories/:id/writing_questions', ValidateParams(pv.subcategories.writing_questions), Authenticate, ctrl.subcategories.writingQuestions);
+router.get(  '/videos/:id/writing_questions',ValidateParams(pv.writingQuestions.index),        Authenticate, ctrl['writing-questions'].index);
 router.get(  '/videos',                      ValidateParams(pv.videos.index),                  Authenticate, ctrl.videos.index);
 router.get(  '/videos/:id',                  ValidateParams(pv.videos.show),                   Authenticate, ctrl.videos.show);
 router.post( '/videos/:id/dequeue',          ValidateParams(pv.videos.dequeue),                Authenticate, ctrl.videos.dequeue);

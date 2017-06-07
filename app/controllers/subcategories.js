@@ -17,62 +17,6 @@ const Subcategory = db[k.Model.Subcategory];
 
 const _ = require('lodash');
 
-module.exports.writingQuestions = async (req, res, next) => {
-    let questions;
-
-    const interfaceLanguageCode = _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code));
-    const interfaceLanguageId = await Language.findIdForCode(interfaceLanguageCode);
-
-    const conditions = {
-        where: {
-            subcategory_id: req.params[k.Attr.Id]
-        },
-        attributes: [
-            k.Attr.Id
-        ],
-        include: [
-            {
-                model: WritingQuestionLocalized,
-                as: 'writing_questions_localized',
-                attributes: [
-                    k.Attr.Text, k.Attr.ExampleAnswer
-                ],
-                where: {
-                    language_id: interfaceLanguageId
-                }
-            }
-        ]
-    };
-
-    if (req.query.count) {
-        conditions.limit = +req.query.count;
-    }
-
-    try {
-        questions = await WritingQuestion.findAll(conditions);
-    } catch (e) {
-        return next(e);
-    }
-
-    if (_.size(questions) === 0) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.ResourceNotFound));
-    }
-
-    questions = _.invokeMap(questions, 'get', {plain: true});
-
-    questions = _.map(questions, question => {
-        question[k.Attr.Text] = _.first(question.writing_questions_localized)[k.Attr.Text];
-        question[k.Attr.ExampleAnswer] = _.first(question.writing_questions_localized)[k.Attr.ExampleAnswer];
-        delete question.writing_questions_localized;
-        return question;
-    });
-
-    questions = _.zipObject(['records', 'count'], [questions, questions.length]);
-
-    return res.status(200).send(questions);
-};
-
 module.exports.show = async (req, res, next) => {
     let subcategory;
 
