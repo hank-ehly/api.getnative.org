@@ -9,7 +9,8 @@ const SpecUtil = require('../../spec-util');
 const Utility  = require('../../../app/services')['Utility'];
 const k        = require('../../../config/keys.json');
 
-const Promise  = require('bluebird');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const request  = require('supertest');
 const assert   = require('assert');
 const _        = require('lodash');
@@ -22,7 +23,7 @@ describe('GET /videos', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -41,24 +42,10 @@ describe('GET /videos', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
-    describe('response.headers', function() {
-        it('should respond with an X-GN-Auth-Token header', function() {
-            return request(server).get('/videos').set('authorization', authorization).then(function(response) {
-                assert(response.header['x-gn-auth-token'].length > 0);
-            });
-        });
-
-        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
-            return request(server).get('/videos').set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isParsableTimestamp(+response.header['x-gn-auth-expire']));
-            });
-        });
-    });
-
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).get('/videos').expect(401, done);
         });
@@ -123,7 +110,19 @@ describe('GET /videos', function() {
         // todo: bad time_zone_offset
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
+        it('should respond with an X-GN-Auth-Token header', function() {
+            return request(server).get('/videos').set('authorization', authorization).then(function(response) {
+                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
+            });
+        });
+
+        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
+            return request(server).get('/videos').set('authorization', authorization).then(function(response) {
+                assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
+            });
+        });
+
         it('should receive a 200 OK response for a valid request', function(done) {
             request(server).get('/videos').set('authorization', authorization).expect(200, done);
         });
@@ -339,6 +338,26 @@ describe('GET /videos', function() {
                     });
                 });
             });
+        });
+
+        it('should localize the subcategory name based on the interface_lang query parameter if present', async function() {
+            const response = await request(server).get(`/videos`).query({interface_lang: 'ja'}).set('authorization', authorization);
+            assert(/[^a-z]/i.test(_.first(response.body.records).subcategory[k.Attr.Name]));
+        });
+
+        it('should localize the subcategory name based on the user preferred interface language if the interface_lang query parameter is missing', async function() {
+            const response = await request(server).get(`/videos`).set('authorization', authorization);
+            assert(/[a-z]/i.test(_.first(response.body.records).subcategory[k.Attr.Name]));
+        });
+
+        it('should localize the speaker name based on the interface_lang query parameter if present', async function() {
+            const response = await request(server).get(`/videos`).query({interface_lang: 'ja'}).set('authorization', authorization);
+            assert(_.startsWith(_.first(response.body.records).speaker[k.Attr.Name], 'ja'));
+        });
+
+        it('should localize the speaker name based on the user preferred interface language if the interface_lang query parameter is missing', async function() {
+            const response = await request(server).get(`/videos`).set('authorization', authorization);
+            assert(_.startsWith(_.first(response.body.records).speaker[k.Attr.Name], 'en'));
         });
 
         // todo e2e (check the category_id and subcategory_id don't conflict

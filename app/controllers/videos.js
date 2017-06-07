@@ -5,63 +5,122 @@
  * Created by henryehly on 2017/01/18.
  */
 
-const k               = require('../../config/keys.json');
-const logger          = require('../../config/logger');
-const services        = require('../services');
+const k = require('../../config/keys.json');
+const logger = require('../../config/logger');
+const services = require('../services');
 const ResponseWrapper = services['ResponseWrapper'];
-const GetNativeError  = services['GetNativeError'];
-const Speech          = services['Speech'];
-const db              = require('../models');
-const ModelHelper     = services['Model'](db);
-const Subcategory     = db[k.Model.Subcategory];
-const CuedVideo       = db[k.Model.CuedVideo];
-const Language        = db[k.Model.Language];
-const Speaker         = db[k.Model.Speaker];
-const Video           = db[k.Model.Video];
-const Like            = db[k.Model.Like];
+const GetNativeError = services['GetNativeError'];
+const Speech = services['Speech'];
+const db = require('../models');
+const ModelHelper = services['Model'](db);
+const Subcategory = db[k.Model.Subcategory];
+const SubcategoryLocalized = db[k.Model.SubcategoryLocalized];
+const CuedVideo = db[k.Model.CuedVideo];
+const Language = db[k.Model.Language];
+const Speaker = db[k.Model.Speaker];
+const SpeakerLocalized = db[k.Model.SpeakerLocalized];
+const Video = db[k.Model.Video];
+const Like = db[k.Model.Like];
 
-const exec            = require('child_process').exec;
-const Promise         = require('bluebird');
-const formidable      = require('formidable');
-const _               = require('lodash');
+const exec = require('child_process').exec;
+const Promise = require('bluebird');
+const formidable = require('formidable');
+const _ = require('lodash');
 
-module.exports.index = (req, res, next) => {
-    const conditions = {};
+module.exports.index = async (req, res, next) => {
+    let videos, conditions = {};
 
-    return Language.find({where: {code: req.body.lang || 'en'}}).then(language => {
-        conditions.language_id = language.get(k.Attr.Id);
+    const interfaceLanguageCode = _.defaultTo(req.query.interface_lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code));
+    const interfaceLanguageId = await Language.findIdForCode(interfaceLanguageCode);
 
-        return Subcategory.findIdsForCategoryIdOrSubcategoryId(req.query);
-    }).then(subcategoryIds => {
-        if (subcategoryIds.length) {
-            conditions.subcategory_id = {$in: subcategoryIds};
+    conditions.language_id = await Language.findIdForCode(_.defaultTo(req.body.lang, 'en'));
+
+    const subcategoryIds = await Subcategory.findIdsForCategoryIdOrSubcategoryId(req.query);
+
+    if (subcategoryIds.length) {
+        conditions.subcategory_id = {$in: subcategoryIds};
+    }
+
+    const createdAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
+    const cued = Video.getCuedAttributeForUserId(req.user[k.Attr.Id]);
+    const attributes = [createdAt, k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length, cued];
+
+    const scopes = [
+        'newestFirst',
+        {method: ['cuedAndMaxId', req.query.cued_only, req.user[k.Attr.Id], req.query.max_id]},
+        {method: ['count', req.query.count]}
+    ];
+
+    const include = [
+        {
+            model: Speaker,
+            as: 'speaker',
+            attributes: [
+                k.Attr.Id
+            ],
+            include: [
+                {
+                    model: SpeakerLocalized,
+                    as: 'speakers_localized',
+                    attributes: [
+                        k.Attr.Name
+                    ],
+                    where: {
+                        language_id: interfaceLanguageId
+                    }
+                }
+            ]
+        }, {
+            model: Subcategory,
+            as: 'subcategory',
+            attributes: [
+                k.Attr.Id
+            ],
+            include: [
+                {
+                    model: SubcategoryLocalized,
+                    as: 'subcategories_localized',
+                    attributes: [
+                        k.Attr.Name
+                    ],
+                    where: {
+                        language_id: interfaceLanguageId
+                    }
+                }
+            ]
         }
+    ];
 
-        const createdAt  = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
-        const cued       = Video.getCuedAttributeForUserId(req.user[k.Attr.Id]);
-        const attributes = [createdAt, k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length, cued];
+    try {
+        videos = await Video.scope(scopes).findAll({attributes: attributes, where: conditions, include: include});
+    } catch (e) {
+        return next(e);
+    }
 
-        const scopes = [
-            'newestFirst',
-            {method: ['cuedAndMaxId', req.query.cued_only, req.user[k.Attr.Id], req.query.max_id]},
-            {method: ['count', req.query.count]},
-            {method: ['includeSubcategoryNameAndId', Subcategory]},
-            {method: ['includeSpeakerName', Speaker]}
-        ];
-
-        return Video.scope(scopes).findAll({
-            attributes: attributes,
-            where: conditions
+    if (_.size(videos) === 0) {
+        return res.send({
+            records: [],
+            count: 0
         });
-    }).then(videos => {
-        const videosAsJson = ResponseWrapper.wrap(videos.map(v => {
-            v = v.get({plain: true});
-            v.cued = v.cued === 1;
-            return v;
-        }));
+    }
 
-        res.send(videosAsJson)
-    }).catch(next);
+    videos = _.invokeMap(videos, 'get', {
+        plain: true
+    });
+
+    videos = ResponseWrapper.wrap(videos.map(video => {
+        video.cued = video.cued === 1;
+
+        video.speaker[k.Attr.Name] = _.first(video.speaker.speakers_localized)[k.Attr.Name];
+        delete video.speaker.speakers_localized;
+
+        video.subcategory[k.Attr.Name] = _.first(video.subcategory.subcategories_localized)[k.Attr.Name];
+        delete video.subcategory.subcategories_localized;
+
+        return video;
+    }));
+
+    return res.send(videos)
 };
 
 module.exports.show = (req, res, next) => {
