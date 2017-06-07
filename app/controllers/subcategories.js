@@ -18,32 +18,10 @@ const Subcategory = db[k.Model.Subcategory];
 const _ = require('lodash');
 
 module.exports.writingQuestions = async (req, res, next) => {
-    let questions, interfaceLanguageId;
+    let questions;
 
-    // todo: DRY
-    if (req.query.lang) {
-        let requestedLanguage;
-        try {
-            const predicate = {
-                where: {
-                    code: req.query.lang
-                },
-                attributes: [k.Attr.Id]
-            };
-
-            requestedLanguage = await Language.find(predicate);
-        } catch (e) {
-            return next(e);
-        }
-
-        if (requestedLanguage) {
-            interfaceLanguageId = requestedLanguage.get(k.Attr.Id)
-        } else {
-            interfaceLanguageId = req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Id)
-        }
-    } else {
-        interfaceLanguageId = req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Id)
-    }
+    const interfaceLanguageCode = _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code));
+    const interfaceLanguageId = await Language.findIdForCode(interfaceLanguageCode);
 
     const conditions = {
         where: {

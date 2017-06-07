@@ -15,31 +15,10 @@ const GetNativeError = require('../services')['GetNativeError'];
 const _ = require('lodash');
 
 module.exports.show = async (req, res, next) => {
-    let speaker, interfaceLanguageId;
+    let speaker;
 
-    // todo: this is the same as in category.index -- should refactor
-    if (req.query.lang) {
-        let requestedLanguage;
-        try {
-            requestedLanguage = await Language.find({
-                where: {
-                    code: req.query.lang
-                },
-                attributes: [k.Attr.Id]
-            });
-        } catch (e) {
-            return next(e);
-        }
-
-        if (requestedLanguage) {
-            interfaceLanguageId = requestedLanguage.get(k.Attr.Id)
-        } else {
-            interfaceLanguageId = req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Id)
-        }
-    } else {
-        interfaceLanguageId = req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Id)
-    }
-    //
+    const interfaceLanguageCode = _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code));
+    const interfaceLanguageId = await Language.findIdForCode(interfaceLanguageCode);
 
     try {
         speaker = await Speaker.findByPrimary(req.params[k.Attr.Id], {
