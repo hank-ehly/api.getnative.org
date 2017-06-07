@@ -287,46 +287,53 @@ module.exports.like = (req, res, next) => {
     });
 };
 
-module.exports.unlike = (req, res, next) => {
-    return Video.findByPrimary(parseInt(req.params[k.Attr.Id])).then(video => {
-        if (!video) {
-            throw new GetNativeError(k.Error.ResourceNotFound);
-        }
+module.exports.unlike = async (req, res, next) => {
+    let video;
 
-        return Like.destroy({
+    try {
+        video = await Video.findByPrimary(parseInt(req.params[k.Attr.Id]));
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!video) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    try {
+        await Like.destroy({
             where: {
                 video_id: video[k.Attr.Id],
                 user_id: req.user[k.Attr.Id]
             },
             limit: 1
         });
-    }).then(() => {
-        res.sendStatus(204);
-    }).catch(e => {
-        res.status(404);
-        next(e);
-    });
+    } catch (e) {
+        return next(e);
+    }
+
+    res.sendStatus(204);
 };
 
-module.exports.queue = (req, res, next) => {
-    return CuedVideo.create({
-        video_id: req.params.id,
-        user_id: req.user[k.Attr.Id]
-    }).then(() => {
-        res.sendStatus(204);
-    }).catch(next);
+module.exports.queue = async (req, res, next) => {
+    try {
+        await CuedVideo.create({video_id: req.params.id, user_id: req.user[k.Attr.Id]});
+    } catch (e) {
+        return next(e);
+    }
+
+    return res.sendStatus(204);
 };
 
-module.exports.dequeue = (req, res, next) => {
-    return CuedVideo.destroy({
-        where: {
-            video_id: req.params.id,
-            user_id: req.user[k.Attr.Id]
-        },
-        limit: 1
-    }).then(() => {
-        res.sendStatus(204);
-    }).catch(next);
+module.exports.dequeue = async (req, res, next) => {
+    try {
+        await CuedVideo.destroy({where: {video_id: req.params.id, user_id: req.user[k.Attr.Id]}, limit: 1});
+    } catch (e) {
+        return next(e);
+    }
+
+    return res.sendStatus(204);
 };
 
 module.exports.transcribe = (req, res, next) => {
@@ -335,15 +342,14 @@ module.exports.transcribe = (req, res, next) => {
     form.parse(req, async (err, fields, files) => {
         if (err) {
             return next(err);
-        }
-        else if (_.size(files) === 0) {
+        } else if (_.size(files) === 0) {
             res.status(400);
             return next(new GetNativeError(k.Error.FileMissing));
         }
 
         const transcript = await Speech.transcribeVideo(files.file.path, req.query[k.Attr.LanguageCode] || 'en-US');
 
-        res.status(200).send({
+        return res.status(200).send({
             transcription: transcript
         });
     });
