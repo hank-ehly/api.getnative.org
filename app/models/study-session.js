@@ -5,8 +5,10 @@
  * Created by henryehly on 2017/02/24.
  */
 
+const k = require('../../config/keys.json');
+
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define('StudySession', {
+    return sequelize.define(k.Model.StudySession, {
         study_time: {
             allowNull: false,
             type: DataTypes.INTEGER,
@@ -22,9 +24,9 @@ module.exports = function(sequelize, DataTypes) {
         underscored: true,
         updatedAt: false,
         associations: function(models) {
-            models.StudySession.belongsTo(models.User);
-            models.StudySession.belongsTo(models.Video);
-            models.StudySession.hasOne(models.WritingAnswer);
+            models[k.Model.StudySession].belongsTo(models[k.Model.User], {as: 'user'});
+            models[k.Model.StudySession].belongsTo(models[k.Model.Video], {as: 'video'});
+            models[k.Model.StudySession].hasOne(models[k.Model.WritingAnswer], {as: 'writing_answer'});
         }
     });
 };
