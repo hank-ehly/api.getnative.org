@@ -134,32 +134,32 @@ describe('GET /speakers/:id', function() {
 
         it('should localize the speaker description based on the lang query parameter if it is present', async function() {
             const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).query({lang: 'ja'}).set('authorization', authorization);
-            assert(_.startsWith(response.body[k.Attr.Description], 'ja'));
+            assert(/[^a-z]/i.test(response.body[k.Attr.Description]));
         });
 
         it('should localize the speaker description based on the user preferred interface language if no lang query parameter is present', async function() {
             const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization);
-            assert(_.startsWith(response.body[k.Attr.Description], 'en'));
+            assert(/[a-z]/i.test(response.body[k.Attr.Description]));
         });
 
         it('should localize the speaker name based on the lang query parameter if it is present', async function() {
             const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).query({lang: 'ja'}).set('authorization', authorization);
-            assert(_.startsWith(response.body[k.Attr.Name], 'ja'));
+            assert(/[^a-z]/i.test(response.body[k.Attr.Name]));
         });
 
         it('should localize the speaker name based on the user preferred interface language if no lang query parameter is present', async function() {
             const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization);
-            assert(_.startsWith(response.body[k.Attr.Name], 'en'));
+            assert(/[a-z]/i.test(response.body[k.Attr.Name]));
         });
 
         it('should localize the speaker location based on the lang query parameter if it is present', async function() {
             const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).query({lang: 'ja'}).set('authorization', authorization);
-            assert(_.startsWith(response.body[k.Attr.Location], 'ja'));
+            assert(/[^a-z]/i.test(response.body[k.Attr.Location]));
         });
 
         it('should localize the speaker location based on the user preferred interface language if no lang query parameter is present', async function() {
             const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization);
-            assert(_.startsWith(response.body[k.Attr.Location], 'en'));
+            assert(/[a-z]/i.test(response.body[k.Attr.Location]));
         });
     });
 });
