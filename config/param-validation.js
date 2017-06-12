@@ -5,15 +5,16 @@
  * Created by henryehly on 2017/01/22.
  */
 
+const k = require('../config/keys.json');
+const validLangCodes = require('../config/application').config.get(k.VideoLanguageCodes);
+const GoogleCloudSpeechLanguageCodes = require('./google-cloud-speech-language-codes.json');
+
 const Joi = require('joi');
 
 const regex = {
     email: /[a-z0-9!#$%&\'*+/=?^_`{|}~.-]+@[a-z0-9-]+(\.[a-z0-9-]+)*/,
     timeZoneOffset: /^-*[0-9]+$/
 };
-
-const validLangCodes = ['en', 'ja'];
-const GoogleCloudSpeechLanguageCodes = require('./google-cloud-speech-language-codes.json');
 
 const schema = {
     users: {
@@ -73,9 +74,6 @@ const schema = {
         create: {
             headers: {
                 authorization: Joi.string().required()
-            },
-            body: {
-                name: Joi.string().min(1).max(50).required()
             }
         },
         index: {

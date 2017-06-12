@@ -43,6 +43,8 @@ function Config() {
     const jwtKeyPair = require('./secrets/jwt-keypair.json');
     nconf.set(k.PrivateKey, jwtKeyPair.privateKey);
     nconf.set(k.PublicKey, jwtKeyPair.publicKey);
+
+    nconf.set(k.VideoLanguageCodes, ['en', 'ja']);
 }
 
 Config.prototype.get = function(key) {

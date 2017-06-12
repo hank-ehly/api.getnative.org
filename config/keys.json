@@ -144,5 +144,6 @@
         "EmailVerified": "email-verified",
         "PasswordUpdated": "password-updated",
         "Welcome": "welcome"
-    }
+    },
+    "VideoLanguageCodes": "kVideoLanguageCodes"
 }

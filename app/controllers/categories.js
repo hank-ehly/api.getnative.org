@@ -7,6 +7,7 @@
 
 const k = require('../../config/keys.json');
 const db = require('../models');
+const config = require('../../config/application').config;
 const Category = db[k.Model.Category];
 const CategoryLocalized = db[k.Model.CategoryLocalized];
 const Subcategory = db[k.Model.Subcategory];
@@ -22,9 +23,8 @@ const _ = require('lodash');
 module.exports.index = async (req, res, next) => {
     let categories;
 
-    const interfaceLanguageId = await Language.findIdForCode(
-        _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code))
-    );
+    const interfaceLanguageId = await Language.findIdForCode(_.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage)
+        .get(k.Attr.Code)));
 
     const include = [
         {
@@ -47,7 +47,10 @@ module.exports.index = async (req, res, next) => {
     ];
 
     try {
-        categories = await Category.findAll({attributes: [k.Attr.Id], include: include});
+        categories = await Category.findAll({
+            attributes: [k.Attr.Id],
+            include: include
+        });
     } catch (e) {
         return next(e);
     }
@@ -108,8 +111,7 @@ module.exports.show = async (req, res, next) => {
     });
 
     category.categories_localized = _.zipObject(['records', 'count'], [
-        category.categories_localized,
-        category.categories_localized.length
+        category.categories_localized, category.categories_localized.length
     ]);
 
     const subcategoryCreatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Subcategory, k.Attr.CreatedAt);
@@ -133,7 +135,10 @@ module.exports.show = async (req, res, next) => {
     }
 
     if (_.size(subcategories) === 0) {
-        return res.send({records: [], count: 0});
+        return res.send({
+            records: [],
+            count: 0
+        });
     }
 
     subcategories = _.invokeMap(subcategories, 'get', {
@@ -151,19 +156,58 @@ module.exports.show = async (req, res, next) => {
 };
 
 module.exports.create = async (req, res, next) => {
-    let category;
+    let category, languages;
+    const categoriesLocalized = [], languageCodes = config.get(k.VideoLanguageCodes);
 
     try {
-        category = await Category.create({
-            name: req.body[k.Attr.Name]
+        languages = await Language.findAll({
+            attributes: [k.Attr.Id, k.Attr.Code]
         });
     } catch (e) {
         return next(e);
     }
 
+    if (_.size(languages) === 0) {
+        throw new ReferenceError('language variable is undefined');
+    }
+
+    languages = _.invokeMap(languages, 'get', {
+        plain: true
+    });
+
+    const transaction = await db.sequelize.transaction();
+
+    try {
+        category = await Category.create({
+            name: req.body[k.Attr.Name]
+        }, {transaction: transaction});
+
+        for (let code of languageCodes) {
+            let newCategoryLocalized = await CategoryLocalized.create({
+                category_id: category.get(k.Attr.Id),
+                language_id: _.find(languages, {code: code})[k.Attr.Id]
+            }, {transaction: transaction});
+
+            if (newCategoryLocalized) {
+                categoriesLocalized.push(newCategoryLocalized);
+            }
+        }
+
+        await transaction.commit();
+    } catch (e) {
+        await transaction.rollback();
+        return next(e);
+    }
+
     if (!category) {
+        await transaction.rollback();
         res.status(500);
         return next(new GetNativeError(k.Error.CreateResourceFailure));
+    }
+
+    if (categoriesLocalized.length !== languageCodes.length) {
+        await transaction.rollback();
+        throw new Error('length of categoriesLocalized does not equal length of languageCodes');
     }
 
     res.set(k.Header.Location, `/categories/${category.get(k.Attr.Id)}`);
