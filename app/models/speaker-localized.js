@@ -8,7 +8,7 @@
 const k = require('../../config/keys.json');
 
 module.exports = function(sequelize, DataTypes) {
-    const Speaker = sequelize.define(k.Model.SpeakerLocalized, {
+    return sequelize.define(k.Model.SpeakerLocalized, {
         description: {
             type: DataTypes.TEXT,
             allowNull: false
@@ -31,8 +31,4 @@ module.exports = function(sequelize, DataTypes) {
             models[k.Model.SpeakerLocalized].belongsTo(models[k.Model.Language], {as: 'language'});
         }
     });
-
-    Speaker.removeAttribute(k.Attr.Id);
-
-    return Speaker;
 };

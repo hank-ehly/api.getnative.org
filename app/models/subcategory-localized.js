@@ -10,7 +10,7 @@ const k = require('../../config/keys.json');
 const _ = require('lodash');
 
 module.exports = function(sequelize, DataTypes) {
-    const SubcategoryLocalized = sequelize.define(k.Model.SubcategoryLocalized, {
+    return sequelize.define(k.Model.SubcategoryLocalized, {
         name: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -24,8 +24,4 @@ module.exports = function(sequelize, DataTypes) {
             models[k.Model.SubcategoryLocalized].belongsTo(models[k.Model.Language], {as: 'language'});
         }
     });
-
-    SubcategoryLocalized.removeAttribute(k.Attr.Id);
-
-    return SubcategoryLocalized;
 };

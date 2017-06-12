@@ -80,23 +80,19 @@ module.exports.show = async (req, res, next) => {
     const categoryCreatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Category, k.Attr.CreatedAt);
     const categoryUpdatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Category, k.Attr.UpdatedAt);
 
-    const localizedCategories = [
-        {
-            model: CategoryLocalized,
-            as: 'categories_localized',
-            attributes: [k.Attr.Name],
-            include: {
-                model: Language,
-                as: 'language',
-                attributes: [k.Attr.Name, k.Attr.Code]
-            }
-        }
-    ];
-
     try {
         category = await Category.findByPrimary(req.params[k.Attr.Id], {
             attributes: [k.Attr.Id, categoryCreatedAt, categoryUpdatedAt],
-            include: localizedCategories
+            include: {
+                model: CategoryLocalized,
+                as: 'categories_localized',
+                attributes: [k.Attr.Name],
+                include: {
+                    model: Language,
+                    as: 'language',
+                    attributes: [k.Attr.Name, k.Attr.Code]
+                }
+            }
         });
     } catch (e) {
         return next(e);

@@ -8,6 +8,12 @@
 module.exports = {
     up: function(queryInterface, Sequelize) {
         return queryInterface.createTable('speakers_localized', {
+            id: {
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+                type: Sequelize.INTEGER
+            },
             language_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
@@ -16,8 +22,7 @@ module.exports = {
                     key: 'id'
                 },
                 onUpdate: 'restrict',
-                onDelete: 'restrict',
-                primaryKey: true
+                onDelete: 'restrict'
             },
             speaker_id: {
                 type: Sequelize.INTEGER,
@@ -27,8 +32,7 @@ module.exports = {
                     key: 'id'
                 },
                 onUpdate: 'restrict',
-                onDelete: 'restrict',
-                primaryKey: true
+                onDelete: 'restrict'
             },
             description: {
                 type: Sequelize.TEXT,
