@@ -202,6 +202,20 @@ const schema = {
             }
         }
     },
+    subcategoriesLocalized: {
+        update: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                subcategory_id: Joi.number().integer().min(1).required(),
+                subcategories_localized_id: Joi.number().integer().min(1).required()
+            },
+            body: {
+                name: Joi.string().min(1).max(50)
+            }
+        }
+    },
     videos: {
         index: {
             headers: {
