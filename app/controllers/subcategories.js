@@ -7,9 +7,6 @@
 
 const k = require('../../config/keys.json');
 const db = require('../models');
-const WritingQuestion = db[k.Model.WritingQuestion];
-const WritingQuestionLocalized = db[k.Model.WritingQuestionLocalized];
-const Language = db[k.Model.Language];
 const Subcategory = db[k.Model.Subcategory];
 const services = require('../services');
 const ModelHelper = services['Model'](db);
@@ -20,12 +17,25 @@ const _ = require('lodash');
 module.exports.show = async (req, res, next) => {
     let subcategory;
 
-    const subcategoryCreatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Subcategory, k.Attr.CreatedAt);
-    const subcategoryUpdatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Subcategory, k.Attr.UpdatedAt);
+    const createdAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Subcategory, k.Attr.CreatedAt);
+    const updatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Subcategory, k.Attr.UpdatedAt);
 
     const subcategoryPredicate = {
-        where: {id: +req.params.subcategory_id, category_id: +req.params.category_id},
-        attributes: [k.Attr.Id, k.Attr.Name, subcategoryCreatedAt, subcategoryUpdatedAt]
+        where: {
+            id: +req.params.subcategory_id,
+            category_id: +req.params.category_id
+        },
+        attributes: [k.Attr.Id, createdAt, updatedAt],
+        include: {
+            model: db[k.Model.SubcategoryLocalized],
+            attributes: [k.Attr.Id, k.Attr.Name],
+            as: 'subcategories_localized',
+            include: {
+                model: db[k.Model.Language],
+                attributes: [k.Attr.Code, k.Attr.Name],
+                as: 'language'
+            }
+        }
     };
 
     try {
@@ -43,6 +53,10 @@ module.exports.show = async (req, res, next) => {
         plain: true
     });
 
+    subcategory.subcategories_localized = _.zipObject(['records', 'count'], [
+        subcategory.subcategories_localized, subcategory.subcategories_localized.length
+    ]);
+
     return res.status(200).send(subcategory);
 };
 
@@ -57,7 +71,10 @@ module.exports.update = async (req, res, next) => {
     }
 
     const subcategoryPredicate = {
-        where: {id: req.params.subcategory_id, category_id: req.params.category_id}
+        where: {
+            id: req.params.subcategory_id,
+            category_id: req.params.category_id
+        }
     };
 
     try {

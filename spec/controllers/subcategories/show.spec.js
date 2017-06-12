@@ -47,19 +47,23 @@ describe('GET /categories/:category_id/subcategories/:subcategory_id', function(
 
     describe('failure', function() {
         it('should respond with 400 Bad Request if the :category_id parameter is not a number', function(done) {
-            request(server).get('/categories/hello/subcategories/' + subcategoryId).set(k.Header.Authorization, authorization).expect(400, done);
+            request(server).get('/categories/not_a_number/subcategories/' + subcategoryId).set(k.Header.Authorization, authorization)
+                .expect(400, done);
         });
 
         it('should respond with 400 Bad Request if the :category_id parameter is 0', function(done) {
-            request(server).get('/categories/0/subcategories/' + subcategoryId).set(k.Header.Authorization, authorization).expect(400, done);
+            request(server).get('/categories/0/subcategories/' + subcategoryId).set(k.Header.Authorization, authorization)
+                .expect(400, done);
         });
 
         it('should respond with 404 Not Found if no Category for the provided :category_id exists', function(done) {
-            request(server).get('/categories/99999/subcategories/' + subcategoryId).set(k.Header.Authorization, authorization).expect(404, done);
+            request(server).get('/categories/99999/subcategories/' + subcategoryId).set(k.Header.Authorization, authorization)
+                .expect(404, done);
         });
 
         it('should respond with 400 Bad Request if the :subcategory_id parameter is not a number', function(done) {
-            request(server).get(`/categories/${categoryId}/subcategories/hello`).set(k.Header.Authorization, authorization).expect(400, done);
+            request(server).get(`/categories/${categoryId}/subcategories/not_a_number`).set(k.Header.Authorization, authorization)
+                .expect(400, done);
         });
 
         it('should respond with 400 Bad Request if the :subcategory_id parameter is 0', function(done) {
@@ -67,7 +71,8 @@ describe('GET /categories/:category_id/subcategories/:subcategory_id', function(
         });
 
         it('should respond with 404 Not Found if no Subcategory for the provided :subcategory_id exists', function(done) {
-            request(server).get(`/categories/${categoryId}/subcategories/99999`).set(k.Header.Authorization, authorization).expect(404, done);
+            request(server).get(`/categories/${categoryId}/subcategories/99999`).set(k.Header.Authorization, authorization)
+                .expect(404, done);
         });
 
         it('should respond with 404 Not Found if the Subcategory is not a child of the Category', function(done) {
@@ -86,42 +91,92 @@ describe('GET /categories/:category_id/subcategories/:subcategory_id', function(
 
     describe('success', function() {
         it('should respond with an X-GN-Auth-Token header', async function() {
-            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`).set(k.Header.Authorization, authorization);
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
             assert(_.gt(response.header[k.Header.AuthToken].length, 0));
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', async function() {
-            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`).set(k.Header.Authorization, authorization);
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
             assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
         });
 
         it('should return 200 OK for a valid request', function(done) {
-            request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`).set(k.Header.Authorization, authorization).expect(200, done);
+            request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`).set(k.Header.Authorization, authorization)
+                .expect(200, done);
         });
 
         it('should return the Subcategory whose id is equal to :subcategory_id', async function() {
-            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`).set(k.Header.Authorization, authorization);
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
             const subcategory = await db[k.Model.Subcategory].findByPrimary(subcategoryId);
             assert.equal(response.body[k.Attr.Id], subcategory.get(k.Attr.Id));
         });
 
         it('should return a top level "id" number', async function() {
-            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`).set(k.Header.Authorization, authorization);
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
             assert(_.isNumber(response.body[k.Attr.Id]));
         });
 
-        it('should return a top level "name" string', async function() {
-            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`).set(k.Header.Authorization, authorization);
-            assert(_.isString(response.body[k.Attr.Name]));
+        it('should return a top level "subcategories_localized" object', async function() {
+                const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                    .set(k.Header.Authorization, authorization);
+                assert(_.isPlainObject(response.body.subcategories_localized));
+        });
+
+        it('should return a "subcategories_localized.records" array', async function() {
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
+            assert(_.isArray(response.body.subcategories_localized.records));
+        });
+
+        it('should return a "subcategories_localized.count" number', async function() {
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
+            assert(_.isNumber(response.body.subcategories_localized.count));
+        });
+
+        it('should return a "subcategories_localized.records[N].id" number', async function() {
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
+            assert(_.isNumber(_.first(response.body.subcategories_localized.records)[k.Attr.Id]));
+        });
+
+        it('should return a "subcategories_localized.records[N].name" string', async function() {
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
+            assert(_.isString(_.first(response.body.subcategories_localized.records)[k.Attr.Name]));
+        });
+
+        it('should return a "subcategories_localized.records[N].language" object', async function() {
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
+            assert(_.isPlainObject(_.first(response.body.subcategories_localized.records).language));
+        });
+
+        it('should return a "subcategories_localized.records[N].language.code" string', async function() {
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
+            assert(_.isString(_.first(response.body.subcategories_localized.records).language[k.Attr.Code]));
+        });
+
+        it('should return a "subcategories_localized.records[N].language.name" string', async function() {
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
+            assert(_.isString(_.first(response.body.subcategories_localized.records).language[k.Attr.Name]));
         });
 
         it('should return a correctly formatted top level "created_at" string', async function() {
-            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`).set(k.Header.Authorization, authorization);
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
             assert(SpecUtil.isClientFriendlyDateString(response.body[k.Attr.CreatedAt]));
         });
 
         it('should return a correctly formatted top level "updated_at" string', async function() {
-            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`).set(k.Header.Authorization, authorization);
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
             assert(SpecUtil.isClientFriendlyDateString(response.body[k.Attr.UpdatedAt]));
         });
     });
