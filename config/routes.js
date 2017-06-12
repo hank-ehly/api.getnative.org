@@ -38,6 +38,7 @@ router.get(  '/users/me',                    ValidateParams(pv.users.me),       
 router.get(  '/categories',                  ValidateParams(pv.categories.index),              Authenticate, ctrl.categories.index);
 router.post( '/categories',                  ValidateParams(pv.categories.create), Authenticate, AdminOnly, ctrl.categories.create);
 router.get(  '/categories/:id',              ValidateParams(pv.categories.show),               Authenticate, AdminOnly, ctrl.categories.show);
+router.patch('/categories/:category_id/categories_localized/:categories_localized_id', ValidateParams(pv.categoriesLocalized.update), Authenticate, AdminOnly, ctrl['categories-localized'].update);
 router.get(  '/categories/:category_id/subcategories/:subcategory_id', ValidateParams(pv.subcategories.show), Authenticate, AdminOnly, ctrl.subcategories.show);
 router.patch('/categories/:category_id/subcategories/:subcategory_id', ValidateParams(pv.subcategories.update), Authenticate, AdminOnly, ctrl.subcategories.update);
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                           ctrl.auth.confirmEmail);

@@ -95,6 +95,20 @@ const schema = {
             }
         }
     },
+    categoriesLocalized: {
+        update: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                category_id: Joi.number().integer().min(1).required(),
+                categories_localized_id: Joi.number().integer().min(1).required()
+            },
+            body: {
+                name: Joi.string().min(1).max(50)
+            }
+        }
+    },
     sessions: {
         create: {
             body: {
@@ -184,7 +198,7 @@ const schema = {
             },
             body: {
                 category_id: Joi.number().integer().min(1),
-                name: Joi.string().min(1)
+                name: Joi.string().min(1).max(50)
             }
         }
     },
