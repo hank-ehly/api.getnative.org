@@ -119,6 +119,11 @@ describe('GET /categories/:id', function() {
             assert(_.isString(_.first(response.body.categories_localized.records)[k.Attr.Name]));
         });
 
+        it('should return a "categories_localized.records[N].id" integer', async function() {
+            const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
+            assert(_.isNumber(_.first(response.body.categories_localized.records)[k.Attr.Id]));
+        });
+
         it('should return a correctly formatted top level "created_at" string', async function() {
             const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
             assert(SpecUtil.isClientFriendlyDateString(response.body[k.Attr.CreatedAt]));

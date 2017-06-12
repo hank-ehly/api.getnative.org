@@ -15,7 +15,7 @@ const regex = {
 const validLangCodes = ['en', 'ja'];
 const GoogleCloudSpeechLanguageCodes = require('./google-cloud-speech-language-codes.json');
 
-module.exports = {
+const schema = {
     users: {
         create: {
             body: {
@@ -92,17 +92,6 @@ module.exports = {
             },
             params: {
                 id: Joi.number().integer().min(1).required()
-            }
-        },
-        update: {
-            headers: {
-                authorization: Joi.string().required()
-            },
-            params: {
-                id: Joi.number().integer().min(1).required()
-            },
-            body: {
-                name: Joi.string().min(1)
             }
         }
     },
@@ -283,3 +272,5 @@ module.exports = {
         },
     }
 };
+
+module.exports = schema;

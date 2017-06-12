@@ -86,7 +86,7 @@ module.exports.show = async (req, res, next) => {
             include: {
                 model: CategoryLocalized,
                 as: 'categories_localized',
-                attributes: [k.Attr.Name],
+                attributes: [k.Attr.Name, k.Attr.Id],
                 include: {
                     model: Language,
                     as: 'language',
@@ -148,27 +148,6 @@ module.exports.show = async (req, res, next) => {
     category.subcategories = _.zipObject(['records', 'count'], [subcategories, subcategories.length]);
 
     return res.send(category);
-};
-
-module.exports.update = async (req, res, next) => {
-    let updateCount;
-
-    if (!req.body[k.Attr.Name]) {
-        return res.sendStatus(304);
-    }
-
-    try {
-        [updateCount] = await Category.update({name: req.body[k.Attr.Name]}, {where: {id: req.params[k.Attr.Id]}});
-    } catch (e) {
-        return next(e);
-    }
-
-    if (updateCount === 0) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.ResourceNotFound));
-    }
-
-    return res.sendStatus(204);
 };
 
 module.exports.create = async (req, res, next) => {
