@@ -79,9 +79,39 @@ describe('GET /categories/:id', function() {
             assert(_.isNumber(response.body[k.Attr.Id]));
         });
 
-        it('should return a top level "name" string', async function() {
+        it('should return a top level "categories_localized" object', async function() {
             const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
-            assert(_.isString(response.body[k.Attr.Name]));
+            assert(_.isPlainObject(response.body.categories_localized));
+        });
+
+        it('should return a "categories_localized.records" array', async function() {
+            const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
+            assert(_.isArray(response.body.categories_localized.records));
+        });
+
+        it('should return a "categories_localized.count" integer', async function() {
+            const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
+            assert(_.isNumber(response.body.categories_localized.count));
+        });
+
+        it('should return a "categories_localized.records[N].language" object', async function() {
+            const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
+            assert(_.isPlainObject(_.first(response.body.categories_localized.records).language));
+        });
+
+        it('should return a "categories_localized.records[N].language.name" string', async function() {
+            const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
+            assert(_.isString(_.first(response.body.categories_localized.records).language[k.Attr.Name]));
+        });
+
+        it('should return a "categories_localized.records[N].language.code" string', async function() {
+            const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
+            assert(_.isString(_.first(response.body.categories_localized.records).language[k.Attr.Code]));
+        });
+
+        it('should return a "categories_localized.records[N].name" string', async function() {
+            const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
+            assert(_.isString(_.first(response.body.categories_localized.records)[k.Attr.Name]));
         });
 
         it('should return a correctly formatted top level "created_at" string', async function() {
