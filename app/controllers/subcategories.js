@@ -47,17 +47,12 @@ module.exports.show = async (req, res, next) => {
 };
 
 module.exports.update = async (req, res, next) => {
-    let updateCount, changes = {};
+    let updateCount;
 
-    if (req.body[k.Attr.Name]) {
-        changes[k.Attr.Name] = req.body[k.Attr.Name];
-    }
+    const changeableAttributes = ['category_id'];
+    const requestedChanges = _.pick(req.body, changeableAttributes);
 
-    if (req.body.category_id) {
-        changes.category_id = req.body.category_id;
-    }
-
-    if (_.size(changes) === 0) {
+    if (_.size(requestedChanges) === 0) {
         return res.sendStatus(304);
     }
 
@@ -66,7 +61,7 @@ module.exports.update = async (req, res, next) => {
     };
 
     try {
-        [updateCount] = await Subcategory.update(changes, subcategoryPredicate);
+        [updateCount] = await Subcategory.update(requestedChanges, subcategoryPredicate);
     } catch (e) {
         return next(e);
     }
@@ -76,7 +71,7 @@ module.exports.update = async (req, res, next) => {
         return next(new GetNativeError(k.Error.ResourceNotFound));
     }
 
-    const locationCategoryId = _.defaultTo(changes.category_id, req.params.category_id);
+    const locationCategoryId = _.defaultTo(requestedChanges.category_id, req.params.category_id);
     res.set(k.Header.Location, `/categories/${locationCategoryId}/subcategories/${req.params.subcategory_id}`);
 
     return res.sendStatus(204);

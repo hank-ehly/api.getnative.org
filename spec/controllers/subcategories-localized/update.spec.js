@@ -138,6 +138,22 @@ describe('PATCH /subcategories/:subcategory_id/subcategories_localized/:subcateg
     });
 
     describe('success', function() {
+        it('should respond with an X-GN-Auth-Token header', async function() {
+            const response = await request(server)
+                .patch(`/subcategories/${realSubcategoryId}/subcategories_localized/${realSubcategoryLocalizedId}`)
+                .set(k.Header.Authorization, authorization)
+                .send({name: randomHash});
+            assert(_.gt(response.header[k.Header.AuthToken].length, 0));
+        });
+
+        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', async function() {
+            const response = await request(server)
+                .patch(`/subcategories/${realSubcategoryId}/subcategories_localized/${realSubcategoryLocalizedId}`)
+                .set(k.Header.Authorization, authorization)
+                .send({name: randomHash});
+            assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
+        });
+
         it('should return 204 No Content if the request succeeds', function(done) {
             request(server)
                 .patch(`/subcategories/${realSubcategoryId}/subcategories_localized/${realSubcategoryLocalizedId}`)

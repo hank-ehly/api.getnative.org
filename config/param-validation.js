@@ -197,8 +197,7 @@ const schema = {
                 subcategory_id: Joi.number().integer().min(1).required()
             },
             body: {
-                category_id: Joi.number().integer().min(1),
-                name: Joi.string().min(1).max(50)
+                category_id: Joi.number().integer().min(1)
             }
         }
     },

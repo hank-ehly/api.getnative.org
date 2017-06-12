@@ -16,7 +16,7 @@ const assert = require('assert');
 const _ = require('lodash');
 
 describe('PATCH /categories/:category_id/subcategories/:subcategory_id', function() {
-    let newSubcategoryName = null;
+    let newCategoryId = null;
     let subcategoryId = null;
     let authorization = null;
     let categoryId = null;
@@ -34,9 +34,11 @@ describe('PATCH /categories/:category_id/subcategories/:subcategory_id', functio
         server = results.server;
         authorization = results.authorization;
         db = results.db;
-        categoryId = (await db[k.Model.Category].find()).get(k.Attr.Id);
-        subcategoryId = (await db[k.Model.Subcategory].find({where: {category_id: categoryId}})).get(k.Attr.Id);
-        newSubcategoryName = Auth.generateRandomHash();
+
+        let subcategory = await db[k.Model.Subcategory].find({attributes: ['category_id', k.Attr.Id]});
+        categoryId = subcategory.get('category_id');
+        subcategoryId = subcategory.get(k.Attr.Id);
+        newCategoryId = (await db[k.Model.Category].find({where: {id: {$not: categoryId}}})).get(k.Attr.Id);
     });
 
     afterEach(function(done) {
@@ -50,69 +52,63 @@ describe('PATCH /categories/:category_id/subcategories/:subcategory_id', functio
 
     describe('failure', function() {
         it('should respond with 400 Bad Request if the :category_id parameter is not a number', function(done) {
-            request(server).patch('/categories/hello/subcategories/' + subcategoryId)
+            request(server)
+                .patch('/categories/hello/subcategories/' + subcategoryId)
                 .set(k.Header.Authorization, authorization)
-                .send({name: newSubcategoryName})
+                .send({category_id: newCategoryId})
                 .expect(400, done);
         });
 
         it('should respond with 400 Bad Request if the :category_id parameter is 0', function(done) {
-            request(server).patch('/categories/0/subcategories/' + subcategoryId)
+            request(server)
+                .patch('/categories/0/subcategories/' + subcategoryId)
                 .set(k.Header.Authorization, authorization)
-                .send({name: newSubcategoryName})
+                .send({category_id: newCategoryId})
                 .expect(400, done);
         });
 
         it('should respond with 404 Not Found if no Category for the provided :category_id exists', function(done) {
-            request(server).patch('/categories/99999/subcategories/' + subcategoryId)
+            request(server)
+                .patch('/categories/99999/subcategories/' + subcategoryId)
                 .set(k.Header.Authorization, authorization)
-                .send({name: newSubcategoryName})
+                .send({category_id: newCategoryId})
                 .expect(404, done);
         });
 
         it('should respond with 400 Bad Request if the :subcategory_id parameter is not a number', function(done) {
-            request(server).patch(`/categories/${categoryId}/subcategories/hello`)
+            request(server)
+                .patch(`/categories/${categoryId}/subcategories/hello`)
                 .set(k.Header.Authorization, authorization)
-                .send({name: newSubcategoryName})
+                .send({category_id: newCategoryId})
                 .expect(400, done);
         });
 
         it('should respond with 400 Bad Request if the :subcategory_id parameter is 0', function(done) {
-            request(server).patch(`/categories/${categoryId}/subcategories/0`)
+            request(server)
+                .patch(`/categories/${categoryId}/subcategories/0`)
                 .set(k.Header.Authorization, authorization)
-                .send({name: newSubcategoryName}).expect(400, done);
+                .send({category_id: newCategoryId}).expect(400, done);
         });
 
         it('should respond with 404 Not Found if no Subcategory for the provided :subcategory_id exists', function(done) {
-            request(server).patch(`/categories/${categoryId}/subcategories/99999`)
+            request(server)
+                .patch(`/categories/${categoryId}/subcategories/99999`)
                 .set(k.Header.Authorization, authorization)
-                .send({name: newSubcategoryName})
+                .send({category_id: newCategoryId})
                 .expect(404, done);
         });
 
-        it('should respond with 400 Bad Request if the name body parameter is not a string', function(done) {
-            request(server).patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
-                .send({name: _.stubObject()})
-                .set(k.Header.Authorization, authorization)
-                .expect(400, done);
-        });
-
-        it('should respond with 400 Bad Request if the name body parameter length is 0', function(done) {
-            request(server).patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
-                .send({name: _.stubString()})
-                .set(k.Header.Authorization, authorization)
-                .expect(400, done);
-        });
-
         it('should respond with 400 Bad Request if the category_id body parameter is 0', function(done) {
-            request(server).patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+            request(server)
+                .patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
                 .send({category_id: 0})
                 .set(k.Header.Authorization, authorization)
                 .expect(400, done);
         });
 
         it('should respond with 400 Bad Request if the category_id body parameter is not a number', function(done) {
-            request(server).patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+            request(server)
+                .patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
                 .send({category_id: _.stubString()})
                 .set(k.Header.Authorization, authorization)
                 .expect(400, done);
@@ -126,60 +122,57 @@ describe('PATCH /categories/:category_id/subcategories/:subcategory_id', functio
                     }
                 }
             }).then(function(subcategory) {
-                request(server).patch(`/categories/${categoryId}/subcategories/${subcategory.get(k.Attr.Id)}`)
-                    .set(k.Header.Authorization, authorization).send({name: newSubcategoryName}).expect(404, done);
+                request(server)
+                    .patch(`/categories/${categoryId}/subcategories/${subcategory.get(k.Attr.Id)}`)
+                    .set(k.Header.Authorization, authorization).send({category_id: newCategoryId}).expect(404, done);
             });
         });
     });
 
     describe('success', function() {
         it('should respond with an X-GN-Auth-Token header', async function() {
-            const response = await request(server).patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
-                .send({name: newSubcategoryName})
+            const response = await request(server)
+                .patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .send({category_id: newCategoryId})
                 .set(k.Header.Authorization, authorization);
             assert(_.gt(response.header[k.Header.AuthToken].length, 0));
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', async function() {
-            const response = await request(server).patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+            const response = await request(server)
+                .patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
                 .set(k.Header.Authorization, authorization)
-                .send({name: newSubcategoryName});
+                .send({category_id: newCategoryId});
             assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
         });
 
         it('should return 204 No Content for a valid request', function(done) {
-            request(server).patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+            request(server)
+                .patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
                 .set(k.Header.Authorization, authorization)
-                .send({name: newSubcategoryName})
+                .send({category_id: newCategoryId})
                 .expect(204, done);
         });
 
         it('should return 304 Not Modified if the request body is empty', function(done) {
-            request(server).patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+            request(server)
+                .patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
                 .set(k.Header.Authorization, authorization)
                 .send({})
                 .expect(304, done);
         });
 
-        it('should change the name of the specified Subcategory', async function() {
-            await request(server).patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+        it('should return 304 Not Modified if the request body only contains invalid keys', function(done) {
+            request(server)
+                .patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
                 .set(k.Header.Authorization, authorization)
-                .send({name: newSubcategoryName});
-
-            const subcategory = await db[k.Model.Subcategory].findByPrimary(subcategoryId);
-            assert.equal(subcategory.get(k.Attr.Name), newSubcategoryName);
+                .send({foo: _.stubString()})
+                .expect(304, done);
         });
 
         it('should change the Category of the specified Subcategory', async function() {
-            const newCategoryId = (await db[k.Model.Category].find({
-                where: {
-                    id: {
-                        $not: categoryId
-                    }
-                }
-            })).get(k.Attr.Id);
-
-            await request(server).patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+            await request(server)
+                .patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
                 .set(k.Header.Authorization, authorization)
                 .send({category_id: newCategoryId});
 
@@ -188,15 +181,8 @@ describe('PATCH /categories/:category_id/subcategories/:subcategory_id', functio
         });
 
         it('should return a Location with the changed Category id', async function() {
-            const newCategoryId = (await db[k.Model.Category].find({
-                where: {
-                    id: {
-                        $not: categoryId
-                    }
-                }
-            })).get(k.Attr.Id);
-
-            const response = await request(server).patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+            const response = await request(server)
+                .patch(`/categories/${categoryId}/subcategories/${subcategoryId}`)
                 .set(k.Header.Authorization, authorization)
                 .send({category_id: newCategoryId});
 
