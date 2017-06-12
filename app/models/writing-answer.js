@@ -54,10 +54,6 @@ module.exports = function(sequelize, DataTypes) {
                 }
             },
             since: function(since) {
-                if (!since) {
-                    return {};
-                }
-
                 return {
                     where: {
                         created_at: {
@@ -67,14 +63,10 @@ module.exports = function(sequelize, DataTypes) {
                 }
             },
             maxId: function(maxId) {
-                if (!maxId) {
-                    return {};
-                }
-
                 return {
                     where: {
                         id: {
-                            $gte: +maxId
+                            $lte: +maxId
                         }
                     }
                 }

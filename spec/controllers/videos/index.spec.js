@@ -352,12 +352,12 @@ describe('GET /videos', function() {
 
         it('should localize the speaker name based on the interface_lang query parameter if present', async function() {
             const response = await request(server).get(`/videos`).query({interface_lang: 'ja'}).set('authorization', authorization);
-            assert(_.startsWith(_.first(response.body.records).speaker[k.Attr.Name], 'ja'));
+            assert(/[^a-z]/i.test(_.first(response.body.records).speaker[k.Attr.Name]));
         });
 
         it('should localize the speaker name based on the user preferred interface language if the interface_lang query parameter is missing', async function() {
             const response = await request(server).get(`/videos`).set('authorization', authorization);
-            assert(_.startsWith(_.first(response.body.records).speaker[k.Attr.Name], 'en'));
+            assert(/[a-z]/i.test(_.first(response.body.records).speaker[k.Attr.Name]));
         });
 
         // todo e2e (check the category_id and subcategory_id don't conflict

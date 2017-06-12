@@ -50,10 +50,16 @@ module.exports.writing_answers = async (req, res, next) => {
 
     const scopes = [
         'newestFirst',
-        {method: ['forUserWithLang', req.user[k.Attr.Id], req.params.lang]},
-        {method: ['since', req.query.since]},
-        {method: ['maxId', req.query.max_id]}
+        {method: ['forUserWithLang', req.user[k.Attr.Id], req.params.lang]}
     ];
+
+    if (req.query.since) {
+        scopes.push({method: ['since', req.query.since]});
+    }
+
+    if (req.query.max_id) {
+        scopes.push({method: ['maxId', req.query.max_id]});
+    }
 
     const include = {
         model: WritingQuestion,
@@ -76,8 +82,7 @@ module.exports.writing_answers = async (req, res, next) => {
     }
 
     if (_.size(writingAnswers) === 0) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.ResourceNotFound));
+        return res.send({records: [], count: 0});
     }
 
     writingAnswers = _.invokeMap(writingAnswers, 'get', {

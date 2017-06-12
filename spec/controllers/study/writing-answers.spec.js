@@ -6,19 +6,19 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const k        = require('../../../config/keys.json');
+const k = require('../../../config/keys.json');
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
-const request  = require('supertest');
-const assert   = require('assert');
-const _        = require('lodash');
+const request = require('supertest');
+const assert = require('assert');
+const _ = require('lodash');
 
 describe('GET /study/:lang/writing_answers', function() {
-    let server        = null;
+    let server = null;
     let authorization = null;
-    let user          = null;
-    let db            = null;
+    let user = null;
+    let db = null;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -29,9 +29,9 @@ describe('GET /study/:lang/writing_answers', function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.login().then(function(result) {
             authorization = result.authorization;
-            server        = result.server;
-            user          = result.response.body;
-            db            = result.db;
+            server = result.server;
+            user = result.response.body;
+            db = result.db;
         });
     });
 
@@ -138,10 +138,11 @@ describe('GET /study/:lang/writing_answers', function() {
         });
 
         it(`should apply the timezone offset in the request to 'created_at'`, function() {
-            return request(server).get(`/study/en/writing_answers?time_zone_offset=-540`).set('authorization', authorization).then(function(response) {
-                const timeZoneOffset = _.first(response.body.records).created_at.split(' ')[4];
-                assert.equal('+0900', timeZoneOffset);
-            });
+            return request(server).get(`/study/en/writing_answers?time_zone_offset=-540`).set('authorization', authorization)
+                .then(function(response) {
+                    const timeZoneOffset = _.first(response.body.records).created_at.split(' ')[4];
+                    assert.equal('+0900', timeZoneOffset);
+                });
         });
 
         it(`should have a 'writing_question' object with a non-null 'text' string for each record`, function() {
@@ -152,11 +153,12 @@ describe('GET /study/:lang/writing_answers', function() {
 
         it(`should respond with records whose creation date is equal to or greater than the 'since' query parameter`, function() {
             let thirtyDaysAgo = new Date().getTime() - (1000 * 60 * 60 * 24 * 30);
-            return request(server).get(`/study/en/writing_answers?since=${thirtyDaysAgo}`).set('authorization', authorization).then(function(response) {
-                let lastRecord = response.body.records[response.body.count - 1];
-                let oldestRecordTimestamp = new Date(lastRecord.created_at).getTime();
-                assert(oldestRecordTimestamp >= thirtyDaysAgo);
-            });
+            return request(server).get(`/study/en/writing_answers?since=${thirtyDaysAgo}`).set('authorization', authorization)
+                .then(function(response) {
+                    let lastRecord = response.body.records[response.body.count - 1];
+                    let oldestRecordTimestamp = new Date(lastRecord.created_at).getTime();
+                    assert(oldestRecordTimestamp >= thirtyDaysAgo);
+                });
         });
 
         it('should only return 10 or less answers', function() {
@@ -175,34 +177,36 @@ describe('GET /study/:lang/writing_answers', function() {
             });
         });
 
-        it(`should return only records whose IDs are less than or equal to the 'max_id' query parameter`, function() {
-            let allUserWritingAnswers = `
+        it(`should return only records whose IDs are less than or equal to the 'max_id' query parameter`, async function() {
+            const [answers] = await db.sequelize.query(`
                 SELECT * 
                 FROM writing_answers 
                 WHERE study_session_id IN (
                     SELECT id 
                     FROM study_sessions 
-                    WHERE user_id = ${user.id}
+                    WHERE user_id = ${user[k.Attr.Id]}
                 );
-            `;
+            `);
 
-            return db.sequelize.query(allUserWritingAnswers).then(function(answers) {
-                let midWritingAnswerId = _.first(answers)[Math.floor(_.first(answers).length / 2)].id;
-                return request(server).get(`/study/en/writing_answers?max_id=${midWritingAnswerId}`).set('authorization', authorization).then(function(response) {
-                    let lastId = response.body.records[response.body.count - 1].id;
-                    assert(lastId >= midWritingAnswerId);
-                });
-            });
+            const midWritingAnswerId = answers[_.floor(answers.length / 2)][k.Attr.Id];
+
+            const response = await request(server).get(`/study/en/writing_answers`)
+                .query({max_id: midWritingAnswerId})
+                .set('authorization', authorization);
+
+            const lastId = response.body.records[response.body.count - 1][k.Attr.Id];
+            assert(lastId <= midWritingAnswerId);
         });
 
         it(`should return only records whose language is equal to that of the 'lang' request param`, function() {
             const requestLang = 'ja';
-            return request(server).get(`/study/${requestLang}/writing_answers`).set('authorization', authorization).then(function(response) {
-                const studySessionIds = _.transform(response.body.records, function(ids, record) {
-                    ids.push(record.study_session_id);
-                }, []);
+            return request(server).get(`/study/${requestLang}/writing_answers`).set('authorization', authorization)
+                .then(function(response) {
+                    const studySessionIds = _.transform(response.body.records, function(ids, record) {
+                        ids.push(record.study_session_id);
+                    }, []);
 
-                return db.sequelize.query(`
+                    return db.sequelize.query(`
                     SELECT L.code 
                     FROM videos V
                     LEFT JOIN languages L ON V.language_id = L.id
@@ -212,18 +216,17 @@ describe('GET /study/:lang/writing_answers', function() {
                         WHERE id IN (${studySessionIds.join(',')})
                     )
                 `).spread(function(rows) {
-                    _.forEach(rows, function(row) {
-                        assert.equal(row[k.Attr.Code], requestLang);
+                        _.forEach(rows, function(row) {
+                            assert.equal(row[k.Attr.Code], requestLang);
+                        });
                     });
                 });
-            });
         });
 
         it('should localize the writing question text based on the language of the video to which the answer is linked', async function() {
-            const langCode = 'ja';
-            const response = await request(server).get(`/study/${langCode}/writing_answers`).set('authorization', authorization);
+            const response = await request(server).get(`/study/ja/writing_answers`).set('authorization', authorization);
             const text = _.first(response.body.records)['writing_question'].text;
-            assert(_.startsWith(_.first(response.body.records)['writing_question'].text, langCode));
+            assert(/[^a-z]/i.test(text));
         });
     });
 });
