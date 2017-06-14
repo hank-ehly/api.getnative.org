@@ -151,7 +151,7 @@ module.exports.show = async (req, res, next) => {
 };
 
 module.exports.create = async (req, res, next) => {
-    let category, languages;
+    let category, retCategory, languages;
     const categoriesLocalized = [], languageCodes = config.get(k.VideoLanguageCodes);
 
     try {
@@ -203,7 +203,42 @@ module.exports.create = async (req, res, next) => {
         throw new Error('length of categoriesLocalized does not equal length of languageCodes');
     }
 
+    const retCategoryCreatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Category, k.Attr.CreatedAt);
+    const retCategoryUpdatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Category, k.Attr.UpdatedAt);
+
+    try {
+        retCategory = await Category.findByPrimary(category.get(k.Attr.Id), {
+            attributes: [k.Attr.Id, retCategoryCreatedAt, retCategoryUpdatedAt],
+            include: {
+                model: CategoryLocalized,
+                as: 'categories_localized',
+                attributes: [k.Attr.Name, k.Attr.Id],
+                required: false,
+                include: {
+                    model: Language,
+                    as: 'language',
+                    attributes: [k.Attr.Name, k.Attr.Code]
+                }
+            }
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!retCategory) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    retCategory = retCategory.get({
+        plain: true
+    });
+
+    retCategory.categories_localized = _.zipObject(['records', 'count'], [
+        retCategory.categories_localized, retCategory.categories_localized.length
+    ]);
+
     res.set(k.Header.Location, `/categories/${category.get(k.Attr.Id)}`);
-    return res.sendStatus(201);
+    return res.status(201).send(retCategory);
 };
 

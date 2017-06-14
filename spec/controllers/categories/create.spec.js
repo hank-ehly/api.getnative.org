@@ -82,5 +82,65 @@ describe('POST /categories', function() {
             const afterCount = await db[k.Model.CategoryLocalized].count();
             assert.equal(afterCount, beforeCount + _.size(config.get(k.VideoLanguageCodes)));
         });
+
+        it('should return a top level "id" number', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(_.isNumber(response.body[k.Attr.Id]));
+        });
+
+        it('should return a correctly formatted top level "created_at" string', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(SpecUtil.isClientFriendlyDateString(response.body[k.Attr.CreatedAt]));
+        });
+
+        it('should return a correctly formatted top level "updated_at" string', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(SpecUtil.isClientFriendlyDateString(response.body[k.Attr.UpdatedAt]));
+        });
+
+        it('should return a top level "categories_localized" object', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(_.isPlainObject(response.body.categories_localized));
+        });
+
+        it('should return a "categories_localized.records" array', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(_.isArray(response.body.categories_localized.records));
+        });
+
+        it('should return a "categories_localized.count" integer', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(_.isNumber(response.body.categories_localized.count));
+        });
+
+        it('should return more than 1 localized category record', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(_.gt(response.body.categories_localized.count, 1));
+        });
+
+        it('should return a "categories_localized.records[N].language" object', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(_.isPlainObject(_.first(response.body.categories_localized.records).language));
+        });
+
+        it('should return a "categories_localized.records[N].language.name" string', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(_.isString(_.first(response.body.categories_localized.records).language[k.Attr.Name]));
+        });
+
+        it('should return a "categories_localized.records[N].language.code" string', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(_.isString(_.first(response.body.categories_localized.records).language[k.Attr.Code]));
+        });
+
+        it('should return a "categories_localized.records[N].name" string', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(_.isString(_.first(response.body.categories_localized.records)[k.Attr.Name]));
+        });
+
+        it('should return a "categories_localized.records[N].id" integer', async function() {
+            const response = await request(server).post('/categories').set(k.Header.Authorization, authorization);
+            assert(_.isNumber(_.first(response.body.categories_localized.records)[k.Attr.Id]));
+        });
     });
 });

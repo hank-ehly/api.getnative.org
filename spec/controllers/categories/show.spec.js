@@ -91,12 +91,12 @@ describe('GET /categories/:id', function() {
 
         it('should return a "categories_localized.count" integer', async function() {
             const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
-            assert(_.gt(response.body.categories_localized.count, 1));
+            assert(_.isNumber(response.body.categories_localized.count));
         });
 
         it('should return more than 1 localized category record', async function() {
             const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
-            assert(_.isNumber(response.body.categories_localized.count));
+            assert(_.gt(response.body.categories_localized.count, 1));
         });
 
         it('should return a "categories_localized.records[N].language" object', async function() {
