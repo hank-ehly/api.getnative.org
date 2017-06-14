@@ -173,5 +173,11 @@ describe('GET /categories/:id', function() {
             const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
             assert(SpecUtil.isClientFriendlyDateString(_.first(response.body.subcategories.records)[k.Attr.UpdatedAt]));
         });
+
+        it('should return the category even if it has no subcategories', async function() {
+            await db[k.Model.Subcategory].update({category_id: categoryId + 1}, {where: {category_id: categoryId}});
+            const response = await request(server).get('/categories/' + categoryId).set(k.Header.Authorization, authorization);
+            assert.equal(response.body.subcategories.count, 0);
+        });
     });
 });

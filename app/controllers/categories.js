@@ -91,6 +91,7 @@ module.exports.show = async (req, res, next) => {
                 model: CategoryLocalized,
                 as: 'categories_localized',
                 attributes: [k.Attr.Name, k.Attr.Id],
+                required: false,
                 include: {
                     model: Language,
                     as: 'language',
@@ -133,13 +134,6 @@ module.exports.show = async (req, res, next) => {
         });
     } catch (e) {
         return next(e);
-    }
-
-    if (_.size(subcategories) === 0) {
-        return res.send({
-            records: [],
-            count: 0
-        });
     }
 
     subcategories = _.invokeMap(subcategories, 'get', {
