@@ -201,9 +201,7 @@ module.exports.create = async (req, res, next) => {
     }
 
     if (!category) {
-        await transaction.rollback();
-        res.status(500);
-        return next(new GetNativeError(k.Error.CreateResourceFailure));
+        throw new ReferenceError('category variable is undefined');
     }
 
     if (categoriesLocalized.length !== languageCodes.length) {
@@ -214,3 +212,4 @@ module.exports.create = async (req, res, next) => {
     res.set(k.Header.Location, `/categories/${category.get(k.Attr.Id)}`);
     return res.sendStatus(201);
 };
+
