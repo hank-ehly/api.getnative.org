@@ -140,8 +140,22 @@ describe('GET /categories', function() {
             return request(server).get('/categories').set('authorization', authorization).then(function(response) {
                 let count = _.first(response.body.records).subcategories.count;
                 let recordsLength = _.first(response.body.records).subcategories.records.length;
-                assert(count === recordsLength);
+                assert.equal(count, recordsLength);
             });
+        });
+
+        it('should return a category even if it has no subcategories', async function() {
+            const categories = await db[k.Model.Category].findAll({attributes: [k.Attr.Id]});
+
+            await db[k.Model.Subcategory].update({
+                category_id: _.nth(categories, 4).get(k.Attr.Id)
+            }, {
+                where: {category_id: _.nth(categories, 3).get(k.Attr.Id)}
+            });
+
+            const response = await request(server).get('/categories').set('authorization', authorization);
+
+            assert.equal(response.body.count, categories.length);
         });
 
         it('should localize category names based on the lang query parameter if it is present', async function() {

@@ -40,6 +40,7 @@ module.exports.index = async (req, res, next) => {
                 model: SubcategoryLocalized,
                 as: 'subcategories_localized',
                 attributes: [k.Attr.Name],
+                required: false,
                 where: {language_id: interfaceLanguageId}
             }
 
