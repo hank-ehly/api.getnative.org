@@ -26,16 +26,23 @@ module.exports.show = async (req, res, next) => {
             category_id: +req.params.category_id
         },
         attributes: [k.Attr.Id, createdAt, updatedAt],
-        include: {
-            model: db[k.Model.SubcategoryLocalized],
-            attributes: [k.Attr.Id, k.Attr.Name],
-            as: 'subcategories_localized',
-            include: {
-                model: db[k.Model.Language],
-                attributes: [k.Attr.Code, k.Attr.Name],
-                as: 'language'
+        include: [
+            {
+                model: db[k.Model.SubcategoryLocalized],
+                attributes: [k.Attr.Id, k.Attr.Name],
+                as: 'subcategories_localized',
+                include: {
+                    model: db[k.Model.Language],
+                    attributes: [k.Attr.Code, k.Attr.Name],
+                    as: 'language'
+                }
+            },
+            {
+                model: db[k.Model.Category],
+                attributes: [k.Attr.Id],
+                as: 'category'
             }
-        }
+        ]
     };
 
     try {

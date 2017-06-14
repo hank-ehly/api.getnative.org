@@ -120,6 +120,18 @@ describe('GET /categories/:category_id/subcategories/:subcategory_id', function(
             assert(_.isNumber(response.body[k.Attr.Id]));
         });
 
+        it('should return a top level "category" object', async function() {
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
+            assert(_.isPlainObject(response.body.category));
+        });
+
+        it('should return a "category.id" number', async function() {
+            const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
+                .set(k.Header.Authorization, authorization);
+            assert(_.isNumber(response.body.category[k.Attr.Id]));
+        });
+
         it('should return a top level "subcategories_localized" object', async function() {
                 const response = await request(server).get(`/categories/${categoryId}/subcategories/${subcategoryId}`)
                     .set(k.Header.Authorization, authorization);

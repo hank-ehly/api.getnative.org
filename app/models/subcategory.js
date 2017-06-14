@@ -14,7 +14,7 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'subcategories',
         underscored: true,
         associations: function(models) {
-            models[k.Model.Subcategory].belongsTo(models[k.Model.Category]);
+            models[k.Model.Subcategory].belongsTo(models[k.Model.Category], {as: 'category'});
             models[k.Model.Subcategory].hasMany(models[k.Model.SubcategoryLocalized], {as: 'subcategories_localized'});
             models[k.Model.Subcategory].hasMany(models[k.Model.Video], {as: 'videos'});
             models[k.Model.Subcategory].hasMany(models[k.Model.WritingQuestion], {as: 'writing_questions'});
