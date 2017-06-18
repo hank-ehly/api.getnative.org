@@ -76,6 +76,14 @@ const schema = {
                 authorization: Joi.string().required()
             }
         },
+        delete: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1).required()
+            }
+        },
         index: {
             headers: {
                 authorization: Joi.string().required()

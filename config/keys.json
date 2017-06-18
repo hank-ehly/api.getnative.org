@@ -65,7 +65,8 @@
         "UserAlreadyVerified": "UserAlreadyVerified",
         "ResourceNotFound": "ResourceNotFound",
         "FileMissing": "FileMissing",
-        "CreateResourceFailure": "CreateResourceFailure"
+        "CreateResourceFailure": "CreateResourceFailure",
+        "ForeignKeyConstraintError": "ForeignKeyConstraintError"
     },
     "ENVIRONMENT": "kENVIRONMENT",
     "Env": {

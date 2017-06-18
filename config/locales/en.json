@@ -14,7 +14,8 @@
         "UserAlreadyVerified": "This user is already verified",
         "ResourceNotFound": "No resource was found for the given conditions",
         "FileMissing": "Required file missing from request",
-        "CreateResourceFailure": "Failed to create resource"
+        "CreateResourceFailure": "Failed to create resource",
+        "ForeignKeyConstraintError": "Failed to take the specified action on the requested resource due to foreign key constraint"
     },
     "lang": "en",
     "password-updated": {

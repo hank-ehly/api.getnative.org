@@ -242,3 +242,64 @@ module.exports.create = async (req, res, next) => {
     return res.status(201).send(retCategory);
 };
 
+module.exports.delete = async (req, res, next) => {
+    let category;
+
+    try {
+        category = await Category.findByPrimary(req.params[k.Attr.Id], {
+            attributes: [k.Attr.Id],
+            include: {
+                model: CategoryLocalized,
+                as: 'categories_localized',
+                attributes: [k.Attr.Id]
+            }
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!category) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    const t = await db.sequelize.transaction();
+
+    try {
+        const localizedCategoryIds = _.invokeMap(category.categories_localized, 'get', k.Attr.Id);
+
+        if (localizedCategoryIds.length) {
+            await CategoryLocalized.destroy({
+                where: {
+                    id: {
+                        $in: localizedCategoryIds
+                    }
+                }
+            }, {
+                transaction: t
+            });
+        }
+
+        await Category.destroy({
+            where: {
+                id: category.get(k.Attr.Id)
+            },
+            limit: 1
+        }, {
+            transaction: t
+        });
+
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+
+        if (e instanceof db.sequelize.ForeignKeyConstraintError) {
+            res.status(422);
+            return next(new GetNativeError(k.Error.TokenExpired))
+        }
+
+        return next(e);
+    }
+
+    return res.sendStatus(204);
+};
