@@ -186,6 +186,14 @@ const schema = {
         }
     },
     subcategories: {
+        create: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1).required()
+            }
+        },
         show: {
             headers: {
                 authorization: Joi.string().required()

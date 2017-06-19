@@ -11,8 +11,81 @@ const Subcategory = db[k.Model.Subcategory];
 const services = require('../services');
 const ModelHelper = services['Model'](db);
 const GetNativeError = services['GetNativeError'];
+const config = require('../../config/application').config;
 
 const _ = require('lodash');
+
+module.exports.create = async (req, res, next) => {
+    let subcategory, retSubcategory, languages, subcategoriesLocalized = [];
+
+    try {
+        languages = await db[k.Model.Language].findAll({attributes: [k.Attr.Id, k.Attr.Code]});
+    } catch (e) {
+        return next(e);
+    }
+
+    if (_.size(languages) === 0) {
+        throw new ReferenceError('language variable is undefined');
+    }
+
+    languages = _.invokeMap(languages, 'get', {
+        plain: true
+    });
+
+    const t = await db.sequelize.transaction();
+
+    try {
+        subcategory = await Subcategory.create({category_id: req.params[k.Attr.Id]}, {transaction: t});
+
+        for (let code of _.map(languages, k.Attr.Code)) {
+            let newSubcategoryLocalized = await db[k.Model.SubcategoryLocalized].create({
+                subcategory_id: subcategory.get(k.Attr.Id),
+                language_id: _.find(languages, {code: code})[k.Attr.Id]
+            }, {transaction: t});
+
+            if (newSubcategoryLocalized) {
+                subcategoriesLocalized.push(newSubcategoryLocalized);
+            }
+        }
+
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+        if (e instanceof db.sequelize.ForeignKeyConstraintError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
+        return next(e);
+    }
+
+    if (!subcategory) {
+        throw new ReferenceError('subcategory variable is undefined');
+    }
+
+    if (subcategoriesLocalized.length !== languages.length) {
+        await t.rollback();
+        throw new Error('length of subcategoriesLocalized does not equal length of languageCodes');
+    }
+
+    try {
+        retSubcategory = await Subcategory.findByPrimary(subcategory.get(k.Attr.Id), {
+            attributes: [k.Attr.Id, 'category_id']
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!retSubcategory) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    retSubcategory = retSubcategory.get({
+        plain: true
+    });
+
+    return res.status(201).send(retSubcategory);
+};
 
 module.exports.show = async (req, res, next) => {
     let subcategory;

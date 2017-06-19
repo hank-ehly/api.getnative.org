@@ -22,25 +22,22 @@ router.post('/users', ValidateParams(pv.users.create), ctrl.users.create);
 // todo: Combine with /users/password
 router.patch('/users', ValidateParams(pv.users.update),  Authenticate, ctrl.users.update);
 
-// todo: Document
-// todo: Combine
 router.get('/oauth/facebook',                passport.authenticate('facebook',                {scope: ['public_profile', 'email']}));
 router.get('/oauth/twitter',                 passport.authenticate('twitter',                 {scope: ['public_profile', 'email']}));
 router.get('/oauth/google',                  passport.authenticate('google',                  {scope: ['profile', 'email']}));
 router.get('/oauth/facebook/callback',       passport.authenticate('facebook',                {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
 router.get('/oauth/twitter/callback',        passport.authenticate('twitter',                 {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
 router.get('/oauth/google/callback',         passport.authenticate('google',                  {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
-
-// todo: Rest-ify
 router.post( '/users/password',              ValidateParams(pv.users.updatePassword),          Authenticate, ctrl.users.updatePassword);
 router.post( '/users/email',                 ValidateParams(pv.users.updateEmail),             Authenticate, ctrl.users.updateEmail);
 router.get(  '/users/me',                    ValidateParams(pv.users.me),                      Authenticate, ctrl.users.show);
 router.get(  '/categories',                  ValidateParams(pv.categories.index),              Authenticate, ctrl.categories.index);
-router.post( '/categories',                  ValidateParams(pv.categories.create), Authenticate, AdminOnly, ctrl.categories.create);
+router.post( '/categories',                  ValidateParams(pv.categories.create),             Authenticate, AdminOnly, ctrl.categories.create);
 router.get(  '/categories/:id',              ValidateParams(pv.categories.show),               Authenticate, AdminOnly, ctrl.categories.show);
 router.delete('/categories/:id',             ValidateParams(pv.categories.delete),             Authenticate, AdminOnly, ctrl.categories.delete);
+router.post( '/categories/:id/subcategories',ValidateParams(pv.subcategories.create),          Authenticate, AdminOnly, ctrl.subcategories.create);
 router.patch('/categories/:category_id/categories_localized/:categories_localized_id', ValidateParams(pv.categoriesLocalized.update), Authenticate, AdminOnly, ctrl['categories-localized'].update);
-router.get(  '/categories/:category_id/subcategories/:subcategory_id', ValidateParams(pv.subcategories.show), Authenticate, AdminOnly, ctrl.subcategories.show);
+router.get('/categories/:category_id/subcategories/:subcategory_id', ValidateParams(pv.subcategories.show), Authenticate, AdminOnly, ctrl.subcategories.show);
 router.patch('/categories/:category_id/subcategories/:subcategory_id', ValidateParams(pv.subcategories.update), Authenticate, AdminOnly, ctrl.subcategories.update);
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                           ctrl.auth.confirmEmail);
 router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                ctrl.auth.resendConfirmationEmail);
