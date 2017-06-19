@@ -15,7 +15,7 @@ const corsHeaders = {
     'Access-Control-Allow-Origin': config.get(k.Header.AccessControlAllowOrigin),
     'Access-Control-Expose-Headers': 'X-GN-Auth-Token, X-GN-Auth-Expire, Location',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'PATCH'
+    'Access-Control-Allow-Methods': 'PATCH, DELETE'
 };
 
 logger.info(`Set response header: 'Access-Control-Allow-Origin': '${config.get(k.Header.AccessControlAllowOrigin)}'`);
