@@ -26,6 +26,8 @@ module.exports.index = async (req, res, next) => {
     const interfaceLanguageId = await Language.findIdForCode(_.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage)
         .get(k.Attr.Code)));
 
+    const requireSubcategories = [null, undefined, true, 'true'].includes(req.query.require_subcategories);
+
     const include = [
         {
             model: CategoryLocalized,
@@ -40,7 +42,7 @@ module.exports.index = async (req, res, next) => {
                 model: SubcategoryLocalized,
                 as: 'subcategories_localized',
                 attributes: [k.Attr.Name],
-                required: false,
+                required: requireSubcategories,
                 where: {language_id: interfaceLanguageId}
             }
 
@@ -173,9 +175,7 @@ module.exports.create = async (req, res, next) => {
     const transaction = await db.sequelize.transaction();
 
     try {
-        category = await Category.create({
-            name: req.body[k.Attr.Name]
-        }, {transaction: transaction});
+        category = await Category.create({}, {transaction: transaction});
 
         for (let code of languageCodes) {
             let newCategoryLocalized = await CategoryLocalized.create({

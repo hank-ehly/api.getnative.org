@@ -49,6 +49,12 @@ describe('GET /categories', function() {
         it('should respond with 400 Bad Request if the provided lang query parameter is not a valid language code', function(done) {
             request(server).get('/categories').query({lang: 'foobar'}).set('authorization', authorization).expect(400, done);
         });
+
+        it('should return 400 Bad Request if the require_subcategories query param is not a boolean', function(done) {
+            request(server).get('/categories').query({
+                require_subcategories: _.stubString()
+            }).set('authorization', authorization).expect(400, done);
+        });
     });
 
     describe('response.success', function() {
@@ -144,20 +150,6 @@ describe('GET /categories', function() {
             });
         });
 
-        it('should return a category even if it has no subcategories', async function() {
-            const categories = await db[k.Model.Category].findAll({attributes: [k.Attr.Id]});
-
-            await db[k.Model.Subcategory].update({
-                category_id: _.nth(categories, 4).get(k.Attr.Id)
-            }, {
-                where: {category_id: _.nth(categories, 3).get(k.Attr.Id)}
-            });
-
-            const response = await request(server).get('/categories').set('authorization', authorization);
-
-            assert.equal(response.body.count, categories.length);
-        });
-
         it('should localize category names based on the lang query parameter if it is present', async function() {
             const response = await request(server).get('/categories').query({lang: 'ja'}).set('authorization', authorization);
             assert(/[^a-z]/i.test(_.first(response.body.records)[k.Attr.Name]));
@@ -176,6 +168,41 @@ describe('GET /categories', function() {
         it('should localize subcategory names based on the user.interface_language if no lang parameter is present', async function() {
             const response = await request(server).get('/categories').set('authorization', authorization);
             assert(/[a-z]/i.test(_.first(_.first(response.body.records).subcategories.records)[k.Attr.Name]));
+        });
+
+        describe('require_subcategories', function() {
+            let childlessCategory;
+
+            before(async function() {
+                let languages = await db[k.Model.Language].findAll();
+                languages = _.invokeMap(languages, 'get', {plain: true});
+                childlessCategory = await db[k.Model.Category].create();
+                await db[k.Model.CategoryLocalized].create({
+                    name: 'EN_NAME',
+                    category_id: childlessCategory.get(k.Attr.Id),
+                    language_id: _.find(languages, {code: 'en'})[k.Attr.Id]
+                });
+                await db[k.Model.CategoryLocalized].create({
+                    name: 'JA_NAME',
+                    category_id: childlessCategory.get(k.Attr.Id),
+                    language_id: _.find(languages, {code: 'ja'})[k.Attr.Id]
+                });
+            });
+
+            it('should not include categories without subcategories by default', async function() {
+                const response = await request(server).get('/categories').set('authorization', authorization);
+                assert(!_.find(response.body.records, {id: childlessCategory.get(k.Attr.Id)}));
+            });
+
+            it('should not include categories without subcategories if require_subcategories is set to true', async function() {
+                const response = await request(server).get('/categories').query({require_subcategories: true}).set('authorization', authorization);
+                assert(!_.find(response.body.records, {id: childlessCategory.get(k.Attr.Id)}));
+            });
+
+            it('should include categories without subcategories if require_subcategories is set to false', async function() {
+                const response = await request(server).get('/categories').query({require_subcategories: false}).set('authorization', authorization);
+                assert(_.find(response.body.records, {id: childlessCategory.get(k.Attr.Id)}));
+            });
         });
     });
 });

@@ -89,7 +89,8 @@ const schema = {
                 authorization: Joi.string().required()
             },
             query: {
-                lang: Joi.string().lowercase().valid(validLangCodes)
+                lang: Joi.string().lowercase().valid(validLangCodes),
+                require_subcategories: Joi.boolean()
             }
         },
         show: {

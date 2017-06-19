@@ -5,20 +5,15 @@
  * Created by henryehly on 2017/03/20.
  */
 
-const GetNativeError = require('../services').GetNativeError;
-const k              = require('../../config/keys.json');
+const GetNativeError = require('../services')['GetNativeError'];
+const k = require('../../config/keys.json');
 
-const Joi            = require('joi');
-const _              = require('lodash');
+const Joi = require('joi');
+const _ = require('lodash');
 
-const options        = {
+const options = {
     "abortEarly": false,
-    "convert": true,
-    "allowUnknown": true,
-    "skipFunctions": false,
-    "stripUnknown": false,
-    "presence": "optional",
-    "noDefaults": false
+    "allowUnknown": true
 };
 
 module.exports = function(schema) {
