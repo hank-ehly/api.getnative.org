@@ -67,7 +67,11 @@ module.exports.index = async (req, res, next) => {
         delete category.categories_localized;
 
         category.subcategories = _.map(category.subcategories, subcategory => {
-            subcategory.name = _.first(subcategory.subcategories_localized)[k.Attr.Name];
+            if (_.gt(subcategory.subcategories_localized.length, 0)) {
+                subcategory.name = _.first(subcategory.subcategories_localized)[k.Attr.Name];
+            } else {
+                subcategory.name = '';
+            }
             delete subcategory.subcategories_localized;
             return subcategory;
         });
