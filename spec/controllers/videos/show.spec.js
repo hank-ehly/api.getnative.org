@@ -11,7 +11,6 @@ const k        = require('../../../config/keys.json');
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
-const Promise  = require('bluebird');
 const request  = require('supertest');
 const assert   = require('assert');
 const _        = require('lodash');
@@ -25,7 +24,7 @@ describe('GET /videos/:id', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -48,7 +47,7 @@ describe('GET /videos/:id', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('failure', function() {
@@ -294,23 +293,16 @@ describe('GET /videos/:id', function() {
             expectedSubcategoryIds = _.map(expectedSubcategoryIds, 'id');
 
             const response = await request(server).get(`/videos/${videoId}`).set('authorization', authorization);
-            const actualSubcategoryIds = _.map(response.body.related_videos.records, 'subcategory.id');
+            const actualSubcategoryIds = _.uniq(_.map(response.body.related_videos.records, 'subcategory.id'));
 
-            console.log(response.body.related_videos.records);
-
-            console.log('Expected:', expectedSubcategoryIds);
-            console.log('Actual:', actualSubcategoryIds);
-            console.log('Difference:', _.size(_.difference(expectedSubcategoryIds, actualSubcategoryIds)));
-
-            assert.equal(_.size(_.difference(expectedSubcategoryIds, actualSubcategoryIds)), 0);
+            assert.equal(_.difference(actualSubcategoryIds, expectedSubcategoryIds), 0);
         });
 
-        it(`should return different related videos if the same video is requested twice`, function() {
+        it(`should return different related videos if the same video is requested twice`, async function() {
             const r1 = request(server).get(`/videos/${videoId}`).set('authorization', authorization);
             const r2 = request(server).get(`/videos/${videoId}`).set('authorization', authorization);
-            return Promise.join(r1, r2, function(first, second) {
-                assert(!_.isEqual(first.body.related_videos, second.body.related_videos));
-            });
+            let [first, second] = await Promise.all([r1, r2]);
+            assert(!_.isEqual(first.body.related_videos, second.body.related_videos));
         });
 
         it(`should contain a non-null 'like_count' integer`, function() {
