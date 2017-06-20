@@ -41,6 +41,7 @@ router.get(  '/categories/:category_id/subcategories/:subcategory_id', ValidateP
 router.patch('/categories/:category_id/subcategories/:subcategory_id', ValidateParams(pv.subcategories.update), Authenticate, AdminOnly, ctrl.subcategories.update);
 router.delete('/categories/:category_id/subcategories/:subcategory_id',ValidateParams(pv.subcategories.delete), Authenticate, AdminOnly, ctrl.subcategories.delete);
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                           ctrl.auth.confirmEmail);
+router.get(  '/languages',                   ValidateParams(pv.languages.index),               Authenticate, AdminOnly, ctrl.languages.index);
 router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                ctrl.auth.resendConfirmationEmail);
 router.post( '/study',                       ValidateParams(pv.study.createStudySession),      Authenticate, ctrl.study.createStudySession);
 router.post( '/study/complete',              ValidateParams(pv.study.complete),                Authenticate, ctrl.study.complete);

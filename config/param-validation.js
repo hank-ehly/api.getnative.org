@@ -116,6 +116,13 @@ const schema = {
             }
         }
     },
+    languages: {
+        index: {
+            headers: {
+                authorization: Joi.string().required()
+            }
+        }
+    },
     sessions: {
         create: {
             body: {
