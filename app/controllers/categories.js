@@ -295,7 +295,7 @@ module.exports.delete = async (req, res, next) => {
 
         if (e instanceof db.sequelize.ForeignKeyConstraintError) {
             res.status(422);
-            return next(new GetNativeError(k.Error.TokenExpired))
+            return next(new GetNativeError(k.Error.ForeignKeyConstraintError))
         }
 
         return next(e);

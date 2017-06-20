@@ -8,6 +8,7 @@
 const k = require('../../config/keys.json');
 const db = require('../models');
 const Subcategory = db[k.Model.Subcategory];
+const SubcategoryLocalized = db[k.Model.SubcategoryLocalized];
 const services = require('../services');
 const ModelHelper = services['Model'](db);
 const GetNativeError = services['GetNativeError'];
@@ -170,6 +171,72 @@ module.exports.update = async (req, res, next) => {
 
     const locationCategoryId = _.defaultTo(requestedChanges.category_id, req.params.category_id);
     res.set(k.Header.Location, `/categories/${locationCategoryId}/subcategories/${req.params.subcategory_id}`);
+
+    return res.sendStatus(204);
+};
+
+module.exports.delete = async (req, res, next) => {
+    let subcategory;
+
+    try {
+        subcategory = await Subcategory.find({
+            where: {
+                id: req.params['subcategory_id'],
+                category_id: req.params['category_id']
+            },
+            attributes: [k.Attr.Id],
+            include: {
+                model: SubcategoryLocalized,
+                as: 'subcategories_localized',
+                attributes: [k.Attr.Id]
+            }
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!subcategory) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    const t = await db.sequelize.transaction();
+
+    try {
+        const localizedSubcategoryIds = _.invokeMap(subcategory.subcategories_localized, 'get', k.Attr.Id);
+
+        if (localizedSubcategoryIds.length) {
+            await SubcategoryLocalized.destroy({
+                where: {
+                    id: {
+                        $in: localizedSubcategoryIds
+                    }
+                }
+            }, {
+                transaction: t
+            });
+        }
+
+        await Subcategory.destroy({
+            where: {
+                id: subcategory.get(k.Attr.Id)
+            },
+            limit: 1
+        }, {
+            transaction: t
+        });
+
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+
+        if (e instanceof db.sequelize.ForeignKeyConstraintError) {
+            res.status(422);
+            return next(new GetNativeError(k.Error.ForeignKeyConstraintError))
+        }
+
+        return next(e);
+    }
 
     return res.sendStatus(204);
 };

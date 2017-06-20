@@ -37,8 +37,9 @@ router.get(  '/categories/:id',              ValidateParams(pv.categories.show),
 router.delete('/categories/:id',             ValidateParams(pv.categories.delete),             Authenticate, AdminOnly, ctrl.categories.delete);
 router.post( '/categories/:id/subcategories',ValidateParams(pv.subcategories.create),          Authenticate, AdminOnly, ctrl.subcategories.create);
 router.patch('/categories/:category_id/categories_localized/:categories_localized_id', ValidateParams(pv.categoriesLocalized.update), Authenticate, AdminOnly, ctrl['categories-localized'].update);
-router.get('/categories/:category_id/subcategories/:subcategory_id', ValidateParams(pv.subcategories.show), Authenticate, AdminOnly, ctrl.subcategories.show);
+router.get(  '/categories/:category_id/subcategories/:subcategory_id', ValidateParams(pv.subcategories.show), Authenticate, AdminOnly, ctrl.subcategories.show);
 router.patch('/categories/:category_id/subcategories/:subcategory_id', ValidateParams(pv.subcategories.update), Authenticate, AdminOnly, ctrl.subcategories.update);
+router.delete('/categories/:category_id/subcategories/:subcategory_id',ValidateParams(pv.subcategories.delete), Authenticate, AdminOnly, ctrl.subcategories.delete);
 router.post( '/confirm_email',               ValidateParams(pv.auth.confirmEmail),                           ctrl.auth.confirmEmail);
 router.post( '/resend_confirmation_email',   ValidateParams(pv.auth.resendConfirmationEmail),                ctrl.auth.resendConfirmationEmail);
 router.post( '/study',                       ValidateParams(pv.study.createStudySession),      Authenticate, ctrl.study.createStudySession);
