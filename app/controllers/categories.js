@@ -278,8 +278,7 @@ module.exports.delete = async (req, res, next) => {
                     id: {
                         $in: localizedCategoryIds
                     }
-                }
-            }, {
+                },
                 transaction: t
             });
         }
@@ -288,8 +287,7 @@ module.exports.delete = async (req, res, next) => {
             where: {
                 id: category.get(k.Attr.Id)
             },
-            limit: 1
-        }, {
+            limit: 1,
             transaction: t
         });
 

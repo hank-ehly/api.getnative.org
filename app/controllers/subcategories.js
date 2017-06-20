@@ -211,8 +211,7 @@ module.exports.delete = async (req, res, next) => {
                     id: {
                         $in: localizedSubcategoryIds
                     }
-                }
-            }, {
+                },
                 transaction: t
             });
         }
@@ -221,8 +220,7 @@ module.exports.delete = async (req, res, next) => {
             where: {
                 id: subcategory.get(k.Attr.Id)
             },
-            limit: 1
-        }, {
+            limit: 1,
             transaction: t
         });
 
