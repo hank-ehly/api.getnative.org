@@ -12,6 +12,8 @@ const VerificationToken = db[k.Model.VerificationToken];
 const User = db[k.Model.User];
 const Auth = require('../../../app/services')['Auth'];
 
+const m = require('mocha');
+const [describe, it, beforeEach] = [m.describe, m.it, m.beforeEach];
 const assert = require('assert');
 const moment = require('moment');
 const execFileSync = require('child_process').execFileSync;

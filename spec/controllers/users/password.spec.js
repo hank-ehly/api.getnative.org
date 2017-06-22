@@ -7,10 +7,11 @@
 
 const Auth     = require('../../../app/services')['Auth'];
 const SpecUtil = require('../../spec-util');
-const Promise  = require('bluebird');
 const config   = require('../../../config/application').config;
 const k        = require('../../../config/keys.json');
 
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const request  = require('supertest');
 const assert   = require('assert');
 const i18n     = require('i18n');
@@ -29,7 +30,7 @@ describe('POST /users/password', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -57,7 +58,7 @@ describe('POST /users/password', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('response.headers', function() {
@@ -74,7 +75,7 @@ describe('POST /users/password', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it(`should return 204 No Content for a valid request`, function(done) {
             request(server).post('/users/password').set('authorization', authorization).send(validBody).expect(204, done);
         });
@@ -88,7 +89,7 @@ describe('POST /users/password', function() {
         });
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).post('/users/password').send(validBody).expect(401, done);
         });

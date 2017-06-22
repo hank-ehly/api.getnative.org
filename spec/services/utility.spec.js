@@ -5,8 +5,10 @@
  * Created by henryehly on 2017/03/14.
  */
 
-const Utility = require('../../app/services').Utility;
+const Utility = require('../../app/services')['Utility'];
 
+const m = require('mocha');
+const [describe, it, before] = [m.describe, m.it, m.before];
 const assert  = require('assert');
 const _       = require('lodash');
 

@@ -10,17 +10,15 @@ const db              = require('../../../app/models');
 const k               = require('../../../config/keys.json');
 const User            = db[k.Model.User];
 const Video           = db[k.Model.Video];
-const WritingAnswer   = db[k.Model.WritingAnswer];
 const Credential      = db[k.Model.Credential];
 const StudySession    = db[k.Model.StudySession];
 const Language        = db[k.Model.Language];
 
-const Promise         = require('bluebird');
 const assert          = require('assert');
 const chance          = require('chance').Chance();
 const _               = require('lodash');
 const m = require('mocha');
-const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
+const [describe, it, before, beforeEach, after] = [m.describe, m.it, m.before, m.beforeEach, m.after];
 
 describe('User.calculateStudyStreaks', function() {
     let user = null;
@@ -29,7 +27,7 @@ describe('User.calculateStudyStreaks', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer(), function() {
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]).then(function() {
             return Language.findAll({attributes: [k.Attr.Code, k.Attr.Id]});
         }).then(function(languages) {
             languages = _.invokeMap(languages, 'get', {plain: true});
@@ -54,7 +52,7 @@ describe('User.calculateStudyStreaks', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     it(`should throw a ReferenceError if no 'lang' is provided`, function() {
@@ -73,7 +71,9 @@ describe('User.calculateStudyStreaks', function() {
         const japaneseVideoPromise = Video.find({attributes: [k.Attr.Id], where: {language_id: japaneseLanguageId}});
         const englishVideoPromise  = Video.find({attributes: [k.Attr.Id], where: {language_id: englishLanguageId}});
 
-        return Promise.join(japaneseVideoPromise, englishVideoPromise, function(japaneseVideo, englishVideo) {
+        return Promise.all([japaneseVideoPromise, englishVideoPromise]).then(function(values) {
+            let [japaneseVideo, englishVideo] = values;
+
             const englishStudyDates = [
                 '2017-03-13 00:00:00',
                 '2017-03-10 00:00:00',
@@ -121,7 +121,8 @@ describe('User.calculateStudyStreaks', function() {
             return StudySession.bulkCreate(_.concat(englishStudySessions, japaneseStudySessions));
         }).then(function() {
             return Promise.all([user.calculateStudyStreaksForLanguage('en'), user.calculateStudyStreaksForLanguage('ja')]);
-        }).spread(function(englishStats, japaneseStats) {
+        }).then(function(values) {
+            const [englishStats, japaneseStats] = values;
             assert.equal(englishStats.longest_consecutive_days, 4, '(English)');
             assert.equal(japaneseStats.longest_consecutive_days, 6, '(Japanese)');
         });
@@ -131,7 +132,9 @@ describe('User.calculateStudyStreaks', function() {
         const japaneseVideoPromise = Video.find({attributes: [k.Attr.Id], where: {language_id: japaneseLanguageId}});
         const englishVideoPromise  = Video.find({attributes: [k.Attr.Id], where: {language_id: englishLanguageId}});
 
-        return Promise.join(japaneseVideoPromise, englishVideoPromise, function(japaneseVideo, englishVideo) {
+        return Promise.all([japaneseVideoPromise, englishVideoPromise]).then(function(values) {
+            const [japaneseVideo, englishVideo] = values;
+
             const oneDay             = 1000 * 60 * 60 * 24;
             const now                = new Date();
             const yesterday          = new Date(now - oneDay);
@@ -170,7 +173,8 @@ describe('User.calculateStudyStreaks', function() {
             return StudySession.bulkCreate(_.concat(englishStudySessions, japaneseStudySessions));
         }).then(function() {
             return Promise.all([user.calculateStudyStreaksForLanguage('en'), user.calculateStudyStreaksForLanguage('ja')]);
-        }).spread(function(englishStats, japaneseStats) {
+        }).then(function(values) {
+            const [englishStats, japaneseStats] = values;
             assert.equal(englishStats.consecutive_days, 2, '(English)');
             assert.equal(japaneseStats.consecutive_days, 1, '(Japanese)');
         });

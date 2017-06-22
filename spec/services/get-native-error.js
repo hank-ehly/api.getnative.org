@@ -5,9 +5,11 @@
  * Created by henryehly on 2017/04/02.
  */
 
-const GetNativeError = require('../../app/services').GetNativeError;
+const GetNativeError = require('../../app/services')['GetNativeError'];
 const k              = require('../../config/keys.json');
 
+const m = require('mocha');
+const [describe, it, before] = [m.describe, m.it, m.before];
 const assert         = require('assert');
 const _              = require('lodash');
 

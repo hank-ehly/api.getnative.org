@@ -299,9 +299,10 @@ describe('GET /videos', function() {
         it(`should return only English videos if the request contains no 'lang' parameter`, function() {
             return request(server).get(`/videos`).set('authorization', authorization).then(function(response) {
                 let firstVideoId = _.first(response.body.records)[k.Attr.Id];
-                return db.sequelize.query(`SELECT language_id FROM videos WHERE videos.id = ${firstVideoId} LIMIT 1`).spread(function(result) {
+                return db.sequelize.query(`SELECT language_id FROM videos WHERE videos.id = ${firstVideoId} LIMIT 1`).then(function(values) {
+                    const [rows] = values;
                     return db[k.Model.Language].find({where: {code: 'en'}, attributes: [k.Attr.Id]}).then(function(language) {
-                        assert.equal(_.first(result).language_id, language.get(k.Attr.Id));
+                        assert.equal(_.first(rows).language_id, language.get(k.Attr.Id));
                     });
                 });
             });

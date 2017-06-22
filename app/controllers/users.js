@@ -50,7 +50,8 @@ module.exports.create = (req, res, next) => {
                         }
                     })
                 ]);
-            }).spread((authAdapterType, identity) => {
+            }).then((values) => {
+                const [authAdapterType, identity] = values;
                 if (identity) {
                     throw new GetNativeError(k.Error.UserAlreadyExists);
                 }

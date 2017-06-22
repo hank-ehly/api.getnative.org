@@ -215,7 +215,8 @@ describe('GET /study/:lang/writing_answers', function() {
                         FROM study_sessions 
                         WHERE id IN (${studySessionIds.join(',')})
                     )
-                `).spread(function(rows) {
+                `).then(function(values) {
+                    const [rows] = values;
                         _.forEach(rows, function(row) {
                             assert.equal(row[k.Attr.Code], requestLang);
                         });

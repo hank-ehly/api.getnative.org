@@ -6,11 +6,12 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const request  = require('supertest');
-const assert   = require('assert');
 const k        = require('../../../config/keys.json');
 
-const Promise  = require('bluebird');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
+const request  = require('supertest');
+const assert   = require('assert');
 const _        = require('lodash');
 
 describe('POST /videos/:id/unlike', function() {
@@ -22,7 +23,7 @@ describe('POST /videos/:id/unlike', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -41,7 +42,8 @@ describe('POST /videos/:id/unlike', function() {
                 LIMIT 1
             `;
 
-            return db.sequelize.query(query, {replacements: [SpecUtil.credentials.email]}).spread(function(rows) {
+            return db.sequelize.query(query, {replacements: [SpecUtil.credentials.email]}).then(function(values) {
+                const [rows] = values;
                 requestVideoId = _.first(rows)[k.Attr.VideoId];
             });
         });
@@ -53,7 +55,7 @@ describe('POST /videos/:id/unlike', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('response.headers', function() {
@@ -70,7 +72,7 @@ describe('POST /videos/:id/unlike', function() {
         });
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should return 400 Bad Request if the required :id is not a number`, function(done) {
             request(server).post('/videos/x/unlike').set('authorization', authorization).expect(400, done);
         });
@@ -84,7 +86,7 @@ describe('POST /videos/:id/unlike', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it(`should respond with 204 No Content if the request succeeds`, function(done) {
             request(server).post(`/videos/${requestVideoId}/unlike`).set('authorization', authorization).expect(204, done);
         });

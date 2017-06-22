@@ -47,7 +47,7 @@ module.exports = function(schema) {
             }
         }
 
-        ['headers', 'body', 'query', 'params'].forEach(key => {
+        ['headers', 'body', 'query', 'params', 'files'].forEach(key => {
             if (!schema[key]) {
                 return;
             }

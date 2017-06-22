@@ -30,7 +30,9 @@ CustomStrategy.prototype.authenticate = function(req) {
 
     return Auth.verifyToken(token).then(decodedToken => {
         return Promise.all([User.findByPrimary(decodedToken.sub), Auth.refreshToken(decodedToken)]);
-    }).spread((user, refreshedToken) => {
+    }).then(values => {
+        const [user, refreshedToken] = values;
+
         Auth.setAuthHeadersOnResponseWithToken(req.res, refreshedToken);
 
         if (user) {

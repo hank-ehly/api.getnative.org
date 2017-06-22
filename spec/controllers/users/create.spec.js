@@ -55,7 +55,7 @@ describe('POST /users', function() {
         return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with a 400 Bad Request response the 'email' field is missing`, function(done) {
             request(server).post('/users').send({password: credential.password}).expect(400, done);
         });
@@ -85,7 +85,7 @@ describe('POST /users', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return request(server).post('/users').send(credential).then(function(response) {
                 assert(_.gt(response.header[k.Header.AuthToken].length, 0));
@@ -217,7 +217,8 @@ describe('POST /users', function() {
                     });
 
                     return Promise.all([identity, authType]);
-                }).spread(function(identity, authType) {
+                }).then(function(values) {
+                    const [identity, authType] = values;
                     assert.equal(identity.get('auth_adapter_type_id'), authType.get(k.Attr.Id));
                 });
             });
@@ -236,7 +237,8 @@ describe('POST /users', function() {
                 });
 
                 return Promise.all([findAuthAdapterTypes, createUser]);
-            }).spread(function(authAdapterTypes, user) {
+            }).then(function(values) {
+                const [authAdapterTypes, user] = values;
                 cache.authAdapterTypes = authAdapterTypes;
 
                 return db[k.Model.Identity].create({
@@ -280,7 +282,8 @@ describe('POST /users', function() {
                 });
 
                 return Promise.all([findAuthAdapterTypes, createUser]);
-            }).spread(function(authAdapterTypes, user) {
+            }).then(function(values) {
+                const [authAdapterTypes, user] = values;
                 cache.authAdapterTypes = authAdapterTypes;
 
                 return db[k.Model.Identity].create({

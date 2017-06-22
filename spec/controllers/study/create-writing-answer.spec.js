@@ -8,7 +8,8 @@
 const SpecUtil = require('../../spec-util');
 const k        = require('../../../config/keys.json');
 
-const Promise  = require('bluebird');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const request  = require('supertest');
 const assert   = require('assert');
 const crypto   = require('crypto');
@@ -22,7 +23,7 @@ describe('POST /study/writing_answers', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -32,15 +33,16 @@ describe('POST /study/writing_answers', function() {
             server        = result.server;
             db            = result.db;
 
-            return db.Video.find().then(function(video) {
+            return db[k.Model.Video].find().then(function(video) {
                 return Promise.all([
-                    db.StudySession.create({
+                    db[k.Model.StudySession].create({
                         user_id: result.response.body[k.Attr.Id],
                         video_id: video.get(k.Attr.Id),
                         study_time: 300
-                    }), db.WritingQuestion.find({plain: true})
+                    }), db[k.Model.WritingQuestion].find({plain: true})
                 ]);
-            }).spread(function(studySession, writingQuestion) {
+            }).then(function(values) {
+                const [studySession, writingQuestion] = values;
                 const hash = crypto.randomBytes(8).toString('hex');
                 req = {
                     answer: _.times(10, _.constant(`This answer has sixty words - ${hash}.`)).join(' '),
@@ -58,7 +60,7 @@ describe('POST /study/writing_answers', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('headers', function() {

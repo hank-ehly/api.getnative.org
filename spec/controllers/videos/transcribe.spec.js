@@ -11,13 +11,8 @@ const assert = require('assert');
 const k = require('../../../config/keys.json');
 const _ = require('lodash');
 
-const mocha = require('mocha');
-const before = mocha.before;
-const after = mocha.after;
-const afterEach = mocha.afterEach;
-const beforeEach = mocha.beforeEach;
-const describe = mocha.describe;
-const it = mocha.it;
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const path = require('path');
 
 describe('POST /videos/transcribe', function() {
@@ -58,54 +53,54 @@ describe('POST /videos/transcribe', function() {
             this.timeout(SpecUtil.defaultTimeout);
 
             server.close(async function() {
-                let results   = await SpecUtil.login();
+                const results = await SpecUtil.login();
                 authorization = results.authorization;
-                server        = results.server;
+                server = results.server;
 
-                request(server).post(url).set('authorization', authorization).attach('file', file).expect(404, done);
+                request(server).post(url).set('authorization', authorization).attach('video', file).expect(404, done);
             });
         });
 
         it('should respond with 400 Bad Request if the language_code query parameter is not an accepted google speech language code', function(done) {
-            request(server).post(url).set('authorization', authorization).attach('file', file).query({language_code: 'xx-XX'}).expect(400, done);
+            request(server).post(url).set('authorization', authorization).attach('video', file).query({language_code: 'xx-XX'}).expect(400, done);
         });
     });
 
     describe('success', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
-            return request(server).post(url).set('authorization', authorization).attach('file', file).then(function(response) {
+            return request(server).post(url).set('authorization', authorization).attach('video', file).then(function(response) {
                 assert(_.gt(response.header[k.Header.AuthToken].length, 0));
             });
         });
 
         it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', function() {
-            return request(server).post(url).set('authorization', authorization).attach('file', file).then(function(response) {
+            return request(server).post(url).set('authorization', authorization).attach('video', file).then(function(response) {
                 assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
         });
 
         it('should respond with 200 OK for a successful request', function(done) {
-            request(server).post(url).set('authorization', authorization).attach('file', file).query({language_code: 'en-US'}).expect(200, done);
+            request(server).post(url).set('authorization', authorization).attach('video', file).query({language_code: 'en-US'}).expect(200, done);
         });
 
         it('should respond with 200 OK for a successful request without a language_code query parameter', function(done) {
-            request(server).post(url).set('authorization', authorization).attach('file', file).expect(200, done);
+            request(server).post(url).set('authorization', authorization).attach('video', file).expect(200, done);
         });
 
         it('should return a JSON object', function() {
-            return request(server).post(url).set('authorization', authorization).attach('file', file).then(function(response) {
+            return request(server).post(url).set('authorization', authorization).attach('video', file).then(function(response) {
                 assert(_.isPlainObject(response.body));
             });
         });
 
         it(`should return a top-level 'transcription' string`, function() {
-            return request(server).post(url).set('authorization', authorization).attach('file', file).then(function(response) {
+            return request(server).post(url).set('authorization', authorization).attach('video', file).then(function(response) {
                 assert(_.isString(response.body.transcription));
             });
         });
 
         it('should return the spoken text', function() {
-            return request(server).post(url).set('authorization', authorization).attach('file', file).then(function(response) {
+            return request(server).post(url).set('authorization', authorization).attach('video', file).then(function(response) {
                 assert.equal(response.body.transcription, 'test-result');
             });
         });

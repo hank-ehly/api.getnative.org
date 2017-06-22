@@ -17,7 +17,6 @@ const User              = db[k.Model.User];
 const Credential        = db[k.Model.Credential];
 const Language          = db[k.Model.Language];
 
-const Promise           = require('bluebird');
 const mailer            = require('../../config/initializers/mailer');
 const i18n              = require('i18n');
 const _                 = require('lodash');

@@ -85,7 +85,8 @@ module.exports = function(sequelize, DataTypes) {
             replacements: [
                 email
             ]
-        }).spread(rows => {
+        }).then(values => {
+            const [rows] = values;
             return _.first(rows).does_exist;
         });
     };
@@ -146,7 +147,8 @@ module.exports = function(sequelize, DataTypes) {
             WHERE user_id = ? AND videos.language_id = (SELECT id FROM languages WHERE code = ? LIMIT 1) AND is_completed = true;
         `;
 
-        return sequelize.query(query, {replacements: [this.id, lang]}).spread(rows => {
+        return sequelize.query(query, {replacements: [this.id, lang]}).then(values => {
+            const [rows] = values;
             const result = _.first(rows);
             result.total_time_studied = _.toNumber(result.total_time_studied);
             return result;
@@ -176,7 +178,9 @@ module.exports = function(sequelize, DataTypes) {
             );
         `;
 
-        return sequelize.query(query, {replacements: [this.id, lang]}).spread(_.first);
+        return sequelize.query(query, {replacements: [this.id, lang]}).then(result => {
+            return _.first(_.first(result));
+        });
     };
 
     User.prototype.calculateStudyStreaksForLanguage = function(lang) {
@@ -211,7 +215,9 @@ module.exports = function(sequelize, DataTypes) {
             ORDER BY StreakEndDate DESC;
         `;
 
-        return sequelize.query(query, {replacements: [this.id, lang]}).spread(rows => {
+        return sequelize.query(query, {replacements: [this.id, lang]}).then(values => {
+            const [rows] = values;
+
             const result = {
                 consecutive_days: 0,
                 longest_consecutive_days: 0

@@ -22,7 +22,7 @@ module.exports.videoToFlac = function(filepath) {
     const outputFilePath = '/tmp/' + randomHash() + '.flac';
 
     return new Promise((resolve, reject) => {
-        exec(`/usr/bin/env avconv -i ${filepath} ${outputFilePath}`, err => {
+        exec(`/usr/bin/env avconv -i ${filepath} -vn -f flac ${outputFilePath}`, err => {
             if (err) {
                 reject(err);
             } else {

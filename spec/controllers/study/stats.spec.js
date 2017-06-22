@@ -8,7 +8,8 @@
 const SpecUtil = require('../../spec-util');
 const k        = require('../../../config/keys.json');
 
-const Promise  = require('bluebird');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const request  = require('supertest');
 const assert   = require('assert');
 const _        = require('lodash');
@@ -21,7 +22,7 @@ describe('GET /study/stats', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -40,7 +41,7 @@ describe('GET /study/stats', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('response.headers', function() {
@@ -57,7 +58,7 @@ describe('GET /study/stats', function() {
         });
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).get('/study/en/stats').expect(401, done);
         });
@@ -67,7 +68,7 @@ describe('GET /study/stats', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it('should response with 200 OK for a valid request', function(done) {
             request(server).get('/study/en/stats').set('authorization', authorization).expect(200, done);
         });

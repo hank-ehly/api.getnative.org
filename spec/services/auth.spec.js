@@ -12,6 +12,8 @@ const SpecUtil = require('../spec-util');
 const config   = require('../../config/application').config;
 const k        = require('../../config/keys.json');
 
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const assert   = require('assert');
 const _        = require('lodash');
 

@@ -47,7 +47,7 @@ describe('GET /speakers/:id', function() {
         return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).expect(401, done);
         });
@@ -57,7 +57,7 @@ describe('GET /speakers/:id', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(response) {
                 assert(response.header[k.Header.AuthToken].length > 0);

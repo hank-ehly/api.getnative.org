@@ -8,6 +8,8 @@
 const SpecUtil     = require('../../spec-util');
 const db           = require('../../../app/models');
 
+const m = require('mocha');
+const [describe, it, beforeEach] = [m.describe, m.it, m.beforeEach];
 const execFileSync = require('child_process').execFileSync;
 const assert       = require('assert');
 const moment       = require('moment');

@@ -24,11 +24,10 @@ describe('POST /sessions', function() {
         return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
-    beforeEach(function() {
-        return SpecUtil.login().then(function(initGroup) {
-            server = initGroup.server;
-            response = initGroup.response;
-        });
+    beforeEach(async function() {
+        const results = await SpecUtil.login();
+        server = results.server;
+        response = results.response;
     });
 
     afterEach(function(done) {
@@ -50,7 +49,7 @@ describe('POST /sessions', function() {
         });
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it('should respond with a 404 Not Found response if the user is not found', function(done) {
             request(server).post('/sessions').send({
                 email: 'bad@email.com',
@@ -66,7 +65,7 @@ describe('POST /sessions', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it('should respond with 201 Created', function(done) {
             request(server).post('/sessions').send(SpecUtil.credentials).expect(201, done);
         });

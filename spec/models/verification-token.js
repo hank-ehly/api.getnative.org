@@ -13,6 +13,8 @@ const Language = db[k.Model.Language];
 const Auth = require('../../app/services')['Auth'];
 const SpecUtil = require('../spec-util');
 
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const chance = require('chance').Chance();
 const assert = require('assert');
 const moment = require('moment');

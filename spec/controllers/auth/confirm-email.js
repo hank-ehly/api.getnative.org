@@ -9,7 +9,8 @@ const SpecUtil = require('../../spec-util');
 const Auth     = require('../../../app/services')['Auth'];
 const k        = require('../../../config/keys.json');
 
-const Promise  = require('bluebird');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const request  = require('supertest');
 const assert   = require('assert');
 const moment   = require('moment');
@@ -24,7 +25,7 @@ describe('POST /confirm_email', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -54,7 +55,7 @@ describe('POST /confirm_email', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('response.headers', function() {
@@ -71,7 +72,7 @@ describe('POST /confirm_email', function() {
         });
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 400 Bad Request if the 'token' body parameter is missing`, function(done) {
             request(server).post('/confirm_email').expect(400, done);
         });
@@ -99,7 +100,7 @@ describe('POST /confirm_email', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it(`should respond with 200 OK if the verification succeeds`, function(done) {
             request(server).post(`/confirm_email`).send({token: token}).expect(200, done);
         });

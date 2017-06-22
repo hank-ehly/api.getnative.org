@@ -8,7 +8,8 @@
 const SpecUtil = require('../../spec-util');
 const k        = require('../../../config/keys.json');
 
-const Promise  = require('bluebird');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const request  = require('supertest');
 const assert   = require('assert');
 const _        = require('lodash');
@@ -21,7 +22,7 @@ describe('POST /videos/:id/like', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -39,7 +40,10 @@ describe('POST /videos/:id/like', function() {
                     FROM likes
                     WHERE user_id = ?
                 ) LIMIT 1
-            `, {replacements: [result.response.body[k.Attr.Id]]}).spread(r => requestVideoId = _.first(r)[k.Attr.Id]);
+            `, {replacements: [result.response.body[k.Attr.Id]]}).then(function(values) {
+                const [r] = values;
+                requestVideoId = _.first(r)[k.Attr.Id]
+            });
         });
     });
 
@@ -49,7 +53,7 @@ describe('POST /videos/:id/like', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('response.headers', function() {
@@ -66,7 +70,7 @@ describe('POST /videos/:id/like', function() {
         });
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).post(`/videos/${requestVideoId}/like`).expect(401, done);
         });
@@ -84,7 +88,7 @@ describe('POST /videos/:id/like', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it(`should respond with 204 No Content if the request succeeds`, function(done) {
             request(server).post(`/videos/${requestVideoId}/like`).set('authorization', authorization).expect(204, done);
         });

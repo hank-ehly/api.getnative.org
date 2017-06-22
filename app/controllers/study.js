@@ -21,7 +21,6 @@ const ResponseWrapper = services['ResponseWrapper'];
 const GetNativeError  = services['GetNativeError'];
 const Auth            = services['Auth'];
 
-const Promise         = require('bluebird');
 const _               = require('lodash');
 
 module.exports.stats = (req, res, next) => {
@@ -29,7 +28,8 @@ module.exports.stats = (req, res, next) => {
     const writingStats = req.user.calculateWritingStatsForLanguage(req.params.lang);
     const studyStreaks = req.user.calculateStudyStreaksForLanguage(req.params.lang);
 
-    return Promise.join(sessionStats, writingStats, studyStreaks, (sessions, writing, streaks) => {
+    return Promise.all([sessionStats, writingStats, studyStreaks]).then(values => {
+        const [sessions, writing, streaks] = values;
         res.status(200).send({
             lang: req.params.lang,
             total_time_studied: sessions.total_time_studied,
@@ -119,7 +119,8 @@ module.exports.createStudySession = (req, res, next) => {
         study_time: studyTime
     });
 
-    return Promise.join(studySession, queuedVideo, function(session) {
+    return Promise.all([studySession, queuedVideo]).then(function(values) {
+        const [session] = values;
         const ret = _.pick(session.get({plain: true}), [k.Attr.Id, k.Attr.VideoId, k.Attr.StudyTime, k.Attr.IsCompleted]);
         res.status(201).send(ret);
     }).catch(next);

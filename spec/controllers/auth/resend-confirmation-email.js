@@ -55,7 +55,7 @@ describe('POST /resend_confirmation_email', function() {
         return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 400 Bad Request if the 'email' body parameter is missing`, function(done) {
             request(server).post('/resend_confirmation_email').expect(400, done);
         });
@@ -109,7 +109,7 @@ describe('POST /resend_confirmation_email', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it(`should respond with 204 No Content if the request succeeds`, function(done) {
             request(server).post('/resend_confirmation_email').send({email: user.email}).expect(204, done);
         });

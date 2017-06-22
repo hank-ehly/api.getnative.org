@@ -8,7 +8,8 @@
 const SpecUtil = require('../../spec-util');
 const k        = require('../../../config/keys.json');
 
-const Promise = require('bluebird');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const request = require('supertest');
 const assert  = require('assert');
 const _       = require('lodash');
@@ -22,7 +23,7 @@ describe('POST /videos/:id/queue', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -37,7 +38,8 @@ describe('POST /videos/:id/queue', function() {
                 SELECT * FROM videos WHERE id NOT IN (
                     SELECT video_id FROM cued_videos WHERE user_id = ?
                 ) LIMIT 1;
-            `, {replacements: [user[k.Attr.Id]]}).spread(function(video) {
+            `, {replacements: [user[k.Attr.Id]]}).then(function(values) {
+                const [video] = values;
                 sampleVideo = _.first(video);
             });
         });
@@ -49,7 +51,7 @@ describe('POST /videos/:id/queue', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('response.headers', function() {
@@ -66,7 +68,7 @@ describe('POST /videos/:id/queue', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it(`should return 204 No Content for a valid request`, function(done) {
             request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/queue`).set('authorization', authorization).expect(204, done);
         });
@@ -91,7 +93,7 @@ describe('POST /videos/:id/queue', function() {
         });
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/queue`).expect(401, done);
         });

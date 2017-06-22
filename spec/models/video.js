@@ -7,11 +7,11 @@
 
 const SpecUtil = require('../spec-util');
 const db       = require('../../app/models');
-const User  = db.User;
-const Video    = db.Video;
 const k        = require('../../config/keys.json');
+const Video    = db[k.Model.Video];
 
-const Promise  = require('bluebird');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const assert   = require('assert');
 const _        = require('lodash');
 
@@ -21,7 +21,7 @@ describe('Video', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -38,7 +38,7 @@ describe('Video', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('cuedAndMaxId', function() {
@@ -95,7 +95,8 @@ describe('Video', function() {
                             SELECT subcategory_id FROM videos WHERE id = ?
                         )
                     )
-                `, {replacements: [video.get(k.Attr.Id)]}).spread(function(results) {
+                `, {replacements: [video.get(k.Attr.Id)]}).then(function(values) {
+                    const [results] = values;
                     return _.map(results, k.Attr.Id);
                 });
 
@@ -103,7 +104,8 @@ describe('Video', function() {
                     return _.map(videos, 'subcategory_id');
                 });
 
-                return Promise.join(expectedSubcategoryIds, actualSubcategoryIds, function(expected, actual) {
+                return Promise.all([expectedSubcategoryIds, actualSubcategoryIds]).then(function(values) {
+                    const [expected, actual] = values;
                     assert.equal(_.difference(actual, expected).length, 0);
                 });
             });
@@ -114,7 +116,8 @@ describe('Video', function() {
         it(`should return different results for the same query`, function() {
             const q1 = Video.scope('orderByRandom').findAll({limit: 5});
             const q2 = Video.scope('orderByRandom').findAll({limit: 5});
-            return Promise.join(q1, q2, function(first, second) {
+            return Promise.all([q1, q2]).then(function(values) {
+                const [first, second] = values;
                 assert(!_.isEqual(first, second));
             });
         });

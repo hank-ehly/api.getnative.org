@@ -8,7 +8,8 @@
 const SpecUtil = require('../../spec-util');
 const k        = require('../../../config/keys.json');
 
-const Promise = require('bluebird');
+const m = require('mocha');
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const request = require('supertest');
 const assert  = require('assert');
 const _       = require('lodash');
@@ -22,7 +23,7 @@ describe('POST /study', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -48,7 +49,7 @@ describe('POST /study', function() {
                     }
                 });
             }).then(function() {
-                return Promise.join(db[k.Model.CuedVideo].destroy(byUserId), db[k.Model.StudySession].destroy(byUserId));
+                return Promise.all([db[k.Model.CuedVideo].destroy(byUserId), db[k.Model.StudySession].destroy(byUserId)]);
             }).then(function() {
                 return db[k.Model.Video].find();
             }).then(function(video) {
@@ -66,7 +67,7 @@ describe('POST /study', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('response.headers', function() {
@@ -83,7 +84,7 @@ describe('POST /study', function() {
         });
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 400 Bad Request if the 'video_id' request body parameter is missing`, function(done) {
             request(server).post('/study').set('authorization', authorization).send({study_time: reqBody.study_time}).expect(400, done);
         });
@@ -130,7 +131,7 @@ describe('POST /study', function() {
         });
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it(`should respond with 201 Created for a valid request`, function(done) {
             request(server).post('/study').set('authorization', authorization).send(reqBody).expect(201, done);
         });

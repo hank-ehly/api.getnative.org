@@ -26,7 +26,6 @@ const Video = db[k.Model.Video];
 const Like = db[k.Model.Like];
 
 const exec = require('child_process').exec;
-const Promise = require('bluebird');
 const formidable = require('formidable');
 const _ = require('lodash');
 
@@ -335,18 +334,8 @@ module.exports.dequeue = async (req, res, next) => {
     return res.sendStatus(204);
 };
 
-module.exports.transcribe = (req, res, next) => {
-    const form = new formidable.IncomingForm();
+module.exports.transcribe = async (req, res) => {
 
-    form.parse(req, async (err, fields, files) => {
-        if (err) {
-            return next(err);
-        } else if (_.size(files) === 0) {
-            res.status(400);
-            return next(new GetNativeError(k.Error.FileMissing));
-        }
-
-        const transcript = await Speech.transcribeVideo(files.file.path, req.query[k.Attr.LanguageCode] || 'en-US');
-        return res.status(200).send({transcription: transcript});
-    });
+    const transcript = await Speech.transcribeVideo(req.files.video.path, req.query[k.Attr.LanguageCode] || 'en-US');
+    return res.status(200).send({transcription: transcript});
 };

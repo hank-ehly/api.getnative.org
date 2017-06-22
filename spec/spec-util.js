@@ -9,7 +9,6 @@ const k       = require('../config/keys.json');
 
 const url     = require('url');
 const request = require('supertest');
-const Promise = require('bluebird');
 const exec    = require('child_process').exec;
 const MailDev = require('maildev');
 const jwt     = require('jsonwebtoken');
@@ -40,11 +39,19 @@ module.exports.seedAllUndo = function() {
 
 module.exports.startMailServer = function() {
     maildev = new MailDev({silent: true});
-    return Promise.promisify(maildev.listen)();
+    return new Promise(function(resolve) {
+        maildev.listen(function() {
+            resolve();
+        });
+    });
 };
 
 module.exports.stopMailServer = function() {
-    return Promise.promisify(maildev.end)();
+    return new Promise(function(resolve) {
+        maildev.end(function() {
+            resolve();
+        });
+    });
 };
 
 module.exports.getAllEmail = function() {

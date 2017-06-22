@@ -5,8 +5,10 @@
  * Created by henryehly on 2017/03/14.
  */
 
-const ResponseWrapper = require('../../app/services').ResponseWrapper;
+const ResponseWrapper = require('../../app/services')['ResponseWrapper'];
 
+const m = require('mocha');
+const [describe, it, before] = [m.describe, m.it, m.before];
 const assert          = require('assert');
 const _               = require('lodash');
 

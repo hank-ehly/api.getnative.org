@@ -35,8 +35,9 @@ describe('GET /videos/:id', function() {
             user          = result.response.body;
             db            = result.db;
 
-            return db.sequelize.query('SELECT id FROM videos LIMIT 1').spread(r => {
-                videoId = _.first(r)[k.Attr.Id];
+            return db.sequelize.query('SELECT id FROM videos LIMIT 1').then(function(values) {
+                const [rows] = values;
+                videoId = _.first(rows)[k.Attr.Id];
             });
         });
     });

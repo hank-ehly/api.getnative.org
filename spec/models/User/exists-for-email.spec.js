@@ -12,7 +12,6 @@ const Credential = db[k.Model.Credential];
 const User = db[k.Model.User];
 const Language = db[k.Model.Language];
 
-const Promise = require('bluebird');
 const chance = require('chance').Chance();
 const assert = require('assert');
 const m = require('mocha');
@@ -23,7 +22,7 @@ describe('User.existsForEmail', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAll(), SpecUtil.startMailServer());
+        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
     });
 
     beforeEach(function() {
@@ -42,7 +41,7 @@ describe('User.existsForEmail', function() {
 
     after(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.join(SpecUtil.seedAllUndo(), SpecUtil.stopMailServer());
+        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('existsForEmail', function() {

@@ -305,6 +305,9 @@ const schema = {
             },
             query: {
                 language_code: Joi.string().lowercase().valid(GoogleCloudSpeechLanguageCodes)
+            },
+            files: {
+                video: Joi.object().required()
             }
         },
         unlike: {

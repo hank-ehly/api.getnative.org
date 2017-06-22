@@ -70,7 +70,7 @@ describe('PATCH /users', function() {
         return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
-    describe('response.success', function() {
+    describe('success', function() {
         it('should respond with an X-GN-Auth-Token header', function() {
             return request(server).patch('/users').set('authorization', authorization).send(validBody).then(function(response) {
                 assert(_.gt(response.header[k.Header.AuthToken].length, 0));
@@ -148,7 +148,7 @@ describe('PATCH /users', function() {
         });
     });
 
-    describe('response.failure', function() {
+    describe('failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).patch('/users').send(validBody).expect(401, done);
         });

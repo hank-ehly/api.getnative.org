@@ -13,6 +13,7 @@ const middleware     = require('../app/middleware');
 const ValidateParams = middleware['ValidateRequestParameters'];
 const Authenticate   = middleware['Authenticate'];
 const AdminOnly      = middleware['AdminOnly'];
+const FormParser     = middleware['FormParser'];
 
 const passport       = require('passport');
 
@@ -57,6 +58,6 @@ router.post( '/videos/:id/dequeue',          ValidateParams(pv.videos.dequeue), 
 router.post( '/videos/:id/like',             ValidateParams(pv.videos.like),                   Authenticate, ctrl.videos.like);
 router.post( '/videos/:id/queue',            ValidateParams(pv.videos.queue),                  Authenticate, ctrl.videos.queue);
 router.post( '/videos/:id/unlike',           ValidateParams(pv.videos.unlike),                 Authenticate, ctrl.videos.unlike);
-router.post( '/videos/transcribe',           ValidateParams(pv.videos.transcribe),             Authenticate, AdminOnly, ctrl.videos.transcribe);
+router.post( '/videos/transcribe', FormParser, ValidateParams(pv.videos.transcribe),           Authenticate, AdminOnly, ctrl.videos.transcribe);
 
 module.exports = router;

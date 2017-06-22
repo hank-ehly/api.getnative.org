@@ -15,7 +15,6 @@ const k          = require('../keys.json');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const passport   = require('passport');
-const Promise    = require('bluebird');
 const express    = require('express');
 const morgan     = require('morgan');
 const path       = require('path');
@@ -25,13 +24,8 @@ passport.use('facebook', require('../passport/facebook'));
 passport.use('twitter', require('../passport/twitter'));
 passport.use('google', require('../passport/google'));
 
-passport.serializeUser(function(user, cb) {
-    cb(null, user);
-});
-
-passport.deserializeUser(function(obj, cb) {
-    cb(null, obj);
-});
+passport.serializeUser((user, cb) => cb(null, user));
+passport.deserializeUser((obj, cb) => cb(null, obj));
 
 module.exports = () => {
     const app = express();
@@ -48,7 +42,7 @@ module.exports = () => {
     app.set('view engine', 'ejs');
 
     app.use(bodyParser.json());
-    app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
+    app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true })); // todo
     app.use(cookieParser());
     app.use(i18n.init);
     app.use(middleware['Cors']);
