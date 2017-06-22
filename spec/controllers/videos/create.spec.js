@@ -42,50 +42,59 @@ describe('POST /videos', function() {
     });
 
     describe('failure', function() {
-        describe('subcategory_id', function() {
-            it('should return 400 Bad Request if subcategory_id is not present');
-            it('should return 400 Bad Request if subcategory_id is not a number');
-            it('should return 400 Bad Request if subcategory_id is 0');
-            it('should return 404 Not Found if the subcategory_id does not correspond to an existing Subcategory record');
+        describe('video', function() {
+            it('should return 400 Bad Request if the video field is missing');
         });
 
-        describe('language_id', function() {
-            it('should return 400 Bad Request if language_id is not present');
-            it('should return 400 Bad Request if language_id is not a number');
-            it('should return 400 Bad Request if language_id is 0');
-            it('should return 404 Not Found if the language_id does not correspond to an existing Language record');
-        });
+        describe('metadata', function() {
+            it('should return 400 Bad Request if the metadata field is missing');
+            it('should return 400 Bad Request if the metadata field is not a parsable JSON object');
 
-        describe('speaker_id', function() {
-            it('should return 400 Bad Request if speaker_id is not present');
-            it('should return 400 Bad Request if speaker_id is not a number');
-            it('should return 400 Bad Request if speaker_id is 0');
-            it('should return 404 Not Found if the speaker_id does not correspond to an existing Speaker record');
-        });
+            describe('subcategory_id', function() {
+                it('should return 400 Bad Request if subcategory_id is not present');
+                it('should return 400 Bad Request if subcategory_id is not a number');
+                it('should return 400 Bad Request if subcategory_id is 0');
+                it('should return 404 Not Found if the subcategory_id does not correspond to an existing Subcategory record');
+            });
 
-        describe('description', function() {
-            it('should return 400 Bad Request if description is not present');
-            it('should return 400 Bad Request if description is not a string');
-            it('should return 400 Bad Request if description is 0 length');
-        });
+            describe('language_id', function() {
+                it('should return 400 Bad Request if language_id is not present');
+                it('should return 400 Bad Request if language_id is not a number');
+                it('should return 400 Bad Request if language_id is 0');
+                it('should return 404 Not Found if the language_id does not correspond to an existing Language record');
+            });
 
-        describe('transcripts', function() {
-            it('should return 400 Bad Request if transcripts is not present');
-            it('should return 400 Bad Request if transcripts is not an array');
-            it('should return 400 Bad Request if transcripts is 0 length');
-        });
+            describe('speaker_id', function() {
+                it('should return 400 Bad Request if speaker_id is not present');
+                it('should return 400 Bad Request if speaker_id is not a number');
+                it('should return 400 Bad Request if speaker_id is 0');
+                it('should return 404 Not Found if the speaker_id does not correspond to an existing Speaker record');
+            });
 
-        describe('transcripts.language_id', function() {
-            it('should return 400 Bad Request if transcripts.language_id is not present');
-            it('should return 400 Bad Request if transcripts.language_id is not a number');
-            it('should return 400 Bad Request if transcripts.language_id is 0');
-            it('should return 404 Not Found if the transcripts.language_id does not correspond to an existing Language record');
-        });
+            describe('description', function() {
+                it('should return 400 Bad Request if description is not present');
+                it('should return 400 Bad Request if description is not a string');
+                it('should return 400 Bad Request if description is 0 length');
+            });
 
-        describe('transcripts.text', function() {
-            it('should return 400 Bad Request if transcripts.text is not present');
-            it('should return 400 Bad Request if transcripts.text is not a string');
-            it('should return 400 Bad Request if transcripts.text is 0 length');
+            describe('transcripts', function() {
+                it('should return 400 Bad Request if transcripts is not present');
+                it('should return 400 Bad Request if transcripts is not an array');
+                it('should return 400 Bad Request if transcripts is 0 length');
+            });
+
+            describe('transcripts.language_id', function() {
+                it('should return 400 Bad Request if transcripts.language_id is not present');
+                it('should return 400 Bad Request if transcripts.language_id is not a number');
+                it('should return 400 Bad Request if transcripts.language_id is 0');
+                it('should return 404 Not Found if the transcripts.language_id does not correspond to an existing Language record');
+            });
+
+            describe('transcripts.text', function() {
+                it('should return 400 Bad Request if transcripts.text is not present');
+                it('should return 400 Bad Request if transcripts.text is not a string');
+                it('should return 400 Bad Request if transcripts.text is 0 length');
+            });
         });
     });
 
@@ -109,6 +118,8 @@ describe('POST /videos', function() {
         describe('assets storage', function() {
             it('should save a new video asset to online storage');
             it('should save a new picture asset to online storage');
+            it('should resize the new video to 3:2 aspect ratio');
+            it('should resize the new picture to 3:2 aspect ratio');
         });
     });
 });
