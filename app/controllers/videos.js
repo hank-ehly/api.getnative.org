@@ -335,7 +335,6 @@ module.exports.dequeue = async (req, res, next) => {
 };
 
 module.exports.transcribe = async (req, res) => {
-
     const transcript = await Speech.transcribeVideo(req.files.video.path, req.query[k.Attr.LanguageCode] || 'en-US');
     return res.status(200).send({transcription: transcript});
 };
