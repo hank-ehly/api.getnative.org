@@ -9,7 +9,6 @@ const Utility = require('./utility');
 const config  = require('../../config/application').config;
 const k       = require('../../config/keys.json');
 
-const Promise = require('bluebird');
 const sodium  = require('sodium').api;
 const crypto  = require('crypto');
 const moment  = require('moment');
@@ -24,7 +23,15 @@ module.exports.verifyToken = function(token) {
         algorithms: ['RS256']
     };
 
-    return Promise.promisify(jwt.verify)(token, config.get(k.PublicKey), args);
+    return new Promise((resolve, reject) => {
+        jwt.verify(token, config.get(k.PublicKey), args, (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        });
+    });
 };
 
 module.exports.refreshToken = token => {
@@ -45,7 +52,15 @@ module.exports.refreshToken = token => {
         expiresIn: '1h'
     };
 
-    return Promise.promisify(jwt.sign)(cloneToken, config.get(k.PrivateKey), args);
+    return new Promise((resolve, reject) => {
+        jwt.sign(cloneToken, config.get(k.PrivateKey), args, (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        });
+    });
 };
 
 module.exports.generateTokenForUserId = userId => {
@@ -60,7 +75,15 @@ module.exports.generateTokenForUserId = userId => {
         expiresIn: '1h'
     };
 
-    return Promise.promisify(jwt.sign)(token, config.get(k.PrivateKey), args);
+    return new Promise((resolve, reject) => {
+        jwt.sign(token, config.get(k.PrivateKey), args, (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        });
+    });
 };
 
 module.exports.setAuthHeadersOnResponseWithToken = (res, token) => {

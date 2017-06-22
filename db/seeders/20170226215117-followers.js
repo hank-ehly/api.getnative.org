@@ -9,7 +9,6 @@ const chance  = require('chance').Chance();
 const models  = require('../../app/models');
 const Speaker = models.Speaker;
 const User = models.User;
-const Promise = require('bluebird');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {

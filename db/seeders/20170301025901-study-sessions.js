@@ -5,17 +5,19 @@
  * Created by henryehly on 2017/03/01.
  */
 
-const chance  = require('chance').Chance();
-const models  = require('../../app/models');
-const Promise = require('bluebird');
-const User = models.User;
-const Video   = models.Video;
+const k = require('../../config/keys.json');
+const db = require('../../app/models');
+const User = db[k.Model.User];
+const Video = db[k.Model.Video];
+
+const chance = require('chance').Chance();
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
         const promises = [User.unscoped().min('id'), User.unscoped().max('id'), Video.min('id'), Video.max('id')];
 
-        return Promise.all(promises).spread((minUserId, maxUserId, minVideoId, maxVideoId) => {
+        return Promise.all(promises).then(values => {
+            const [minUserId, maxUserId, minVideoId, maxVideoId] = values;
             const studySessions = [];
             const possibleStudyTimes = [];
 
@@ -40,7 +42,10 @@ module.exports = {
                         }),
                         user_id: i,
                         study_time: chance.pickone(possibleStudyTimes),
-                        created_at: new Date(chance.integer({min: minDate, max: maxDate})),
+                        created_at: new Date(chance.integer({
+                            min: minDate,
+                            max: maxDate
+                        })),
                         is_completed: chance.bool()
                     });
                 }

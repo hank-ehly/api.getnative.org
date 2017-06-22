@@ -5,15 +5,17 @@
  * Created by henryehly on 2017/03/01.
  */
 
-const Transcript = require('../../app/models').Transcript;
-const chance     = require('chance').Chance();
-const Promise    = require('bluebird');
+const k = require('../../config/keys.json');
+const Transcript = require('../../app/models')[k.Model.Transcript];
+
+const chance = require('chance').Chance();
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return Promise.all([Transcript.min('id'), Transcript.max('id')]).spread((minTranscriptId, maxTranscriptId) => {
+        return Promise.all([Transcript.min(k.Attr.Id), Transcript.max(k.Attr.Id)]).then(values => {
+            const [minTranscriptId, maxTranscriptId] = values;
             const collocations = [];
-            const ipa_pool     = 'ɑæɐɑ̃βɓʙɕçðd͡ʒɖɗəɚɵɘɛɜɝɛ̃ɞɠʛɢɥɦɧħʜɪɪ̈ɨʝɟʄɫʟɬɭɮɱŋɲɴɳɔœøɒɔ̃ɶɸɐɾʁɹɻʀɽɺʃʂθt͡ʃt͡sʈʊʊ̈ʉʌʋⱱʍɯɰχʎʏʏɤɣʒʐʑʔʕʢʡ';
+            const ipa_pool = 'ɑæɐɑ̃βɓʙɕçðd͡ʒɖɗəɚɵɘɛɜɝɛ̃ɞɠʛɢɥɦɧħʜɪɪ̈ɨʝɟʄɫʟɬɭɮɱŋɲɴɳɔœøɒɔ̃ɶɸɐɾʁɹɻʀɽɺʃʂθt͡ʃt͡sʈʊʊ̈ʉʌʋⱱʍɯɰχʎʏʏɤɣʒʐʑʔʕʢʡ';
 
             for (let i = minTranscriptId; i <= maxTranscriptId; i++) {
                 let numCollocations = chance.integer({

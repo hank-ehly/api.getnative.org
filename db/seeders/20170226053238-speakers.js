@@ -10,14 +10,13 @@ const db = require('../../app/models');
 const Gender = db[k.Model.Gender];
 
 const chance = require('chance').Chance();
-const Promise = require('bluebird');
 const _ = require('lodash');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
         const speakers = [];
 
-        return Promise.join(Gender.findAll(), function(genders) {
+        return Gender.findAll().then(genders => {
             for (let i = 0; i < 50; i++) {
                 let gender = _.sample(genders);
 

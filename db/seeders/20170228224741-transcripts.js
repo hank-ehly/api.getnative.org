@@ -10,7 +10,6 @@ const db       = require('../../app/models');
 const Language = db[k.Model.Language];
 const Video    = db[k.Model.Video];
 
-const Promise  = require('bluebird');
 const chance   = require('chance').Chance();
 const _        = require('lodash');
 
@@ -18,7 +17,8 @@ module.exports = {
     up: function(queryInterface, Sequelize) {
         const promises = [Video.min(k.Attr.Id), Video.max(k.Attr.Id), Language.findAll({attributes: [k.Attr.Id]})];
 
-        return Promise.all(promises).spread((minVideoId, maxVideoId, languages) => {
+        return Promise.all(promises).then(values => {
+            const [minVideoId, maxVideoId, languages] = values;
             const transcripts = [];
 
             for (let i = minVideoId; i <= maxVideoId; i++) {

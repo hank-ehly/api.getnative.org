@@ -5,12 +5,12 @@
  * Created by henryehly on 2017/03/01.
  */
 
-const chance = require('chance').Chance();
 const db = require('../../app/models');
 const k = require('../../config/keys.json');
 const StudySession = db[k.Model.StudySession];
 const WritingQuestion = db[k.Model.WritingQuestion];
 
+const chance = require('chance').Chance();
 const _ = require('lodash');
 
 module.exports = {

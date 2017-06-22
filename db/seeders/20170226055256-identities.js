@@ -12,7 +12,6 @@ const db              = require('../../app/models');
 const User            = db[k.Model.User];
 const AuthAdapterType = db[k.Model.AuthAdapterType];
 
-const Promise         = require('bluebird');
 const _               = require('lodash');
 
 module.exports = {
@@ -32,7 +31,8 @@ module.exports = {
                     ]
                 })
             ]);
-        }).spread((authAdapterType, users) => {
+        }).then(values => {
+            const [authAdapterType, users] = values;
             const identities = _.times(users.length, i => {
                 return {
                     user_id: users[i].get(k.Attr.Id),

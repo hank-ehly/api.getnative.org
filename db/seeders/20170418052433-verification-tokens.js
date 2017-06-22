@@ -11,7 +11,6 @@ const VerificationToken = db[k.Model.VerificationToken];
 const User = db[k.Model.User];
 const Auth = require('../../app/services')['Auth'];
 
-const Promise = require('bluebird');
 const moment = require('moment');
 const _ = require('lodash');
 

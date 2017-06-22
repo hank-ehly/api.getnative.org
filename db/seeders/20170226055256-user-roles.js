@@ -10,12 +10,12 @@ const db      = require('../../app/models');
 const User    = db[k.Model.User];
 const Role    = db[k.Model.Role];
 
-const Promise = require('bluebird');
 const _       = require('lodash');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return Promise.join(User.findAll({attributes: [k.Attr.Id, k.Attr.Email]}), Role.findAll({attributes: [k.Attr.Id, k.Attr.Name]}), (users, roles) => {
+        return Promise.all([User.findAll({attributes: [k.Attr.Id, k.Attr.Email]}), Role.findAll({attributes: [k.Attr.Id, k.Attr.Name]})]).then(values => {
+            const [users, roles] = values;
             const records = _.times(users.length, i => {
                 let userEmail = users[i].get(k.Attr.Email);
                 let user_id = users[i].get(k.Attr.Id);

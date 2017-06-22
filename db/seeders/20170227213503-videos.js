@@ -11,7 +11,6 @@ const Speaker     = db[k.Model.Speaker];
 const Subcategory = db[k.Model.Subcategory];
 const Language    = db[k.Model.Language];
 
-const Promise     = require('bluebird');
 const chance      = require('chance').Chance();
 const moment      = require('moment');
 const _           = require('lodash');
@@ -36,7 +35,8 @@ module.exports = {
             Language.findAll({attributes: [k.Attr.Id]})
         ];
 
-        return Promise.all(promises).spread((minSpeakerId, maxSpeakerId, minSubcategoryId, maxSubcategoryId, languages) => {
+        return Promise.all(promises).then(values => {
+            const [minSpeakerId, maxSpeakerId, minSubcategoryId, maxSubcategoryId, languages] = values;
             const videos    = [];
             const numVideos = 500;
             const minDate   = moment().subtract(numVideos + 10, 'days');

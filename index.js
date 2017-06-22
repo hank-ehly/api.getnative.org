@@ -9,7 +9,6 @@
 const config = require('./config/application').config;
 const k = require('./config/keys.json');
 
-const Promise = require('bluebird');
 const logger = require('./config/logger');
 const server = require('./config/initializers/server');
 const mailer = require('./config/initializers/mailer');
@@ -18,17 +17,16 @@ const _ = require('lodash');
 
 logger.info(`Initializing ${_.toUpper(config.get(k.ENVIRONMENT))} environment`);
 
-const initPromises = [
-    server(), db.sequelize.authenticate(), Promise.promisify(mailer.verify)()
-];
+const initPromises = [server(), db.sequelize.authenticate(), new Promise(mailer.verify)];
 
 if (config.get(k.ENVIRONMENT) === k.Env.Development) {
     const MailDev = require('maildev');
     const mailServer = new MailDev();
-    initPromises.push(Promise.promisify(mailServer.listen)());
+    initPromises.push(new Promise(mailServer.listen));
 }
 
-module.exports = Promise.all(initPromises).spread(server => {
+module.exports = Promise.all(initPromises).then(values => {
+    const [server] = values;
     logger.info('Initialization successful');
     return {
         server: server,
