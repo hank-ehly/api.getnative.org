@@ -19,10 +19,9 @@ const express    = require('express');
 const morgan     = require('morgan');
 const path       = require('path');
 
-passport.use('custom', require('../passport/custom'));
-passport.use('facebook', require('../passport/facebook'));
-passport.use('twitter', require('../passport/twitter'));
-passport.use('google', require('../passport/google'));
+for (let provider of ['custom', 'facebook', 'twitter', 'google']) {
+    passport.use(provider, require('../passport/' + provider));
+}
 
 passport.serializeUser((user, cb) => cb(null, user));
 passport.deserializeUser((obj, cb) => cb(null, obj));
