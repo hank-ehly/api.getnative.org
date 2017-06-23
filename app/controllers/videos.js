@@ -25,8 +25,6 @@ const UsageExample = db[k.Model.UsageExample];
 const Video = db[k.Model.Video];
 const Like = db[k.Model.Like];
 
-const exec = require('child_process').exec;
-const formidable = require('formidable');
 const _ = require('lodash');
 
 module.exports.index = async (req, res, next) => {
@@ -337,4 +335,8 @@ module.exports.dequeue = async (req, res, next) => {
 module.exports.transcribe = async (req, res) => {
     const transcript = await Speech.transcribeVideo(req.files.video.path, req.query[k.Attr.LanguageCode] || 'en-US');
     return res.status(200).send({transcription: transcript});
+};
+
+module.exports.create = async (req, res, next) => {
+    return res.sendStatus(201);
 };

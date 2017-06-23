@@ -247,6 +247,24 @@ const schema = {
         }
     },
     videos: {
+        create: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            body: {
+                subcategory_id: Joi.number().integer().min(1).required(),
+                speaker_id: Joi.number().integer().min(1).required(),
+                language_id: Joi.number().integer().min(1).required(),
+                description: Joi.string().min(1).required(),
+                transcripts: Joi.array().length(validLangCodes.length).items(Joi.object().keys({
+                    language_id: Joi.number().integer().min(1).required(),
+                    text: Joi.string().min(1).required()
+                })).required()
+            },
+            file: {
+                video: Joi.object().required()
+            }
+        },
         index: {
             headers: {
                 authorization: Joi.string().required()

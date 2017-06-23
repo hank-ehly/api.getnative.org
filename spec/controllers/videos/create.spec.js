@@ -76,13 +76,13 @@ describe('POST /videos', function() {
 
     beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        await destroyAllVideos();
 
         const results = await SpecUtil.login(true);
         authorization = results.authorization;
         server = results.server;
         db = results.db;
 
+        await destroyAllVideos();
         metadata = await setupRequestMetadata();
     });
 
@@ -397,8 +397,7 @@ describe('POST /videos', function() {
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
                     .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata))
-                    .expect(400);
+                    .field('metadata', JSON.stringify(metadata));
                 assert(_.gt(response.header[k.Header.AuthToken].length, 0));
             });
 
@@ -407,8 +406,7 @@ describe('POST /videos', function() {
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
                     .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata))
-                    .expect(400);
+                    .field('metadata', JSON.stringify(metadata));
                 assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
 
@@ -423,13 +421,98 @@ describe('POST /videos', function() {
         });
 
         describe('data integrity', function() {
-            it('should create a new Video record');
-            it('should create a new Video with the specified subcategory_id');
-            it('should create a new Video with the specified language_id');
-            it('should create a new Video with the specified speaker_id');
-            it('should create a new Video with the specified description');
-            it('should create a new Video with the specified number of transcripts');
-            it('should create the same number of new collocation records as specified in the combined transcript text');
+            it('should create a new Video record', async function() {
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const videoCount = await db[k.Model.Video].count();
+                assert.equal(videoCount, 1);
+            });
+
+            it('should create a new Video with the specified subcategory_id', async function() {
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find();
+                assert.equal(video.get('subcategory_id'), metadata.subcategory_id);
+            });
+
+            it('should create a new Video with the specified language_id', async function() {
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find();
+                assert.equal(video.get('language_id'), metadata.language_id);
+            });
+
+            it('should create a new Video with the specified speaker_id', async function() {
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find();
+                assert.equal(video.get('speaker_id'), metadata.speaker_id);
+            });
+
+            it('should create a new Video with the specified description', async function() {
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find();
+                assert.equal(video.get('description'), metadata.description);
+            });
+
+            it('should create a new Video with the specified number of transcripts', async function() {
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find({
+                    include: {
+                        model: db[k.Model.Transcript],
+                        as: 'transcripts'
+                    }
+                });
+
+                assert.equal(video.get('transcripts').length, metadata.transcripts.length);
+            });
+
+            it('should create the same number of new collocation records as specified in the combined transcript text', async function() {
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find({
+                    include: {
+                        model: db[k.Model.Transcript],
+                        as: 'transcripts',
+                        include: {
+                            model: db[k.Model.Collocation],
+                            as: 'collocations'
+                        }
+                    }
+                });
+
+                assert.equal(_.first(video.get('transcripts'))['collocations'].length, 6);
+            });
         });
 
         describe('assets storage', function() {
