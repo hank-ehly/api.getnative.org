@@ -6,7 +6,7 @@
  */
 
 const moment = require('moment');
-const _      = require('lodash');
+const _ = require('lodash');
 
 module.exports.extractAuthTokenFromRequest = function(req) {
     if (arguments.length !== 1) {
@@ -37,16 +37,16 @@ module.exports.browserTimezoneOffsetToSQLFormat = function(offsetInMinutes) {
 
     // The offset is positive if the local timezone is behind UTC and negative if it is ahead
     const minutes = -parseInt(offsetInMinutes);
-    const hours   = minutes / 60;
+    const hours = minutes / 60;
 
-    const wholeHours    = Math[hours > 0 ? 'floor' : 'ceil'](hours);
+    const wholeHours = Math[hours > 0 ? 'floor' : 'ceil'](hours);
     const absoluteHours = Math.abs(wholeHours);
 
-    const wholeMinutes    = (hours % 1) * 60;
+    const wholeMinutes = (hours % 1) * 60;
     const absoluteMinutes = Math.abs(wholeMinutes);
 
-    const symbol        = hours >= 0 ? '+' : '-';
-    const paddedHours   = _.padStart(absoluteHours, 2, '0');
+    const symbol = hours >= 0 ? '+' : '-';
+    const paddedHours = _.padStart(absoluteHours, 2, '0');
     const paddedMinutes = _.padStart(absoluteMinutes, 2, '0');
 
     return [symbol, paddedHours, ':', paddedMinutes].join('');
@@ -54,4 +54,13 @@ module.exports.browserTimezoneOffsetToSQLFormat = function(offsetInMinutes) {
 
 module.exports.tomorrow = function() {
     return moment().add(1, 'days').toDate();
+};
+
+module.exports.findMaxSizeForAspectInSize = function(aspect, size) {
+    const scale = Math.min(size.width / aspect.width, size.height / aspect.height);
+
+    return {
+        width: aspect.width * scale,
+        height: aspect.height * scale
+    };
 };

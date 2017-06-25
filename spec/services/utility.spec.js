@@ -8,7 +8,7 @@
 const Utility = require('../../app/services')['Utility'];
 
 const m = require('mocha');
-const [describe, it, before] = [m.describe, m.it, m.before];
+const [describe, it] = [m.describe, m.it];
 const assert  = require('assert');
 const _       = require('lodash');
 
@@ -85,6 +85,74 @@ describe('Utility', function() {
         it(`should return a Date object equal to 24 hours later than the current time`, function() {
             let tomorrow = new Date(new Date().getTime() + (1000 * 60 * 60 * 24));
             assert.equal(Utility.tomorrow().getTime(), tomorrow.getTime());
+        });
+    });
+
+    describe('findMaxSizeForAspectInSize(aspect, size)', function() {
+        it('should find the maximum dimensions for the given aspect ratio in the given container 1920×1080', function() {
+            const maxSize = {
+                width: 1920,
+                height: 1080
+            };
+
+            const aspectRatio = {
+                width: 3,
+                height: 2
+            };
+
+            const expectedSize = {
+                width: 1620,
+                height: 1080
+            };
+
+            const actualSize = Utility.findMaxSizeForAspectInSize(aspectRatio, maxSize);
+
+            assert.equal(expectedSize.width, actualSize.width);
+            assert.equal(expectedSize.height, actualSize.height);
+        });
+
+        it('should find the maximum dimensions for the given aspect ratio in the given container 1080×720', function() {
+            const maxSize = {
+                width: 1080,
+                height: 720
+            };
+
+            const aspectRatio = {
+                width: 3,
+                height: 2
+            };
+
+            const expectedSize = {
+                width: 1080,
+                height: 720
+            };
+
+            const actualSize = Utility.findMaxSizeForAspectInSize(aspectRatio, maxSize);
+
+            assert.equal(expectedSize.width, actualSize.width);
+            assert.equal(expectedSize.height, actualSize.height);
+        });
+
+        it('should find the maximum dimensions for the given aspect ratio in the given container 720×1080', function() {
+            const maxSize = {
+                width: 720,
+                height: 1080
+            };
+
+            const aspectRatio = {
+                width: 3,
+                height: 2
+            };
+
+            const expectedSize = {
+                width: 720,
+                height: 480
+            };
+
+            const actualSize = Utility.findMaxSizeForAspectInSize(aspectRatio, maxSize);
+
+            assert.equal(expectedSize.width, actualSize.width);
+            assert.equal(expectedSize.height, actualSize.height);
         });
     });
 });
