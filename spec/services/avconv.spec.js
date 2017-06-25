@@ -45,39 +45,39 @@ describe('avconv', function() {
         });
     });
 
-    describe('getDimensionsOfVideoAtPath', function() {
+    describe('getDimensionsOfVisualMediaAtPath', function() {
         it('should throw a ReferenceError if no filename is provided', async function() {
-            const asyncTest = avconv.getDimensionsOfVideoAtPath.bind(null);
+            const asyncTest = avconv.getDimensionsOfVisualMediaAtPath.bind(null);
             assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
         });
 
         it('should throw a TypeError if the provided filename is not a string', async function() {
-            const asyncTest = avconv.getDimensionsOfVideoAtPath.bind(null, _.stubObject());
+            const asyncTest = avconv.getDimensionsOfVisualMediaAtPath.bind(null, _.stubObject());
             assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
         });
 
         it('should return a plain object', async function() {
-            const dimensions = await avconv.getDimensionsOfVideoAtPath(videoPath);
+            const dimensions = await avconv.getDimensionsOfVisualMediaAtPath(videoPath);
             assert(_.isPlainObject(dimensions));
         });
 
         it('should contain a top level "width" number', async function() {
-            const dimensions = await avconv.getDimensionsOfVideoAtPath(videoPath);
+            const dimensions = await avconv.getDimensionsOfVisualMediaAtPath(videoPath);
             assert(_.isNumber(dimensions.width));
         });
 
         it('should contain a top level "height" number', async function() {
-            const dimensions = await avconv.getDimensionsOfVideoAtPath(videoPath);
+            const dimensions = await avconv.getDimensionsOfVisualMediaAtPath(videoPath);
             assert(_.isNumber(dimensions.height));
         });
 
         it('should identify the correct width of the video', async function() {
-            const expectedDimensions = await avconv.getDimensionsOfVideoAtPath(videoPath);
+            const expectedDimensions = await avconv.getDimensionsOfVisualMediaAtPath(videoPath);
             assert.equal(expectedDimensions.width, actualDimensions.width);
         });
 
         it('should identify the correct height of the video', async function() {
-            const expectedDimensions = await avconv.getDimensionsOfVideoAtPath(videoPath);
+            const expectedDimensions = await avconv.getDimensionsOfVisualMediaAtPath(videoPath);
             assert.equal(expectedDimensions.height, actualDimensions.height);
         });
     });
@@ -88,6 +88,7 @@ describe('avconv', function() {
                 width: 300,
                 height: 200
             });
+
             assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
         });
 
@@ -96,6 +97,7 @@ describe('avconv', function() {
                 width: 300,
                 height: 200
             });
+
             assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
         });
 
@@ -148,13 +150,32 @@ describe('avconv', function() {
             };
 
             const croppedVideoPath = await avconv.cropVideoToSize(videoPath, expectedSize);
-            const actualSize = await avconv.getDimensionsOfVideoAtPath(croppedVideoPath);
+            const actualSize = await avconv.getDimensionsOfVisualMediaAtPath(croppedVideoPath);
 
             assert(_.isEqual(actualSize, expectedSize));
         });
     });
 
-    // Get image of frame at 0 seconds into original.mov
-    // avconv -y -i 00001.mp4 -frames:v 1 00001.jpg
-    // describe('')
+    describe('captureFirstFrameOfVideo', function() {
+        it('should throw a ReferenceError if no filename is provided', async function() {
+            const asyncTest = avconv.captureFirstFrameOfVideo.bind(null);
+            assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
+        });
+
+        it('should throw a TypeError if the provided filename is not a string', async function() {
+            const asyncTest = avconv.captureFirstFrameOfVideo.bind(null, _.stubObject());
+            assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
+        });
+
+        it('should return the video frame filepath', async function() {
+            const outputFilepath = await avconv.captureFirstFrameOfVideo(videoPath);
+            assert(_.isString(outputFilepath));
+        });
+
+        it('should generate an image with the same dimensions as the input video', async function() {
+            const imageFilepath = await avconv.captureFirstFrameOfVideo(videoPath);
+            const imageDimensions = await avconv.getDimensionsOfVisualMediaAtPath(imageFilepath);
+            assert(_.isEqual(imageDimensions, actualDimensions));
+        });
+    });
 });

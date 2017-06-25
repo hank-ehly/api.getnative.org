@@ -29,7 +29,7 @@ module.exports.videoToFlac = async function(filepath) {
     return outputFilePath;
 };
 
-module.exports.getDimensionsOfVideoAtPath = async function(filepath) {
+module.exports.getDimensionsOfVisualMediaAtPath = async function(filepath) {
     validateFilepath(filepath);
 
     const {stdout} = await exec(`/usr/bin/env avconv -i ${filepath} 2>&1 | cat`);
@@ -59,6 +59,15 @@ module.exports.cropVideoToSize = async function(filepath, cropSize) {
 
     const outputFilePath = '/tmp/' + randomHash() + '.mp4';
     await exec(`avconv -y -i ${filepath} -vf "crop=${cropSize.width}:${cropSize.height}" -f mp4 ${outputFilePath}`);
+
+    return outputFilePath;
+};
+
+module.exports.captureFirstFrameOfVideo = async function(filepath) {
+    validateFilepath(filepath);
+
+    const outputFilePath = '/tmp/' + randomHash() + '.jpg';
+    await exec(`avconv -y -i ${filepath} -vframes 1 ${outputFilePath}`);
 
     return outputFilePath;
 };
