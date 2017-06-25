@@ -17,7 +17,7 @@ const chance = require('chance').Chance();
 const _ = require('lodash');
 
 describe('POST /videos', function() {
-    const videoFile = path.resolve(__dirname, '..', '..', 'fixtures', 'video.mov');
+    const videoFile = path.resolve(__dirname, '..', '..', 'fixtures', '1080x720.mov');
     const aDescription = chance.paragraph();
     const eTranText = `
         I actually have {a number of} different hobbies. Uhm, {first off} there's music. 

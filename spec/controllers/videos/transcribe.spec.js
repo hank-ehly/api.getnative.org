@@ -18,7 +18,7 @@ const path = require('path');
 describe('POST /videos/transcribe', function() {
     let authorization = null;
     let server = null;
-    let file = path.resolve(__dirname, '..', '..', 'fixtures', 'video.mov');
+    let file = path.resolve(__dirname, '..', '..', 'fixtures', '1080x720.mov');
     let url = '/videos/transcribe';
     let db = null;
 

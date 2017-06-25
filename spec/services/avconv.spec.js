@@ -17,25 +17,144 @@ const path = require('path');
 const fs = require('fs');
 
 describe('avconv', function() {
-    it('should throw a ReferenceError if no filename is provided', async function() {
-        const asyncTest = avconv.videoToFlac.bind(null);
-        assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
+    const videoPath = path.resolve(__dirname, '..', 'fixtures', '1080x720.mov');
+    const actualDimensions = {
+        width: 1080,
+        height: 720
+    };
+
+    describe('videoToFlac', function() {
+        it('should throw a ReferenceError if no filename is provided', async function() {
+            const asyncTest = avconv.videoToFlac.bind(null);
+            assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
+        });
+
+        it('should throw a TypeError if the provided filename is not a string', async function() {
+            const asyncTest = avconv.videoToFlac.bind(null, _.stubObject());
+            assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
+        });
+
+        it('should return a Promise that resolves to a string filename', async function() {
+            const audioFilePath = await avconv.videoToFlac(videoPath);
+            assert(_.isString(audioFilePath));
+        });
+
+        it('should create a flac file', async function() {
+            const audioFilePath = await avconv.videoToFlac(videoPath);
+            assert(fs.existsSync(audioFilePath));
+        });
     });
 
-    it('should throw a TypeError if the provided filename is not a string', async function() {
-        const asyncTest = avconv.videoToFlac.bind(null, _.stubObject());
-        assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
+    describe('getDimensionsOfVideoAtPath', function() {
+        it('should throw a ReferenceError if no filename is provided', async function() {
+            const asyncTest = avconv.getDimensionsOfVideoAtPath.bind(null);
+            assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
+        });
+
+        it('should throw a TypeError if the provided filename is not a string', async function() {
+            const asyncTest = avconv.getDimensionsOfVideoAtPath.bind(null, _.stubObject());
+            assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
+        });
+
+        it('should return a plain object', async function() {
+            const dimensions = await avconv.getDimensionsOfVideoAtPath(videoPath);
+            assert(_.isPlainObject(dimensions));
+        });
+
+        it('should contain a top level "width" number', async function() {
+            const dimensions = await avconv.getDimensionsOfVideoAtPath(videoPath);
+            assert(_.isNumber(dimensions.width));
+        });
+
+        it('should contain a top level "height" number', async function() {
+            const dimensions = await avconv.getDimensionsOfVideoAtPath(videoPath);
+            assert(_.isNumber(dimensions.height));
+        });
+
+        it('should identify the correct width of the video', async function() {
+            const expectedDimensions = await avconv.getDimensionsOfVideoAtPath(videoPath);
+            assert.equal(expectedDimensions.width, actualDimensions.width);
+        });
+
+        it('should identify the correct height of the video', async function() {
+            const expectedDimensions = await avconv.getDimensionsOfVideoAtPath(videoPath);
+            assert.equal(expectedDimensions.height, actualDimensions.height);
+        });
     });
 
-    it('should return a Promise that resolves to a string filename', async function() {
-        const file = path.resolve(__dirname, '..', 'fixtures', 'video.mov');
-        const audioFilePath = await avconv.videoToFlac(file);
-        assert(_.isString(audioFilePath));
+    describe('cropVideoToSize', function() {
+        it('should throw a ReferenceError if no filename is provided', async function() {
+            const asyncTest = await avconv.cropVideoToSize.bind(null, null, {
+                width: 300,
+                height: 200
+            });
+            assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
+        });
+
+        it('should throw a TypeError if the provided filename is not a string', async function() {
+            const asyncTest = await avconv.cropVideoToSize.bind(null, _.stubObject(), {
+                width: 300,
+                height: 200
+            });
+            assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
+        });
+
+        it('should throw a ReferenceError if the expected size is blank', async function() {
+            const asyncTest = await avconv.cropVideoToSize.bind(null, videoPath);
+            assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
+        });
+
+        it('should throw a TypeError if the expected size does not have a "width" number', async function() {
+            const asyncTest = await avconv.cropVideoToSize.bind(null, videoPath, {height: 200});
+            assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
+        });
+
+        it('should throw a TypeError if the expected size does not have a "height" number', async function() {
+            const asyncTest = await avconv.cropVideoToSize.bind(null, videoPath, {width: 300});
+            assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
+        });
+
+        it('should throw a TypeError if the expected size "width" is less than 1', async function() {
+            const asyncTest = await avconv.cropVideoToSize.bind(null, videoPath, {
+                width: -5,
+                height: 200
+            });
+
+            assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
+        });
+
+        it('should throw a TypeError if the expected size "height" is less than 1', async function() {
+            const asyncTest = await avconv.cropVideoToSize.bind(null, videoPath, {
+                width: 300,
+                height: 0
+            });
+
+            assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
+        });
+
+        it('should return the filepath of the cropped video', async function() {
+            const croppedVideoPath = await avconv.cropVideoToSize(videoPath, {
+                width: 500,
+                height: 350
+            });
+
+            assert(_.isString(croppedVideoPath));
+        });
+
+        it('should resize a video to the specified dimensions', async function() {
+            const expectedSize = {
+                width: 500,
+                height: 350
+            };
+
+            const croppedVideoPath = await avconv.cropVideoToSize(videoPath, expectedSize);
+            const actualSize = await avconv.getDimensionsOfVideoAtPath(croppedVideoPath);
+
+            assert(_.isEqual(actualSize, expectedSize));
+        });
     });
 
-    it('should create a flac file', async function() {
-        const file = path.resolve(__dirname, '..', 'fixtures', 'video.mov');
-        const audioFilePath = await avconv.videoToFlac(file);
-        assert(fs.existsSync(audioFilePath));
-    });
+    // Get image of frame at 0 seconds into original.mov
+    // avconv -y -i 00001.mp4 -frames:v 1 00001.jpg
+    // describe('')
 });

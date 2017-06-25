@@ -28,13 +28,13 @@ describe('Speech', function() {
         });
 
         it('should return a Promise that resolves to the transcribed text', async function() {
-            const file = path.resolve(__dirname, '..', 'fixtures', 'video.mov');
+            const file = path.resolve(__dirname, '..', 'fixtures', '1080x720.mov');
             const transcript = await Speech.transcribeVideo(file);
             assert.equal(transcript, 'test-result');
         });
 
         it('should throw a TypeError if the provided languageCode argument is not a string', async function() {
-            const file = path.resolve(__dirname, '..', 'fixtures', 'video.mov');
+            const file = path.resolve(__dirname, '..', 'fixtures', '1080x720.mov');
             const asyncTest = Speech.transcribeVideo.bind(null, file, _.stubObject());
             assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
         });
