@@ -5,6 +5,8 @@
  * Created by henryehly on 2017/02/24.
  */
 
+const k = require('../../config/keys.json');
+
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define('Collocation', {
         text: {
@@ -20,8 +22,8 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'collocations',
         underscored: true,
         associations: function(models) {
-            models.Collocation.hasMany(models.UsageExample, {as: 'usage_examples'});
-            models.Collocation.belongsTo(models.Transcript);
+            models[k.Model.Collocation].hasMany(models[k.Model.UsageExample], {as: 'usage_examples'});
+            models[k.Model.Collocation].belongsTo(models[k.Model.Transcript]);
         }
     });
 };
