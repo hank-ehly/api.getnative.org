@@ -9,8 +9,8 @@ const Utility = require('../../app/services')['Utility'];
 
 const m = require('mocha');
 const [describe, it] = [m.describe, m.it];
-const assert  = require('assert');
-const _       = require('lodash');
+const assert = require('assert');
+const _ = require('lodash');
 
 describe('Utility', function() {
     describe('extractAuthTokenFromRequest', function() {
@@ -153,6 +153,56 @@ describe('Utility', function() {
 
             assert.equal(expectedSize.width, actualSize.width);
             assert.equal(expectedSize.height, actualSize.height);
+        });
+    });
+
+    describe('_validateSizeObject', function() {
+        it('should throw a ReferenceError if no argument is provided', function() {
+            function test() {
+                return Utility._validateSizeObject();
+            }
+
+            assert.throws(test, ReferenceError);
+        });
+
+        it('should throw a TypeError if the argument is not a plain object', function() {
+            function test() {
+                return Utility._validateSizeObject(_.stubString());
+            }
+
+            assert.throws(test, TypeError);
+        });
+
+        it('should throw a TypeError if the aspect argument has no "width" number property', function() {
+            function test() {
+                return Utility._validateSizeObject({height: 200});
+            }
+
+            assert.throws(test, TypeError);
+        });
+
+        it('should throw a TypeError if the aspect argument "width" number property values is less than 1', function() {
+            function test() {
+                return Utility._validateSizeObject({width: 0, height: 200});
+            }
+
+            assert.throws(test, TypeError);
+        });
+
+        it('should throw a TypeError if the aspect argument has no "height" number property', function() {
+            function test() {
+                return Utility._validateSizeObject({width: 300});
+            }
+
+            assert.throws(test, TypeError);
+        });
+
+        it('should throw a TypeError if the aspect argument "height" number property values is less than 1', function() {
+            function test() {
+                return Utility._validateSizeObject({width: 300, height: -5});
+            }
+
+            assert.throws(test, TypeError);
         });
     });
 });

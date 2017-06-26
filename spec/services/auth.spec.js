@@ -6,42 +6,51 @@
  */
 
 const services = require('../../app/services');
-const Auth     = services['Auth'];
-const Utility  = services['Utility'];
+const Auth = services['Auth'];
+const Utility = services['Utility'];
 const SpecUtil = require('../spec-util');
-const config   = require('../../config/application').config;
-const k        = require('../../config/keys.json');
+const config = require('../../config/application').config;
+const k = require('../../config/keys.json');
 
 const m = require('mocha');
-const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
-const assert   = require('assert');
-const _        = require('lodash');
+const [describe, it] = [m.describe, m.it];
+const assert = require('assert');
+const _ = require('lodash');
 
 describe('Auth', function() {
     describe('refreshToken', function() {
         it(`should throw a ReferenceError if the 'token' parameter is missing`, function() {
-            assert.throws(function() {
+            function test() {
                 Auth.refreshToken();
-            }, ReferenceError);
+            }
+
+            assert.throws(test, ReferenceError);
         });
 
         it(`should throw a TypeError if the 'token' parameter is not a plain object`, function() {
-            assert.throws(function() {
+            function test() {
                 Auth.refreshToken(['not', 'a', 'plain', 'object']);
-            }, TypeError);
+            }
+
+            assert.throws(test, TypeError);
         });
     });
 
     describe('hashPassword', function() {
         it(`should throw a ReferenceError if there is no input`, function() {
-            assert.throws(() => Auth.hashPassword(), ReferenceError);
+            function test() {
+                return Auth.hashPassword();
+            }
+
+            assert.throws(test, ReferenceError);
         });
 
         it(`should throw a TypeError if the input is not a string`, function() {
-            assert.throws(() => Auth.hashPassword({}), TypeError);
-            assert.throws(() => Auth.hashPassword(123), TypeError);
-            assert.throws(() => Auth.hashPassword(true), TypeError);
-            assert.throws(() => Auth.hashPassword([]), TypeError);
+            function test() {
+                return Auth.hashPassword(_.stubObject());
+            }
+
+            assert.throws(test, TypeError);
         });
 
         it(`should generate a hash not equal to the password`, function() {
@@ -55,14 +64,19 @@ describe('Auth', function() {
 
     describe('verifyPassword', function() {
         it(`should throw a ReferenceError if there are less than 2 arguments`, function() {
-            assert.throws(() => Auth.verifyPassword('password'), ReferenceError);
+            function test() {
+                return Auth.verifyPassword('password');
+            }
+
+            assert.throws(test, ReferenceError);
         });
 
         it(`should throw a TypeError if either one of the input arguments are not a string`, function() {
-            assert.throws(() => Auth.verifyPassword({}, 'password'), TypeError);
-            assert.throws(() => Auth.verifyPassword('password', 123), TypeError);
-            assert.throws(() => Auth.verifyPassword(true, 'password'), TypeError);
-            assert.throws(() => Auth.verifyPassword('password', []), TypeError);
+            function test() {
+                return Auth.verifyPassword(_.stubObject(), 'password');
+            }
+
+            assert.throws(test, TypeError);
         });
 
         it(`should return false if a library-specify error occurs`, function() {
@@ -96,15 +110,19 @@ describe('Auth', function() {
 
     describe('generateConfirmationURLForToken', function() {
         it(`should throw a ReferenceError if no verification token is provided`, function() {
-            assert.throws(function() {
+            function test() {
                 Auth.generateConfirmationURLForToken();
-            }, ReferenceError);
+            }
+
+            assert.throws(test, ReferenceError);
         });
 
         it(`should throw a TypeError if the provided verification token is not a string`, function() {
-            assert.throws(function() {
+            function test() {
                 Auth.generateConfirmationURLForToken({not: ['a', 'string']});
-            }, TypeError);
+            }
+
+            assert.throws(test, TypeError);
         });
 
         it(`should return a valid URL string`, function() {
@@ -120,7 +138,7 @@ describe('Auth', function() {
         });
 
         it(`should return a url with the correct scheme, hostname, pathname and query`, function() {
-            const token  = Auth.generateRandomHash();
+            const token = Auth.generateRandomHash();
             const actual = Auth.generateConfirmationURLForToken(token);
 
             const expected = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/confirm_email?token=${token}`;

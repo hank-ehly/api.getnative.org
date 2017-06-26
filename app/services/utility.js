@@ -57,10 +57,33 @@ module.exports.tomorrow = function() {
 };
 
 module.exports.findMaxSizeForAspectInSize = function(aspect, size) {
+    this._validateSizeObject(aspect);
+    this._validateSizeObject(size);
+
     const scale = Math.min(size.width / aspect.width, size.height / aspect.height);
 
     return {
         width: aspect.width * scale,
         height: aspect.height * scale
     };
+};
+
+module.exports._validateSizeObject = function(size) {
+    if (arguments.length === 0) {
+        throw new ReferenceError('argument "size" is missing');
+    }
+
+    if (!_.isPlainObject(size)) {
+        throw new TypeError('argument "size" must be a plain object');
+    }
+
+    if (!_.isNumber(size['width']) || _.lt(size['width'], 1)) {
+        throw new TypeError('argument "size" must have a numeric "width" property greater than 0');
+    }
+
+    if (!_.isNumber(size['height']) || _.lt(size['height'], 1)) {
+        throw new TypeError('argument "size" must have a numeric "height" property greater than 0');
+    }
+
+    return true;
 };
