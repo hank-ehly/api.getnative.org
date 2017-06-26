@@ -7,11 +7,6 @@
 
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define('Collocation', {
-        description: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: ''
-        },
         text: {
             type: DataTypes.TEXT,
             allowNull: false
