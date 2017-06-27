@@ -251,32 +251,14 @@ module.exports.show = async (req, res, next) => {
 };
 
 module.exports.like = async (req, res, next) => {
-    let video, like;
-
     try {
-        video = await Video.findByPrimary(parseInt(req.params[k.Attr.Id]));
+        await Like.create({video_id: parseInt(req.params[k.Attr.Id]), user_id: req.user[k.Attr.Id]});
     } catch (e) {
+        if (e instanceof db.sequelize.ForeignKeyConstraintError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
         return next(e);
-    }
-
-    if (!video) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.ResourceNotFound));
-    }
-
-    video = video.get({
-        plain: true
-    });
-
-    try {
-        like = await Like.create({video_id: video[k.Attr.Id], user_id: req.user[k.Attr.Id]});
-    } catch (e) {
-        return next(e);
-    }
-
-    if (!like) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.CreateResourceFailure));
     }
 
     return res.sendStatus(204);
@@ -286,7 +268,7 @@ module.exports.unlike = async (req, res, next) => {
     let video;
 
     try {
-        video = await Video.findByPrimary(+req.params[k.Attr.Id]);
+        video = await Video.findByPrimary(req.params[k.Attr.Id]);
     } catch (e) {
         return next(e);
     }
@@ -297,7 +279,7 @@ module.exports.unlike = async (req, res, next) => {
     }
 
     try {
-        await Like.destroy({where: {video_id: video[k.Attr.Id], user_id: +req.user[k.Attr.Id]}, limit: 1});
+        await Like.destroy({where: {video_id: video[k.Attr.Id], user_id: req.user[k.Attr.Id]}, limit: 1});
     } catch (e) {
         return next(e);
     }
