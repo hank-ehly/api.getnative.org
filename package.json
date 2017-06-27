@@ -13,12 +13,12 @@
         "type": "git",
         "url": "git://github.com/hank-ehly/api.get-native.com.git"
     },
-    "keywords": [],
     "author": "Hank Ehly <admin@get-native.com>",
     "license": "UNLICENSED",
     "private": true,
     "dependencies": {
         "@google-cloud/speech": "^0.9.2",
+        "@google-cloud/storage": "^1.1.1",
         "body-parser": "^1.17.1",
         "cookie-parser": "^1.4.3",
         "ejs": "^2.5.6",
