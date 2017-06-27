@@ -338,5 +338,62 @@ module.exports.transcribe = async (req, res) => {
 };
 
 module.exports.create = async (req, res, next) => {
-    return res.sendStatus(201);
+    let languages, newVideo, transcripts;
+
+    try {
+        languages = await Language.findAll({attributes: [k.Attr.Id, k.Attr.Code]});
+    } catch (e) {
+        return next(e);
+    }
+
+    if (_.size(languages) === 0) {
+        throw new ReferenceError('language variable is undefined');
+    }
+
+    languages = _.invokeMap(languages, 'get', {
+        plain: true
+    });
+
+    const t = await db.sequelize.transaction();
+
+    try {
+        newVideo = await Video.create({
+            language_id: req.body['language_id'],
+            speaker_id: req.body['speaker_id'],
+            subcategory_id: req.body['subcategory_id']
+        }, {transaction: t});
+
+        for (let code of _.map(languages, k.Attr.Code)) {
+            let newTranscript = await Transcript.create({
+                video_id: newVideo.id,
+                language_id: _.find(languages, {code: code})[k.Attr.Id]
+            }, {transaction: t});
+
+            if (newTranscript) {
+                transcripts.push(newTranscript);
+            }
+
+            // todo: collocations
+        }
+
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+        if (e instanceof db.sequelize.ForeignKeyConstraintError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
+        return next(e);
+    }
+
+    if (!newVideo) {
+        throw new ReferenceError('newVideo variable is undefined');
+    }
+
+    if (transcripts.length !== languages.length) {
+        await t.rollback();
+        throw new Error('length of transcripts does not equal length of languageCodes');
+    }
+
+    return res.status(200).send({});
 };
