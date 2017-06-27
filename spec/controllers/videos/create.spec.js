@@ -393,7 +393,7 @@ describe('POST /videos', function() {
     describe('success', function() {
         describe('request headers', function() {
             it('should respond with an X-GN-Auth-Token header', async function() {
-                const response = request(server)
+                const response = await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
                     .attach('video', videoFile)
@@ -402,7 +402,7 @@ describe('POST /videos', function() {
             });
 
             it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', async function() {
-                const response = request(server)
+                const response = await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
                     .attach('video', videoFile)
@@ -422,12 +422,12 @@ describe('POST /videos', function() {
 
         describe('data integrity', function() {
             it('should create a new Video record', async function() {
-                await request(server)
+                let response = await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
                     .attach('video', videoFile)
                     .field('metadata', JSON.stringify(metadata));
-
+                console.log(response);
                 const videoCount = await db[k.Model.Video].count();
                 assert.equal(videoCount, 1);
             });

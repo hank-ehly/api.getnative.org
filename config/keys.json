@@ -66,7 +66,9 @@
         "ResourceNotFound": "ResourceNotFound",
         "FileMissing": "FileMissing",
         "CreateResourceFailure": "CreateResourceFailure",
-        "ForeignKeyConstraintError": "ForeignKeyConstraintError"
+        "ForeignKeyConstraintError": "ForeignKeyConstraintError",
+        "MetadataMissing": "MetadataMissing",
+        "MetadataFormat": "MetadataFormat"
     },
     "ENVIRONMENT": "kENVIRONMENT",
     "Env": {

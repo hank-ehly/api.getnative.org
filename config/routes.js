@@ -14,6 +14,7 @@ const ValidateParams = middleware['ValidateRequestParameters'];
 const Authenticate   = middleware['Authenticate'];
 const AdminOnly      = middleware['AdminOnly'];
 const FormParser     = middleware['FormParser'];
+const ExtractMetadata = middleware['ExtractJsonMetadata'];
 
 const passport       = require('passport');
 
@@ -53,7 +54,7 @@ router.get(  '/speakers/:id',                ValidateParams(pv.speakers.show),  
 router.patch('/subcategories/:subcategory_id/subcategories_localized/:subcategories_localized_id', ValidateParams(pv.subcategoriesLocalized.update), Authenticate, AdminOnly, ctrl['subcategories-localized'].update);
 router.get(  '/videos/:id/writing_questions',ValidateParams(pv.writingQuestions.index),        Authenticate, ctrl['writing-questions'].index);
 router.get(  '/videos',                      ValidateParams(pv.videos.index),                  Authenticate, ctrl.videos.index);
-router.post( '/videos', FormParser,          ValidateParams(pv.videos.create),                 Authenticate, AdminOnly, ctrl.videos.create);
+router.post( '/videos', FormParser, ExtractMetadata, ValidateParams(pv.videos.create),     Authenticate, AdminOnly, ctrl.videos.create);
 router.get(  '/videos/:id',                  ValidateParams(pv.videos.show),                   Authenticate, ctrl.videos.show);
 router.post( '/videos/:id/dequeue',          ValidateParams(pv.videos.dequeue),                Authenticate, ctrl.videos.dequeue);
 router.post( '/videos/:id/like',             ValidateParams(pv.videos.like),                   Authenticate, ctrl.videos.like);

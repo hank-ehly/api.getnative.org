@@ -261,7 +261,7 @@ const schema = {
                     text: Joi.string().min(1).required()
                 })).required()
             },
-            file: {
+            files: {
                 video: Joi.object().required()
             }
         },

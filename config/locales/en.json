@@ -15,7 +15,9 @@
         "ResourceNotFound": "No resource was found for the given conditions",
         "FileMissing": "Required file missing from request",
         "CreateResourceFailure": "Failed to create resource",
-        "ForeignKeyConstraintError": "Failed to take the specified action on the requested resource due to foreign key constraint"
+        "ForeignKeyConstraintError": "Failed to take the specified action on the requested resource due to foreign key constraint",
+        "MetadataMissing": "No metadata was provided in the request",
+        "MetadataFormat": "The provided metadata is not parsable JSON"
     },
     "lang": "en",
     "password-updated": {
