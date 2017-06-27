@@ -338,40 +338,22 @@ module.exports.transcribe = async (req, res) => {
 };
 
 module.exports.create = async (req, res, next) => {
-    let languages, newVideo, transcripts;
-
-    try {
-        languages = await Language.findAll({attributes: [k.Attr.Id, k.Attr.Code]});
-    } catch (e) {
-        return next(e);
-    }
-
-    if (_.size(languages) === 0) {
-        throw new ReferenceError('language variable is undefined');
-    }
-
-    languages = _.invokeMap(languages, 'get', {
-        plain: true
-    });
-
     const t = await db.sequelize.transaction();
 
     try {
-        newVideo = await Video.create({
-            language_id: req.body['language_id'],
-            speaker_id: req.body['speaker_id'],
-            subcategory_id: req.body['subcategory_id']
+        const video = await Video.create({
+            language_id: req.body[k.Attr.LanguageId],
+            speaker_id: req.body[k.Attr.SpeakerId],
+            subcategory_id: req.body[k.Attr.SubcategoryId],
+            description: req.body[k.Attr.Description]
         }, {transaction: t});
 
-        for (let code of _.map(languages, k.Attr.Code)) {
-            let newTranscript = await Transcript.create({
-                video_id: newVideo.id,
-                language_id: _.find(languages, {code: code})[k.Attr.Id]
+        for (let transcript of req.body['transcripts']) {
+            await Transcript.create({
+                video_id: video[k.Attr.Id],
+                language_id: transcript[k.Attr.LanguageId],
+                text: transcript[k.Attr.Text]
             }, {transaction: t});
-
-            if (newTranscript) {
-                transcripts.push(newTranscript);
-            }
 
             // todo: collocations
         }
@@ -386,14 +368,5 @@ module.exports.create = async (req, res, next) => {
         return next(e);
     }
 
-    if (!newVideo) {
-        throw new ReferenceError('newVideo variable is undefined');
-    }
-
-    if (transcripts.length !== languages.length) {
-        await t.rollback();
-        throw new Error('length of transcripts does not equal length of languageCodes');
-    }
-
-    return res.status(200).send({});
+    return res.sendStatus(201);
 };
