@@ -13,9 +13,9 @@ const _ = require('lodash');
 let client;
 if ([k.Env.Test, k.Env.CircleCI].includes(config.get(k.ENVIRONMENT))) {
     client = {
-        bucket: function(name) {
+        bucket: function() {
             return {
-                upload: async function(filepath, destination) {
+                upload: async function() {
                     return new Promise(resolve => {
                         function TestFile() {
                             this.name = 'TestFile';
