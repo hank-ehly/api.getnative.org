@@ -5,12 +5,13 @@
  * Created by henryehly on 2017/05/22.
  */
 
-const logger  = require('./logger');
-const k       = require('./keys.json');
+const logger = require('./logger');
+const k = require('./keys.json');
 
-const nconf   = require('nconf');
-const path    = require('path');
-const _       = require('lodash');
+const nconf = require('nconf');
+const path = require('path');
+const fs = require('fs');
+const _ = require('lodash');
 
 function Config() {
     nconf.env([k.API.Port, k.Debug, k.NODE_ENV]).use('memory');
@@ -45,6 +46,7 @@ function Config() {
     nconf.set(k.PublicKey, jwtKeyPair.publicKey);
 
     nconf.set(k.VideoLanguageCodes, ['en', 'ja']);
+    nconf.set(k.TempDir, fs.mkdtempSync('/tmp/com.get-native.'));
 }
 
 Config.prototype.get = function(key) {

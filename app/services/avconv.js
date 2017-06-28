@@ -6,8 +6,11 @@
  */
 
 const randomHash = require('./auth').generateRandomHash;
+const config = require('../../config/application').config;
+const k = require('../../config/keys.json');
 
 const util = require('util');
+const path = require('path');
 const exec = util.promisify(require('child_process').exec);
 const _ = require('lodash');
 
@@ -24,7 +27,7 @@ function validateFilepath(filepath) {
 module.exports.videoToFlac = async function(filepath) {
     validateFilepath(filepath);
 
-    const outputFilePath = '/tmp/' + randomHash() + '.flac';
+    const outputFilePath = path.resolve(config.get(k.TempDir), randomHash() + '.flac');
     await exec(`/usr/bin/env avconv -y -i ${filepath} -vn -f flac ${outputFilePath} >/dev/null 2>&1`);
     return outputFilePath;
 };
@@ -57,7 +60,7 @@ module.exports.cropVideoToSize = async function(filepath, cropSize) {
         throw new TypeError('argument cropSize.{width,height} must have values greater than or equal to 1');
     }
 
-    const outputFilePath = '/tmp/' + randomHash() + '.mp4';
+    const outputFilePath = path.resolve(config.get(k.TempDir), randomHash() + '.mp4');
     await exec(`avconv -y -i ${filepath} -vf "crop=${cropSize.width}:${cropSize.height}" -f mp4 ${outputFilePath}`);
 
     return outputFilePath;
@@ -66,7 +69,7 @@ module.exports.cropVideoToSize = async function(filepath, cropSize) {
 module.exports.captureFirstFrameOfVideo = async function(filepath) {
     validateFilepath(filepath);
 
-    const outputFilePath = '/tmp/' + randomHash() + '.jpg';
+    const outputFilePath = path.resolve(config.get(k.TempDir), randomHash() + '.jpg');
     await exec(`avconv -y -i ${filepath} -vframes 1 ${outputFilePath}`);
 
     return outputFilePath;

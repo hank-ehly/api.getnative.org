@@ -395,20 +395,18 @@ describe('POST /videos', function() {
 
     describe('success', function() {
         before(function() {
-            fs.mkdirSync(config.get(k.TestTmpDir));
-            fs.mkdirSync(path.resolve(config.get(k.TestTmpDir), 'videos'));
+            fs.mkdirSync(path.resolve(config.get(k.TempDir), 'videos'));
         });
 
         afterEach(function() {
-            const files = fs.readdirSync(path.resolve(config.get(k.TestTmpDir), 'videos'));
+            const files = fs.readdirSync(path.resolve(config.get(k.TempDir), 'videos'));
             _.each(files, function(file) {
-                fs.unlinkSync(path.resolve(config.get(k.TestTmpDir), 'videos', file));
+                fs.unlinkSync(path.resolve(config.get(k.TempDir), 'videos', file));
             });
         });
 
         after(function() {
-            fs.rmdirSync(path.resolve(config.get(k.TestTmpDir), 'videos'));
-            fs.rmdirSync(config.get(k.TestTmpDir));
+            fs.rmdirSync(path.resolve(config.get(k.TempDir), 'videos'));
         });
 
         describe('request headers', function() {
@@ -546,7 +544,7 @@ describe('POST /videos', function() {
                 const video = await db[k.Model.Video].find();
 
                 const expectedHash = Utility.getHashForId(video.get(k.Attr.Id));
-                const videoPath = path.resolve(config.get(k.TestTmpDir), 'videos', expectedHash + config.get(k.VideoFileExtension));
+                const videoPath = path.resolve(config.get(k.TempDir), 'videos', expectedHash + config.get(k.VideoFileExtension));
 
                 assert(fs.existsSync(videoPath));
             });
@@ -561,7 +559,7 @@ describe('POST /videos', function() {
                 const video = await db[k.Model.Video].find();
 
                 const expectedHash = Utility.getHashForId(video.get(k.Attr.Id));
-                const imagePath = path.resolve(config.get(k.TestTmpDir), 'videos', expectedHash + config.get(k.ImageFileExtension));
+                const imagePath = path.resolve(config.get(k.TempDir), 'videos', expectedHash + config.get(k.ImageFileExtension));
 
                 assert(fs.existsSync(imagePath));
             });

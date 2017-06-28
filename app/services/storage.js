@@ -23,7 +23,7 @@ if ([k.Env.Test, k.Env.CircleCI].includes(config.get(k.ENVIRONMENT))) {
             return {
                 upload: async function(filepath, options) {
                     return new Promise(resolve => {
-                        const testTmpDst = [config.get(k.TestTmpDir), '/', options.destination].join('');
+                        const testTmpDst = [config.get(k.TempDir), '/', options.destination].join('');
                         fs.createReadStream(filepath).pipe(fs.createWriteStream(testTmpDst));
                         resolve([new TestFile()]);
                     });
