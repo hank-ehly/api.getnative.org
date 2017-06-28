@@ -551,7 +551,20 @@ describe('POST /videos', function() {
                 assert(fs.existsSync(videoPath));
             });
 
-            it('should save a new picture asset with the appropriate hash title to Google Cloud Storage');
+            it('should save a new picture asset with the appropriate hash title to Google Cloud Storage', async function() {
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find();
+
+                const expectedHash = Utility.getHashForId(video.get(k.Attr.Id));
+                const imagePath = path.resolve(config.get(k.TestTmpDir), 'videos', expectedHash + config.get(k.ImageFileExtension));
+
+                assert(fs.existsSync(imagePath));
+            });
         });
     });
 });
