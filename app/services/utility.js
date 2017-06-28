@@ -5,8 +5,11 @@
  * Created by henryehly on 2017/03/14.
  */
 
-const moment = require('moment');
-const _ = require('lodash');
+const Hashids = require('hashids');
+const moment  = require('moment');
+const _       = require('lodash');
+
+const hashids = new Hashids('', 11);
 
 module.exports.extractAuthTokenFromRequest = function(req) {
     if (arguments.length !== 1) {
@@ -86,4 +89,28 @@ module.exports._validateSizeObject = function(size) {
     }
 
     return true;
+};
+
+module.exports.getHashForId = function(id) {
+    if (arguments.length === 0) {
+        throw new ReferenceError('argument "id" is missing');
+    }
+
+    if (!_.isNumber(id)) {
+        throw new TypeError('argument "id" must be a number');
+    }
+
+    return hashids.encode(id);
+};
+
+module.exports.getIdForHash = function(hash) {
+    if (arguments.length === 0) {
+        throw new ReferenceError('argument "hash" is missing');
+    }
+
+    if (!_.isString(hash)) {
+        throw new TypeError('argument "hash" must be a number');
+    }
+
+    return hashids.decode(hash);
 };

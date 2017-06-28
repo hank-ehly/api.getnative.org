@@ -83,8 +83,10 @@ describe('Utility', function() {
         });
 
         it(`should return a Date object equal to 24 hours later than the current time`, function() {
-            let tomorrow = new Date(new Date().getTime() + (1000 * 60 * 60 * 24));
-            assert.equal(Utility.tomorrow().getTime(), tomorrow.getTime());
+            const tomorrow = new Date(new Date().getTime() + (1000 * 60 * 60 * 24));
+            const expected = Math.floor(tomorrow.getTime() / 10);
+            const actual = Math.floor(Utility.tomorrow().getTime() / 10);
+            assert.equal(actual, expected);
         });
     });
 
@@ -203,6 +205,54 @@ describe('Utility', function() {
             }
 
             assert.throws(test, TypeError);
+        });
+    });
+
+    describe('getHashForId', function() {
+        it('should throw a ReferenceError if no arguments are provided', function() {
+            function test() {
+                Utility.getHashForId();
+            }
+
+            assert.throws(test, ReferenceError);
+        });
+
+        it('should throw a TypeError if the provided argument is not a number', function() {
+            function test() {
+                Utility.getHashForId({});
+            }
+
+            assert.throws(test, TypeError);
+        });
+
+        it('should return a string of length 11', function() {
+            const hash = Utility.getHashForId(1);
+            assert.equal(hash.length, 11);
+        });
+    });
+
+    describe('getIdForHash', function() {
+        it('should throw a ReferenceError if no arguments are provided', function() {
+            function test() {
+                Utility.getIdForHash();
+            }
+
+            assert.throws(test, ReferenceError);
+        });
+
+        it('should throw a TypeError if the provided argument is not a string', function() {
+            function test() {
+                Utility.getIdForHash(1);
+            }
+
+            assert.throws(test, TypeError);
+        });
+
+        it('should return a number matching the input for getHashForId', function() {
+            const testValue = 1;
+            const hash = Utility.getHashForId(testValue);
+            const number = Utility.getIdForHash(hash);
+            assert.equal(number, testValue);
         });
     });
 });
