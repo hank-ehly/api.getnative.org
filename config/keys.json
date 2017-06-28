@@ -80,6 +80,7 @@
         "CircleCI": "circle_ci",
         "Production": "production"
     },
+    "ImageFileExtension": "kImageFileExtension",
     "Header": {
         "AccessControlAllowOrigin": "allow-origin",
         "AuthExpire": "x-gn-auth-expire",
@@ -137,7 +138,8 @@
     },
     "GoogleCloud": {
         "ProjectId": "kGoogleCloudProjectId",
-        "KeyFilename": "kGoogleCloudKeyFilename"
+        "KeyFilename": "kGoogleCloudKeyFilename",
+        "StorageBucketName": "kGoogleCloudStorageBucketName"
     },
     "PrivateKey": "kPrivateKey",
     "PublicKey": "kPublicKey",
@@ -151,5 +153,6 @@
         "PasswordUpdated": "password-updated",
         "Welcome": "welcome"
     },
+    "VideoFileExtension": "kVideoFileExtension",
     "VideoLanguageCodes": "kVideoLanguageCodes"
 }

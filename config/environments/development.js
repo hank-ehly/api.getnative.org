@@ -22,4 +22,6 @@ config[k.OAuth.Google.ClientID] = oauthSecrets.development.google.clientId;
 config[k.OAuth.Google.ClientSecret] = oauthSecrets.development.google.clientSecret;
 config[k.OAuth.Google.CallbackURL] = 'http://localhost:3000/oauth/google/callback';
 
+config[k.GoogleCloud.StorageBucketName] = 'ungoogly-brand-9505';
+
 module.exports = config;

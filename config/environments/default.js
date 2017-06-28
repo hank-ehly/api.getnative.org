@@ -30,6 +30,8 @@ defaults[k.OAuth.Google.ClientID] = 'xxx';
 defaults[k.OAuth.Google.ClientSecret] = 'xxx';
 defaults[k.OAuth.Google.CallbackURL] = 'http://localhost:3000/oauth/google/callback';
 
-defaults[k.GoogleCloud.ProjectId] = 'stg-get-native';
+defaults[k.GoogleCloud.ProjectId] = 'get-native';
+defaults[k.VideoFileExtension] = '.mp4';
+defaults[k.ImageFileExtension] = '.jpg';
 
 module.exports = defaults;
