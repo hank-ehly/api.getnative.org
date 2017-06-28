@@ -12,15 +12,15 @@ const _ = require('lodash');
 
 let client;
 if ([k.Env.Test, k.Env.CircleCI].includes(config.get(k.ENVIRONMENT))) {
+    function TestFile() {
+        this.name = 'TestFile';
+    }
+
     client = {
         bucket: function() {
             return {
                 upload: async function() {
                     return new Promise(resolve => {
-                        function TestFile() {
-                            this.name = 'TestFile';
-                        }
-
                         resolve([new TestFile()]);
                     });
                 }
