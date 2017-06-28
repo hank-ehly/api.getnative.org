@@ -12,6 +12,8 @@ const _ = require('lodash');
 
 let client;
 if ([k.Env.Test, k.Env.CircleCI].includes(config.get(k.ENVIRONMENT))) {
+    const fs = require('fs');
+
     function TestFile() {
         this.name = 'TestFile';
     }
@@ -19,8 +21,10 @@ if ([k.Env.Test, k.Env.CircleCI].includes(config.get(k.ENVIRONMENT))) {
     client = {
         bucket: function() {
             return {
-                upload: async function() {
+                upload: async function(filepath, options) {
                     return new Promise(resolve => {
+                        const testTmpDst = [config.get(k.TestTmpDir), '/', options.destination].join('');
+                        fs.createReadStream(filepath).pipe(fs.createWriteStream(testTmpDst));
                         resolve([new TestFile()]);
                     });
                 }
@@ -54,7 +58,7 @@ module.exports.upload = async function(filepath, destination) {
     try {
         data = await client.bucket(k.GoogleCloud.StorageBucketName).upload(filepath, options);
     } catch (e) {
-        console.log(e);
+        return e;
     }
 
     return _.first(data);

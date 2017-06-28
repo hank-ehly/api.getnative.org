@@ -6,7 +6,9 @@
  */
 
 const SpecUtil = require('../../spec-util');
+const config = require('../../../config/application').config;
 const k = require('../../../config/keys.json');
+const Utility = require('../../../app/services')['Utility'];
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
@@ -14,6 +16,7 @@ const assert = require('assert');
 const request = require('supertest');
 const path = require('path');
 const chance = require('chance').Chance();
+const fs = require('fs');
 const _ = require('lodash');
 
 describe('POST /videos', function() {
@@ -391,6 +394,23 @@ describe('POST /videos', function() {
     });
 
     describe('success', function() {
+        before(function() {
+            fs.mkdirSync(config.get(k.TestTmpDir));
+            fs.mkdirSync(path.resolve(config.get(k.TestTmpDir), 'videos'));
+        });
+
+        afterEach(function() {
+            const files = fs.readdirSync(path.resolve(config.get(k.TestTmpDir), 'videos'));
+            _.each(files, function(file) {
+                fs.unlinkSync(path.resolve(config.get(k.TestTmpDir), 'videos', file));
+            });
+        });
+
+        after(function() {
+            fs.rmdirSync(path.resolve(config.get(k.TestTmpDir), 'videos'));
+            fs.rmdirSync(config.get(k.TestTmpDir));
+        });
+
         describe('request headers', function() {
             it('should respond with an X-GN-Auth-Token header', async function() {
                 const response = await request(server)
@@ -516,10 +536,22 @@ describe('POST /videos', function() {
         });
 
         describe('assets storage', function() {
-            it('should save a new video asset to online storage');
-            it('should save a new picture asset to online storage');
-            it('should resize the new video to 3:2 aspect ratio');
-            it('should resize the new picture to 3:2 aspect ratio');
+            it('should save a new video asset with the appropriate hash title to Google Cloud Storage', async function() {
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find();
+
+                const expectedHash = Utility.getHashForId(video.get(k.Attr.Id));
+                const videoPath = path.resolve(config.get(k.TestTmpDir), 'videos', expectedHash + config.get(k.VideoFileExtension));
+
+                assert(fs.existsSync(videoPath));
+            });
+
+            it('should save a new picture asset with the appropriate hash title to Google Cloud Storage');
         });
     });
 });

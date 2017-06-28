@@ -153,6 +153,7 @@
         "PasswordUpdated": "password-updated",
         "Welcome": "welcome"
     },
+    "TestTmpDir": "kTestTmpDir",
     "VideoFileExtension": "kVideoFileExtension",
     "VideoLanguageCodes": "kVideoLanguageCodes"
 }

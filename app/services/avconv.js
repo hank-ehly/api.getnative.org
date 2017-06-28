@@ -33,7 +33,7 @@ module.exports.getDimensionsOfVisualMediaAtPath = async function(filepath) {
     validateFilepath(filepath);
 
     const {stdout} = await exec(`/usr/bin/env avconv -i ${filepath} 2>&1 | cat`);
-    const size = _.first(stdout.match(/[0-9]{2,}x[0-9]+/));
+    const size = _.trim(_.first(stdout.match(/\s[0-9]{2,}x[0-9]{2,}\s/)));
     const [width, height] = _.map(_.split(size, 'x'), _.toNumber);
 
     return {

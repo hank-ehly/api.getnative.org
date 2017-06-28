@@ -6,11 +6,15 @@
  */
 
 const k = require('../../config/keys.json');
+const config = require('../../config/application').config;
 const logger = require('../../config/logger');
 const services = require('../services');
 const ResponseWrapper = services['ResponseWrapper'];
 const GetNativeError = services['GetNativeError'];
+const Utility = services['Utility'];
+const Storage = services['Storage'];
 const Speech = services['Speech'];
+const avconv = services['Avconv'];
 const db = require('../models');
 const ModelHelper = services['Model'](db);
 const Subcategory = db[k.Model.Subcategory];
@@ -337,8 +341,16 @@ module.exports.create = async (req, res, next) => {
                 text: transcript[k.Attr.Text]
             }, {transaction: t});
 
-            // todo: collocations
+            // todo: collocations (figure out headwords)
         }
+
+        const videoDimensions = await avconv.getDimensionsOfVisualMediaAtPath(req.files.video.path);
+        const maxSize = Utility.findMaxSizeForAspectInSize({width: 3, height: 2}, videoDimensions);
+        const croppedVideoPath = await avconv.cropVideoToSize(req.files.video.path, maxSize);
+        const videoIdHash = Utility.getHashForId(_.toNumber(video[k.Attr.Id]));
+        const thumbnailImagePath = await avconv.captureFirstFrameOfVideo(croppedVideoPath);
+        await Storage.upload(croppedVideoPath, ['videos/', videoIdHash, config.get(k.VideoFileExtension)].join(''));
+        await Storage.upload(thumbnailImagePath, ['videos/', videoIdHash, config.get(k.ImageFileExtension)].join(''));
 
         await t.commit();
     } catch (e) {

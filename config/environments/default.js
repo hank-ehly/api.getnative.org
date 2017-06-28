@@ -33,5 +33,6 @@ defaults[k.OAuth.Google.CallbackURL] = 'http://localhost:3000/oauth/google/callb
 defaults[k.GoogleCloud.ProjectId] = 'get-native';
 defaults[k.VideoFileExtension] = '.mp4';
 defaults[k.ImageFileExtension] = '.jpg';
+defaults[k.TestTmpDir] = '/tmp/get-native-' + new Date().getTime().toString();
 
 module.exports = defaults;
