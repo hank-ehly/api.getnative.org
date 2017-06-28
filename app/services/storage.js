@@ -43,7 +43,7 @@ module.exports.upload = async function(filepath, destination) {
         throw new TypeError('arguments "filepath" and "destination" must be strings');
     }
 
-    let options = {
+    const options = {
         destination: destination,
         resumable: false,
         gzip: true,
