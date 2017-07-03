@@ -594,7 +594,10 @@ describe('POST /videos', function() {
                     }
                 });
 
-                assert.equal(_.first(video.get('transcripts'))['collocation_occurrences'].length, 6);
+                const expected = _.first(metadata.transcripts).collocation_occurrences.length;
+                const actual = _.first(video.get('transcripts'))['collocation_occurrences'].length;
+
+                assert.equal(actual, expected);
             });
         });
 

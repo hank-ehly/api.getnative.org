@@ -334,28 +334,35 @@ module.exports.create = async (req, res, next) => {
             description: req.body[k.Attr.Description]
         }, {transaction: t});
 
-        let transcripts = [];
+        const unsavedTranscripts = [];
         for (let transcript of req.body['transcripts']) {
-            transcripts.push({
+            unsavedTranscripts.push({
                 video_id: video[k.Attr.Id],
                 language_id: transcript[k.Attr.LanguageId],
                 text: transcript[k.Attr.Text]
             });
         }
+        const savedTranscripts = await Transcript.bulkCreate(unsavedTranscripts, {transaction: t});
 
-        await Transcript.bulkCreate(transcripts, {transaction: t});
-        // - get { } contents / Utility
-        // - save collocation occurrences linked to transcript // CollocationOccurrence
-        //const occurrenceIds = transcript.update(transcript[k.Attr.Text])
-
-        // - replace { } contents with collocation occurrence ID / new utility
-        // - update transcript with replaced contents / Transcript
+        const unsavedCollocationOccurrences = [];
+        for (let transcript of savedTranscripts) {
+            let occurrenceTextValues = Utility.pluckCurlyBraceEnclosedContent(transcript.get(k.Attr.Text));
+            for (let text of occurrenceTextValues) {
+                unsavedCollocationOccurrences.push({
+                    transcript_id: transcript.get(k.Attr.Id),
+                    text: text,
+                    ipa_spelling: '-unset-'
+                });
+            }
+        }
+        await CollocationOccurrence.bulkCreate(unsavedCollocationOccurrences, {transaction: t});
 
         const videoDimensions = await avconv.getDimensionsOfVisualMediaAtPath(req.files.video.path);
         const maxSize = Utility.findMaxSizeForAspectInSize({width: 3, height: 2}, videoDimensions);
         const croppedVideoPath = await avconv.cropVideoToSize(req.files.video.path, maxSize);
         const videoIdHash = Utility.getHashForId(_.toNumber(video[k.Attr.Id]));
         const thumbnailImagePath = await avconv.captureFirstFrameOfVideo(croppedVideoPath);
+
         await Storage.upload(croppedVideoPath, ['videos/', videoIdHash, config.get(k.VideoFileExtension)].join(''));
         await Storage.upload(thumbnailImagePath, ['videos/', videoIdHash, config.get(k.ImageFileExtension)].join(''));
 
