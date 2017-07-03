@@ -114,3 +114,18 @@ module.exports.getIdForHash = function(hash) {
 
     return hashids.decode(hash);
 };
+
+module.exports.pluckCurlyBraceEnclosedContent = function(text) {
+    if (!text) {
+        throw new ReferenceError('text argument is required');
+    }
+
+    if (!_.isString(text)) {
+        throw new TypeError('text argument must be a string');
+    }
+
+    const trimmed = _.trim(text);
+    const inline = trimmed.replace(/[\n\t]/g, '').replace(/\s+/g, ' ');
+    const wrappedItems = inline.match(/{[^{}]+}/g);
+    return wrappedItems.map(i => i.replace('{', '').replace('}', ''));
+};
