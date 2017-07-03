@@ -324,5 +324,9 @@ describe('Utility', function() {
 
             assert.equal(_.difference(Utility.pluckCurlyBraceEnclosedContent(japanese), expected).length, 0);
         });
+
+        it('should return an empty array if the text contains no curly braces', function() {
+            assert.equal(Utility.pluckCurlyBraceEnclosedContent('This text contains no curly braces').length, 0);
+        });
     });
 });

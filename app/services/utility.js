@@ -127,5 +127,10 @@ module.exports.pluckCurlyBraceEnclosedContent = function(text) {
     const trimmed = _.trim(text);
     const inline = trimmed.replace(/[\n\t]/g, '').replace(/\s+/g, ' ');
     const wrappedItems = inline.match(/{[^{}]+}/g);
+
+    if (!wrappedItems) {
+        return [];
+    }
+
     return wrappedItems.map(i => i.replace('{', '').replace('}', ''));
 };
