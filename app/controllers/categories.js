@@ -38,11 +38,11 @@ module.exports.index = async (req, res, next) => {
             model: Subcategory,
             as: 'subcategories',
             attributes: [k.Attr.Id],
+            required: requireSubcategories,
             include: {
                 model: SubcategoryLocalized,
                 as: 'subcategories_localized',
                 attributes: [k.Attr.Name],
-                required: requireSubcategories,
                 where: {language_id: interfaceLanguageId}
             }
 

@@ -1,5 +1,5 @@
 /**
- * 20170224002409-create-collocations
+ * 20170224002409-create-collocation-occurrences
  * api.get-native.com
  *
  * Created by henryehly on 2017/02/24.
@@ -7,7 +7,7 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('collocations', {
+        return queryInterface.createTable('collocation_occurrences', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -32,6 +32,10 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.DATE,
                 defaultValue: Sequelize.fn('NOW')
+            },
+            deleted_at: {
+                allowNull: true,
+                type: Sequelize.DATE
             }
         }, {
             engine: 'InnoDB',
@@ -39,6 +43,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('collocations');
+        return queryInterface.dropTable('collocation_occurrences');
     }
 };

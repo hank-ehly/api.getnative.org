@@ -378,71 +378,71 @@ describe('GET /videos/:id', function() {
             });
         });
 
-        it(`should contain a non-null 'transcripts.records[N].collocations' object`, function() {
+        it(`should contain a non-null 'transcripts.records[N].collocation_occurrences' object`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isPlainObject(_.first(response.body.transcripts.records).collocations));
+                assert(_.isPlainObject(_.first(response.body.transcripts.records).collocation_occurrences));
             });
         });
 
-        it(`should contain a non-null 'transcripts.records[N].collocations.records' array`, function() {
+        it(`should contain a non-null 'transcripts.records[N].collocation_occurrences.records' array`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isArray(_.first(response.body.transcripts.records).collocations.records));
+                assert(_.isArray(_.first(response.body.transcripts.records).collocation_occurrences.records));
             });
         });
 
-        it(`should contain a non-null 'transcripts.records[N].collocations.count' integer`, function() {
+        it(`should contain a non-null 'transcripts.records[N].collocation_occurrences.count' integer`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isNumber(_.first(response.body.transcripts.records).collocations.count));
+                assert(_.isNumber(_.first(response.body.transcripts.records).collocation_occurrences.count));
             });
         });
 
-        it(`collocations.records.length and collocations.count should be equal`, function() {
+        it(`collocation_occurrences.records.length and collocation_occurrences.count should be equal`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert.equal(_.first(response.body.transcripts.records).collocations.records.length,
-                    _.first(response.body.transcripts.records).collocations.count);
+                assert.equal(_.first(response.body.transcripts.records).collocation_occurrences.records.length,
+                    _.first(response.body.transcripts.records).collocation_occurrences.count);
             });
         });
 
-        it(`should contain a non-null 'transcripts.records[N].collocations.records[N].text' string`, function() {
+        it(`should contain a non-null 'transcripts.records[N].collocation_occurrences.records[N].text' string`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isNumber(_.first(response.body.transcripts.records).collocations.count));
+                assert(_.isNumber(_.first(response.body.transcripts.records).collocation_occurrences.count));
             });
         });
 
-        it(`should contain a non-null 'transcripts.records[N].collocations.records[N].ipa_spelling' string`, function() {
+        it(`should contain a non-null 'transcripts.records[N].collocation_occurrences.records[N].ipa_spelling' string`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isString(_.first(_.first(response.body.transcripts.records).collocations.records).ipa_spelling));
+                assert(_.isString(_.first(_.first(response.body.transcripts.records).collocation_occurrences.records).ipa_spelling));
             });
         });
 
-        it(`should contain a non-null 'transcripts.records[N].collocations.records[N].usage_examples' object`, function() {
+        it(`should contain a non-null 'transcripts.records[N].collocation_occurrences.records[N].usage_examples' object`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isPlainObject(_.first(_.first(response.body.transcripts.records).collocations.records).usage_examples));
+                assert(_.isPlainObject(_.first(_.first(response.body.transcripts.records).collocation_occurrences.records).usage_examples));
             });
         });
 
-        it(`should contain a non-null 'transcripts.records[N].collocations.records[N].usage_examples.records' array`, function() {
+        it(`should contain a non-null 'transcripts.records[N].collocation_occurrences.records[N].usage_examples.records' array`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isArray(_.first(_.first(response.body.transcripts.records).collocations.records).usage_examples.records));
+                assert(_.isArray(_.first(_.first(response.body.transcripts.records).collocation_occurrences.records).usage_examples.records));
             });
         });
 
-        it(`should contain a non-null 'transcripts.records[N].collocations.records[N].usage_examples.count' integer`, function() {
+        it(`should contain a non-null 'transcripts.records[N].collocation_occurrences.records[N].usage_examples.count' integer`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isNumber(_.first(_.first(response.body.transcripts.records).collocations.records).usage_examples.count));
+                assert(_.isNumber(_.first(_.first(response.body.transcripts.records).collocation_occurrences.records).usage_examples.count));
             });
         });
 
         it(`usage_examples.records.length should be equal to usage_examples.count`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert.equal(_.first(_.first(response.body.transcripts.records).collocations.records).usage_examples.records.length,
-                    _.first(_.first(response.body.transcripts.records).collocations.records).usage_examples.count);
+                assert.equal(_.first(_.first(response.body.transcripts.records).collocation_occurrences.records).usage_examples.records.length,
+                    _.first(_.first(response.body.transcripts.records).collocation_occurrences.records).usage_examples.count);
             });
         });
 
-        it(`should contain a non-null 'transcripts.records[N].collocations.records[N].usage_examples.records[N].text' string`, function() {
+        it(`should contain a non-null 'transcripts.records[N].collocation_occurrences.records[N].usage_examples.records[N].text' string`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isString(_.first(_.first(_.first(response.body.transcripts.records).collocations.records).usage_examples.records).text));
+                assert(_.isString(_.first(_.first(_.first(response.body.transcripts.records).collocation_occurrences.records).usage_examples.records).text));
             });
         });
 

@@ -16,7 +16,8 @@ const m = require('mocha');
 const [describe, it, beforeEach] = [m.describe, m.it, m.beforeEach];
 const assert = require('assert');
 const moment = require('moment');
-const execFileSync = require('child_process').execFileSync;
+const util = require('util');
+const execFile = util.promisify(require('child_process').execFile);
 const path = require('path');
 const _ = require('lodash');
 
@@ -29,7 +30,7 @@ describe('clean (VerificationToken)', function() {
         return SpecUtil.seedAll();
     });
 
-    it(`should delete all VerificationToken records whose expiration date is equal to or before the current time`, function(done) {
+    it(`should delete all VerificationToken records whose expiration date is equal to or before the current time`, async function() {
         this.timeout(SpecUtil.defaultTimeout);
 
         const query = `
@@ -38,40 +39,45 @@ describe('clean (VerificationToken)', function() {
             WHERE expiration_date <= ?;
         `;
 
-        execFileSync(taskPath);
+        try {
+            await execFile(taskPath, {timeout: SpecUtil.defaultTimeout});
+        } catch (e) {
+            assert.fail(null, null, e, '');
+        }
 
-        db.sequelize.query(query, {replacements: [nowFmt]}).then(function(results) {
-            const count = _.first(_.flatten(results))['count'];
-            assert.equal(count, 0);
-            done();
-        });
+        const results = await db.sequelize.query(query, {replacements: [nowFmt]});
+        const count = _.first(_.flatten(results))['count'];
+
+        assert.equal(count, 0);
     });
 
-    it(`should not delete VerificationToken records whose expiration date is in the future`, function(done) {
+    it(`should not delete VerificationToken records whose expiration date is in the future`, async function() {
         this.timeout(SpecUtil.defaultTimeout);
 
-        User.find().then(function(user) {
-            let userId = user.get(k.Attr.Id);
+        const user = await User.find({attributes: [k.Attr.Id]});
+        const userId = user.get(k.Attr.Id);
 
-            return VerificationToken.create({
-                user_id: userId,
-                token: Auth.generateRandomHash(),
-                expiration_date: moment().add(1, 'days').toDate()
-            });
-        }).then(function() {
-            const query = `
-                SELECT COUNT(*) AS count
-                FROM verification_tokens
-                WHERE expiration_date > ?;
-            `;
-
-            execFileSync(taskPath);
-
-            db.sequelize.query(query, {replacements: [nowFmt]}).then(function(results) {
-                const count = _.first(_.flatten(results))['count'];
-                assert.notEqual(count, 0);
-                done();
-            });
+        await VerificationToken.create({
+            user_id: userId,
+            token: Auth.generateRandomHash(),
+            expiration_date: moment().add(1, 'days').toDate()
         });
+
+        const query = `
+            SELECT COUNT(*) AS count
+            FROM verification_tokens
+            WHERE expiration_date > ?;
+        `;
+
+        try {
+            await execFile(taskPath, {timeout: SpecUtil.defaultTimeout});
+        } catch (e) {
+            assert.fail(null, null, e, '');
+        }
+
+        const results = await db.sequelize.query(query, {replacements: [nowFmt]});
+        const count = _.first(_.flatten(results))['count'];
+
+        assert.notEqual(count, 0);
     });
 });

@@ -6,17 +6,17 @@
  */
 
 const k = require('../../config/keys.json');
-const Collocation = require('../../app/models')[k.Model.Collocation];
+const CollocationOccurrence = require('../../app/models')[k.Model.CollocationOccurrence];
 
 const chance = require('chance').Chance();
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return Promise.all([Collocation.min(k.Attr.Id), Collocation.max(k.Attr.Id)]).then(values => {
-            const [minCollocationId, maxCollocationId] = values;
+        return Promise.all([CollocationOccurrence.min(k.Attr.Id), CollocationOccurrence.max(k.Attr.Id)]).then(values => {
+            const [minOccurrenceId, maxOccurrenceId] = values;
             const usageExamples = [];
 
-            for (let i = minCollocationId; i <= maxCollocationId; i++) {
+            for (let i = minOccurrenceId; i <= maxOccurrenceId; i++) {
                 let numUsageExamples = chance.integer({
                     min: 2,
                     max: 4
@@ -25,7 +25,7 @@ module.exports = {
                 for (let j = 0; j < numUsageExamples; j++) {
                     usageExamples.push({
                         text: chance.sentence(),
-                        collocation_id: i
+                        collocation_occurrence_id: i
                     });
                 }
             }

@@ -112,7 +112,7 @@
         "CategoryLocalized": "CategoryLocalized",
         "Video": "Video",
         "Transcript": "Transcript",
-        "Collocation": "Collocation",
+        "CollocationOccurrence": "CollocationOccurrence",
         "UsageExample": "UsageExample",
         "VerificationToken": "VerificationToken",
         "Notification": "Notification"

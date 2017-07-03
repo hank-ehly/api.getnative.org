@@ -27,6 +27,7 @@ module.exports = function(sequelize, DataTypes) {
         }
     }, {
         tableName: 'videos',
+        paranoid: true,
         underscored: true,
         associations: function(models) {
             models[k.Model.Video].belongsTo(models[k.Model.Speaker], {as: 'speaker'});
@@ -69,60 +70,29 @@ module.exports = function(sequelize, DataTypes) {
             newestFirst: {
                 order: [[k.Attr.CreatedAt, 'DESC']]
             },
-            includeSpeakerName: function(Speaker) {
-                return {include: [{model: Speaker, attributes: [k.Attr.Name], as: 'speaker'}]}
-            },
-            includeSubcategoryNameAndId: function(Subcategory) {
-                return {include: [{model: Subcategory, attributes: [k.Attr.Id, k.Attr.Name], as: 'subcategory'}]}
-            },
             orderMostViewed: {
                 order: [[k.Attr.LoopCount, 'DESC']]
-            },
-            includeTranscripts: function() {
-                return {
-                    include: [
-                        {
-                            model: sequelize.model(k.Model.Transcript),
-                            attributes: [k.Attr.Id, k.Attr.Text],
-                            as: 'transcripts',
-                            include: [
-                                {
-                                    model: sequelize.model(k.Model.Collocation),
-                                    attributes: [k.Attr.Text, k.Attr.IPASpelling],
-                                    as: 'collocations',
-                                    include: {
-                                        model: sequelize.model(k.Model.UsageExample),
-                                        attributes: [k.Attr.Text],
-                                        as: 'usage_examples'
-                                    }
-                                }, {
-                                    model: sequelize.model(k.Model.Language),
-                                    attributes: [k.Attr.Name, k.Attr.Code],
-                                    as: 'language'
-                                }
-                            ]
-                        }
-                    ]
-                }
             },
             relatedToVideo: function(videoId) {
                 // todo: could this be more clean and/or efficient? => Yes, use LEFT JOIN
                 return {
                     where: {
                         subcategory_id: {
-                            $in: [sequelize.literal(`
-                                SELECT id
-                                FROM subcategories
-                                WHERE category_id = (
-                                    SELECT category_id
+                            $in: [
+                                sequelize.literal(`
+                                    SELECT id
                                     FROM subcategories
-                                    WHERE id = (
-                                        SELECT subcategory_id
-                                        FROM videos
-                                        WHERE id = ${videoId}
+                                    WHERE category_id = (
+                                        SELECT category_id
+                                        FROM subcategories
+                                        WHERE id = (
+                                            SELECT subcategory_id
+                                            FROM videos
+                                            WHERE id = ${videoId}
+                                        )
                                     )
-                                )
-                            `)]
+                                `)
+                            ]
                         }
                     }
                 };
@@ -140,16 +110,16 @@ module.exports = function(sequelize, DataTypes) {
 
     Video.isLikedByUser = function(db, videoId, userId) {
         // todo: use EXISTS
-        return db.Like.count({where: ['video_id = ? AND user_id = ?', videoId, userId]}).then(c => c === 1);
+        return db[k.Model.Like].count({where: {video_id: videoId, user_id: userId}}).then(c => c === 1);
     };
 
     Video.isCuedByUser = function(db, videoId, userId) {
         // todo: use EXISTS
-        return db.CuedVideo.count({where: ['video_id = ? AND user_id = ?', videoId, userId]}).then(c => c === 1);
+        return db[k.Model.CuedVideo].count({where: {video_id: videoId, user_id: userId}}).then(c => c === 1);
     };
 
     Video.getLikeCount = function(db, videoId) {
-        return db.Like.count({where: ['video_id = ?', videoId]});
+        return db[k.Model.Like].count({where: {video_id: videoId}});
     };
 
     return Video;

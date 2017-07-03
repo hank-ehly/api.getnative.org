@@ -32,10 +32,10 @@ describe('POST /videos', function() {
         {Other than that}, I enjoy programming too. Uhm, particularly web-related stuff. Backend is more {what I'm into}.
     `;
     const jTranText = `
-        久しぶりに家族に会いに行きました。{一週間半くらい}会社休んでアメリカに行った。お母さんとが{空港まで迎えに来てくれた}。その後家に帰ってスープを作ってくれた。
-        お父さんが午後6時くらいに仕事から帰って来て、3人で{色々とお話ができた}。家族と過ごすことはとても大切ですけど、あまりにも家族のそばにいようとすると自分自身で
-        物事を考えて独立して生活{できなくなる危険性}もあると思います。私は元々アメリカに住んでいたが、二十歳で{日本に引っ越した}のです。日本はいい国だが、人はアメリカより
-        排他的で、{孤独になりやすい}タイプだと思います。
+        久しぶりに家族に会いに行きました。一週間半くらい会社休んでアメリカに行った。お母さんとが空港まで迎えに来てくれた。その後家に帰ってスープを作ってくれた。
+        お父さんが午後6時くらいに仕事から帰って来て、3人で色々とお話ができた。家族と過ごすことはとても大切ですけど、あまりにも家族のそばにいようとすると自分自身で
+        物事を考えて独立して生活できなくなる危険性もあると思います。私は元々アメリカに住んでいたが、二十歳で日本に引っ越したのです。日本はいい国だが、人はアメリカより
+        排他的で、孤独になりやすいタイプだと思います。
     `;
     let authorization, server, db, metadata;
 
@@ -52,7 +52,72 @@ describe('POST /videos', function() {
             transcripts: [
                 {
                     language_id: eLang.get(k.Attr.Id),
-                    text: eTranText
+                    text: eTranText,
+                    collocation_occurrences: [
+                        {
+                            text: 'a number of',
+                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
+                            usage_examples: [
+                                {
+                                    text: 'a sample usage example..'
+                                }
+                            ]
+                        },
+                        {
+                            text: 'first off',
+                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
+                            usage_examples: [
+                                {
+                                    text: 'a sample usage example..'
+                                }
+                            ]
+                        },
+                        {
+                            text: 'since I was a little kid',
+                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
+                            usage_examples: [
+                                {
+                                    text: 'a sample usage example..'
+                                }
+                            ]
+                        },
+                        {
+                            text: 'for a bit',
+                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
+                            usage_examples: [
+                                {
+                                    text: 'a sample usage example..'
+                                }
+                            ]
+                        },
+                        {
+                            text: 'I have a passion for',
+                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
+                            usage_examples: [
+                                {
+                                    text: 'a sample usage example..'
+                                }
+                            ]
+                        },
+                        {
+                            text: 'Other than that',
+                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
+                            usage_examples: [
+                                {
+                                    text: 'a sample usage example..'
+                                }
+                            ]
+                        },
+                        {
+                            text: 'what I\'m into',
+                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
+                            usage_examples: [
+                                {
+                                    text: 'a sample usage example..'
+                                }
+                            ]
+                        }
+                    ]
                 }, {
                     language_id: jLang.get(k.Attr.Id),
                     text: jTranText
@@ -63,13 +128,13 @@ describe('POST /videos', function() {
 
     async function destroyAllVideos() {
         await db[k.Model.UsageExample].destroy({where: {}});
-        await db[k.Model.Collocation].destroy({where: {}});
+        await db[k.Model.CollocationOccurrence].destroy({where: {}, force: true});
         await db[k.Model.Transcript].destroy({where: {}});
         await db[k.Model.WritingAnswer].destroy({where: {}});
         await db[k.Model.StudySession].destroy({where: {}});
         await db[k.Model.Like].destroy({where: {}});
         await db[k.Model.CuedVideo].destroy({where: {}});
-        await db[k.Model.Video].destroy({where: {}});
+        await db[k.Model.Video].destroy({where: {}, force: true});
     }
 
     before(async function() {
@@ -511,7 +576,7 @@ describe('POST /videos', function() {
                 assert.equal(video.get('transcripts').length, metadata.transcripts.length);
             });
 
-            it('should create the same number of new collocation records as specified in the combined transcript text', async function() {
+            it('should create the same number of new collocation occurrence records as specified in the combined transcript text', async function() {
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -523,17 +588,17 @@ describe('POST /videos', function() {
                         model: db[k.Model.Transcript],
                         as: 'transcripts',
                         include: {
-                            model: db[k.Model.Collocation],
-                            as: 'collocations'
+                            model: db[k.Model.CollocationOccurrence],
+                            as: 'collocation_occurrences'
                         }
                     }
                 });
 
-                assert.equal(_.first(video.get('transcripts'))['collocations'].length, 6);
+                assert.equal(_.first(video.get('transcripts'))['collocation_occurrences'].length, 6);
             });
         });
 
-        describe('assets storage', function() {
+        describe('Google Cloud Storage', function() {
             it('should save a new video asset with the appropriate hash title to Google Cloud Storage', async function() {
                 await request(server)
                     .post('/videos')

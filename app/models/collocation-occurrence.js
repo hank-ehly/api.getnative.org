@@ -1,5 +1,5 @@
 /**
- * collocation
+ * collocation-occurrence
  * get-native.com
  *
  * Created by henryehly on 2017/02/24.
@@ -8,7 +8,7 @@
 const k = require('../../config/keys.json');
 
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define('Collocation', {
+    return sequelize.define(k.Model.CollocationOccurrence, {
         text: {
             type: DataTypes.TEXT,
             allowNull: false
@@ -19,11 +19,12 @@ module.exports = function(sequelize, DataTypes) {
             defaultValue: ''
         }
     }, {
-        tableName: 'collocations',
+        tableName: 'collocation_occurrences',
+        paranoid: true,
         underscored: true,
         associations: function(models) {
-            models[k.Model.Collocation].hasMany(models[k.Model.UsageExample], {as: 'usage_examples'});
-            models[k.Model.Collocation].belongsTo(models[k.Model.Transcript]);
+            models[k.Model.CollocationOccurrence].hasMany(models[k.Model.UsageExample], {as: 'usage_examples'});
+            models[k.Model.CollocationOccurrence].belongsTo(models[k.Model.Transcript]);
         }
     });
 };

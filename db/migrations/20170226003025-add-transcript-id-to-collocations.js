@@ -1,5 +1,5 @@
 /**
- * 20170226003025-add-transcript-id-to-collocations
+ * 20170226003025-add-transcript-id-to-collocation-occurrences
  * api.get-native.com
  *
  * Created by henryehly on 2017/02/26.
@@ -7,7 +7,7 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.addColumn('collocations', 'transcript_id', {
+        return queryInterface.addColumn('collocation_occurrences', 'transcript_id', {
             type: Sequelize.INTEGER,
             allowNull: false,
             references: {
@@ -20,6 +20,6 @@ module.exports = {
     },
 
     down: function(queryInterface, Sequelize) {
-        return queryInterface.removeColumn('collocations', 'transcript_id');
+        return queryInterface.removeColumn('collocation_occurrences', 'transcript_id');
     }
 };

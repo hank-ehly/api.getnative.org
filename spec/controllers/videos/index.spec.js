@@ -366,7 +366,7 @@ describe('GET /videos', function() {
         // q
         // full text search
         // transcript
-        // collocations
+        // collocation occurrences
         // category title
         // subcategory title
         // speaker name

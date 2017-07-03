@@ -26,15 +26,6 @@ module.exports = function(sequelize, DataTypes) {
             newestFirst: {
                 order: [[k.Attr.CreatedAt, 'DESC']]
             },
-            forUser: function(userId) {
-                return {
-                    where: {
-                        study_session_id: {
-                            $in: sequelize.literal(`(SELECT \`id\` FROM \`study_sessions\` WHERE \`user_id\` = ${userId})`)
-                        }
-                    }
-                };
-            },
             forUserWithLang: function(userId, lang) {
                 return {
                     where: {

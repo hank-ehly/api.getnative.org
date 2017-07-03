@@ -5,8 +5,10 @@
  * Created by henryehly on 2017/02/24.
  */
 
+const k = require('../../config/keys.json');
+
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define('UsageExample', {
+    return sequelize.define(k.Model.UsageExample, {
         text: {
             type: DataTypes.TEXT,
             allowNull: false
@@ -15,7 +17,7 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'usage_examples',
         underscored: true,
         associations: function(models) {
-            models.UsageExample.belongsTo(models.Collocation);
+            models[k.Model.UsageExample].belongsTo(models[k.Model.CollocationOccurrence]);
         }
     });
 };

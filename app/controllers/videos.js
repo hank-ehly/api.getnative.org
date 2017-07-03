@@ -24,7 +24,7 @@ const Language = db[k.Model.Language];
 const Speaker = db[k.Model.Speaker];
 const SpeakerLocalized = db[k.Model.SpeakerLocalized];
 const Transcript = db[k.Model.Transcript];
-const Collocation = db[k.Model.Collocation];
+const CollocationOccurrence = db[k.Model.CollocationOccurrence];
 const UsageExample = db[k.Model.UsageExample];
 const Video = db[k.Model.Video];
 const Like = db[k.Model.Like];
@@ -170,9 +170,9 @@ module.exports.show = async (req, res, next) => {
             as: 'transcripts',
             include: [
                 {
-                    model: Collocation,
+                    model: CollocationOccurrence,
                     attributes: [k.Attr.Text, k.Attr.IPASpelling],
-                    as: 'collocations',
+                    as: 'collocation_occurrences',
                     include: {
                         model: UsageExample,
                         attributes: [k.Attr.Text],
@@ -247,7 +247,7 @@ module.exports.show = async (req, res, next) => {
     }));
 
     video.transcripts = ResponseWrapper.wrap(video.transcripts.map(transcript => {
-        transcript.collocations = ResponseWrapper.deepWrap(transcript.collocations, ['usage_examples']);
+        transcript.collocation_occurrences = ResponseWrapper.deepWrap(transcript.collocation_occurrences, ['usage_examples']);
         return transcript;
     }));
 

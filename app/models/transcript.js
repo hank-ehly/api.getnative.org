@@ -19,7 +19,7 @@ module.exports = function(sequelize, DataTypes) {
         associations: function(models) {
             models[k.Model.Transcript].belongsTo(models[k.Model.Video]);
             models[k.Model.Transcript].belongsTo(models[k.Model.Language], {as: 'language'});
-            models[k.Model.Transcript].hasMany(models[k.Model.Collocation], {as: 'collocations'});
+            models[k.Model.Transcript].hasMany(models[k.Model.CollocationOccurrence], {as: 'collocation_occurrences'});
         }
     });
 };

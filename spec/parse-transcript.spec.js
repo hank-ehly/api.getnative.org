@@ -76,9 +76,7 @@ describe('parse', function() {
             'what I\'m into'
         ];
 
-        let actual = parse(english);
-
-        assert.equal(_.difference(actual, expected).length, 0);
+        assert.equal(_.difference(parse(english), expected).length, 0);
     });
 
     it(`should create an array of strings with the correct contents - Japanese`, function() {
@@ -91,8 +89,12 @@ describe('parse', function() {
             '孤独になりやすい'
         ];
 
-        let actual = parse(japanese);
-
-        assert.equal(_.difference(actual, expected).length, 0);
+        assert.equal(_.difference(parse(japanese), expected).length, 0);
     });
 });
+
+// controller receives request
+// - obtain transcripts
+// - get { } contents
+// - save collocation occurrences
+// - replace { } contents with collocation occurrence ID
