@@ -3,7 +3,7 @@
 const path      = require('path');
 const config    = require('../../../config/application').config;
 const k         = require('../../../config/keys.json');
-const dbconf    = require(path.resolve(__dirname + '/../../../config/database.json'))[config.get(k.ENVIRONMENT)];
+const dbconf    = require(path.resolve(__dirname, '..', '..', '..', 'config', 'database.json'))[config.get(k.ENVIRONMENT)];
 
 const Sequelize = require('sequelize');
 const util      = require('util');
