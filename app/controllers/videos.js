@@ -356,6 +356,7 @@ module.exports.create = async (req, res, next) => {
             }
         }
         await CollocationOccurrence.bulkCreate(unsavedCollocationOccurrences, {transaction: t});
+        await t.commit();
 
         const videoDimensions = await avconv.getDimensionsOfVisualMediaAtPath(req.files.video.path);
         const maxSize = Utility.findMaxSizeForAspectInSize({width: 3, height: 2}, videoDimensions);
@@ -365,8 +366,6 @@ module.exports.create = async (req, res, next) => {
 
         await Storage.upload(croppedVideoPath, ['videos/', videoIdHash, config.get(k.VideoFileExtension)].join(''));
         await Storage.upload(thumbnailImagePath, ['videos/', videoIdHash, config.get(k.ImageFileExtension)].join(''));
-
-        await t.commit();
     } catch (e) {
         await t.rollback();
         if (e instanceof db.sequelize.ForeignKeyConstraintError) {
