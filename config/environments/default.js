@@ -31,6 +31,7 @@ defaults[k.OAuth.Google.ClientSecret] = 'xxx';
 defaults[k.OAuth.Google.CallbackURL] = 'http://localhost:3000/oauth/google/callback';
 
 defaults[k.GoogleCloud.ProjectId] = 'get-native';
+defaults[k.GoogleCloud.StorageBucketName] = 'mock-bucket-name';
 defaults[k.VideoFileExtension] = '.mp4';
 defaults[k.ImageFileExtension] = '.jpg';
 

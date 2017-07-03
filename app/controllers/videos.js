@@ -324,16 +324,28 @@ module.exports.transcribe = async (req, res) => {
 };
 
 module.exports.create = async (req, res, next) => {
-    const t = await db.sequelize.transaction();
+    let video;
 
+    const t1 = await db.sequelize.transaction();
     try {
-        const video = await Video.create({
+        video = await Video.create({
             language_id: req.body[k.Attr.LanguageId],
             speaker_id: req.body[k.Attr.SpeakerId],
             subcategory_id: req.body[k.Attr.SubcategoryId],
             description: req.body[k.Attr.Description]
-        }, {transaction: t});
+        }, {transaction: t1});
+        await t1.commit();
+    } catch (e) {
+        await t1.rollback();
+        if (e instanceof db.sequelize.ForeignKeyConstraintError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
+        return next(e);
+    }
 
+    const t2 = await db.sequelize.transaction();
+    try {
         const unsavedTranscripts = [];
         for (let transcript of req.body['transcripts']) {
             unsavedTranscripts.push({
@@ -342,7 +354,7 @@ module.exports.create = async (req, res, next) => {
                 text: transcript[k.Attr.Text]
             });
         }
-        const savedTranscripts = await Transcript.bulkCreate(unsavedTranscripts, {transaction: t});
+        const savedTranscripts = await Transcript.bulkCreate(unsavedTranscripts, {transaction: t2});
 
         const unsavedCollocationOccurrences = [];
         for (let transcript of savedTranscripts) {
@@ -355,8 +367,7 @@ module.exports.create = async (req, res, next) => {
                 });
             }
         }
-        await CollocationOccurrence.bulkCreate(unsavedCollocationOccurrences, {transaction: t});
-        await t.commit();
+        await CollocationOccurrence.bulkCreate(unsavedCollocationOccurrences, {transaction: t2});
 
         const videoDimensions = await avconv.getDimensionsOfVisualMediaAtPath(req.files.video.path);
         const maxSize = Utility.findMaxSizeForAspectInSize({width: 3, height: 2}, videoDimensions);
@@ -366,8 +377,18 @@ module.exports.create = async (req, res, next) => {
 
         await Storage.upload(croppedVideoPath, ['videos/', videoIdHash, config.get(k.VideoFileExtension)].join(''));
         await Storage.upload(thumbnailImagePath, ['videos/', videoIdHash, config.get(k.ImageFileExtension)].join(''));
+
+        await Video.update({
+            video_url: `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/videos/${videoIdHash}.mp4`,
+            picture_url: `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/videos/${videoIdHash}.jpg`
+        }, {
+            where: {id: video[k.Attr.Id]},
+            transaction: t2
+        });
+
+        await t2.commit();
     } catch (e) {
-        await t.rollback();
+        await t2.rollback();
         if (e instanceof db.sequelize.ForeignKeyConstraintError) {
             res.status(404);
             return next(new GetNativeError(k.Error.ResourceNotFound));

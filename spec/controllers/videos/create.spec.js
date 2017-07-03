@@ -559,6 +559,38 @@ describe('POST /videos', function() {
                 assert.equal(video.get('description'), metadata.description);
             });
 
+            it("should set the video record 'video_url' to the video url", async function() {
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find();
+
+                const actualUrl = video.get(k.Attr.VideoUrl);
+                const videoIdHash = Utility.getHashForId(_.toNumber(video.get(k.Attr.Id)));
+                const expectedUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/videos/${videoIdHash}.mp4`;
+
+                assert.equal(actualUrl, expectedUrl);
+            });
+
+            it("should set the video record 'picture_url' to the picture url", async function() {
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find();
+
+                const actualUrl = video.get(k.Attr.PictureUrl);
+                const videoIdHash = Utility.getHashForId(_.toNumber(video.get(k.Attr.Id)));
+                const expectedUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/videos/${videoIdHash}.jpg`;
+
+                assert.equal(actualUrl, expectedUrl);
+            });
+
             it('should create a new Video with the specified number of transcripts', async function() {
                 await request(server)
                     .post('/videos')
