@@ -171,7 +171,7 @@ module.exports.show = async (req, res, next) => {
             include: [
                 {
                     model: CollocationOccurrence,
-                    attributes: [k.Attr.Text, k.Attr.IPASpelling],
+                    attributes: [k.Attr.Id, k.Attr.Text, k.Attr.IPASpelling],
                     as: 'collocation_occurrences',
                     include: {
                         model: UsageExample,
@@ -334,15 +334,22 @@ module.exports.create = async (req, res, next) => {
             description: req.body[k.Attr.Description]
         }, {transaction: t});
 
+        let transcripts = [];
         for (let transcript of req.body['transcripts']) {
-            await Transcript.create({
+            transcripts.push({
                 video_id: video[k.Attr.Id],
                 language_id: transcript[k.Attr.LanguageId],
                 text: transcript[k.Attr.Text]
-            }, {transaction: t});
-
-            // todo: collocations (figure out headwords)
+            });
         }
+
+        await Transcript.bulkCreate(transcripts, {transaction: t});
+        // - get { } contents / Utility
+        // - save collocation occurrences linked to transcript // CollocationOccurrence
+        //const occurrenceIds = transcript.update(transcript[k.Attr.Text])
+
+        // - replace { } contents with collocation occurrence ID / new utility
+        // - update transcript with replaced contents / Transcript
 
         const videoDimensions = await avconv.getDimensionsOfVisualMediaAtPath(req.files.video.path);
         const maxSize = Utility.findMaxSizeForAspectInSize({width: 3, height: 2}, videoDimensions);

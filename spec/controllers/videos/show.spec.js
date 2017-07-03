@@ -403,9 +403,15 @@ describe('GET /videos/:id', function() {
             });
         });
 
+        it(`should contain a non-null 'transcripts.records[N].collocation_occurrences.records[N].id' number`, function() {
+            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
+                assert(_.isNumber(_.first(_.first(response.body.transcripts.records).collocation_occurrences.records)[k.Attr.Id]));
+            });
+        });
+
         it(`should contain a non-null 'transcripts.records[N].collocation_occurrences.records[N].text' string`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isNumber(_.first(response.body.transcripts.records).collocation_occurrences.count));
+                assert(_.isString(_.first(_.first(response.body.transcripts.records).collocation_occurrences.records).text));
             });
         });
 
