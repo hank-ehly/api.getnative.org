@@ -23,7 +23,7 @@ module.exports.show = async (req, res, next) => {
 
     try {
         speaker = await Speaker.findByPrimary(req.params[k.Attr.Id], {
-            attributes: {exclude: [k.Attr.CreatedAt, k.Attr.UpdatedAt]},
+            attributes: {exclude: [k.Attr.CreatedAt, k.Attr.UpdatedAt, 'gender_id']},
             include: [
                 {
                     model: SpeakerLocalized,
