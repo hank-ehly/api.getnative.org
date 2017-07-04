@@ -30,6 +30,10 @@ module.exports.show = async (req, res, next) => {
                     as: 'speakers_localized',
                     attributes: [k.Attr.Description, k.Attr.Location, k.Attr.Name],
                     where: {language_id: interfaceLanguageId}
+                },
+                {
+                    model: db[k.Model.Gender],
+                    as: 'gender'
                 }
             ]
         });

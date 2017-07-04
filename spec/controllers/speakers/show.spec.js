@@ -118,6 +118,21 @@ describe('GET /speakers/:id', function() {
             });
         });
 
+        it('should contain a gender object', async function() {
+            const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization);
+            assert(_.isPlainObject(response.body.gender));
+        });
+
+        it('should contain a gender.id number', async function() {
+            const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization);
+            assert(_.isNumber(response.body.gender[k.Attr.Id]));
+        });
+
+        it('should contain a gender.name string', async function() {
+            const response = await request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization);
+            assert(_.isString(response.body.gender[k.Attr.Name]));
+        });
+
         it(`should return an object containing the speaker's valid picture url`, () => {
             return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
                 let parsedURL = url.parse(speaker.body.picture_url);
