@@ -116,6 +116,13 @@ const schema = {
             }
         }
     },
+    genders: {
+        index: {
+            headers: {
+                authorization: Joi.string().required()
+            }
+        }
+    },
     languages: {
         index: {
             headers: {
