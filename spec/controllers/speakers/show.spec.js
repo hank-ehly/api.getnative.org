@@ -48,12 +48,16 @@ describe('GET /speakers/:id', function() {
     });
 
     describe('failure', function() {
-        it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
-            request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).expect(401, done);
+        it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function() {
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).expect(401);
         });
 
-        it('should respond with 404 Not Found if the requested speaker does not exist', function(done) {
-            request(server).get('/speakers/99999999').set('authorization', authorization).expect(404, done);
+        it('should respond with 404 Not Found if the requested speaker does not exist', function() {
+            return request(server).get('/speakers/99999999').set('authorization', authorization).expect(404);
+        });
+
+        it('should respond with 400 if the provided "lang" query parameter value is not a valid lang code', function() {
+            return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).query({lang: 'invalid'}).set('authorization', authorization).expect(400);
         });
     });
 

@@ -14,6 +14,56 @@ const GetNativeError = require('../services')['GetNativeError'];
 
 const _ = require('lodash');
 
+module.exports.index = async (req, res, next) => {
+    let countAndRows;
+
+    const interfaceLanguageId = await Language.findIdForCode(
+        _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code))
+    );
+
+    try {
+        countAndRows = await Speaker.findAndCount({
+            attributes: [k.Attr.Id, k.Attr.PictureUrl, k.Attr.IsSilhouettePicture],
+            include: [
+                {
+                    model: SpeakerLocalized,
+                    as: 'speakers_localized',
+                    attributes: [k.Attr.Description, k.Attr.Location, k.Attr.Name],
+                    where: {language_id: interfaceLanguageId}
+                }, {
+                    model: db[k.Model.Gender],
+                    as: 'gender'
+                }
+            ]
+        });
+    } catch (e) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    const {count, rows} = countAndRows;
+
+    if (count === 0) {
+        return res.status(200).send({records: [], count: 0});
+    }
+
+    const records = _.map(rows, speaker => {
+        speaker = speaker.get({plain: true});
+        speaker[k.Attr.Name] = _.first(speaker.speakers_localized)[k.Attr.Name];
+        speaker[k.Attr.Description] = _.first(speaker.speakers_localized)[k.Attr.Description];
+        speaker[k.Attr.Location] = _.first(speaker.speakers_localized)[k.Attr.Location];
+        _.unset(speaker, 'speakers_localized');
+        return speaker;
+    });
+
+    const responseBody = {
+        records: records,
+        count: count
+    };
+
+    return res.status(200).send(responseBody);
+};
+
 module.exports.show = async (req, res, next) => {
     let speaker;
 
@@ -38,7 +88,8 @@ module.exports.show = async (req, res, next) => {
             ]
         });
     } catch (e) {
-        return next(e);
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
     }
 
     if (!speaker) {

@@ -139,12 +139,23 @@ const schema = {
         }
     },
     speakers: {
+        index: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            query: {
+                lang: Joi.string().lowercase().valid(validLangCodes)
+            }
+        },
         show: {
             headers: {
                 authorization: Joi.string().required()
             },
             params: {
                 id: Joi.number().integer().min(1).required()
+            },
+            query: {
+                lang: Joi.string().lowercase().valid(validLangCodes)
             }
         }
     },
