@@ -68,7 +68,7 @@ module.exports = function(sequelize, DataTypes) {
                 return conditions;
             },
             newestFirst: {
-                order: [[k.Attr.CreatedAt, 'DESC']]
+                order: [[k.Attr.Id, 'DESC']]
             },
             orderMostViewed: {
                 order: [[k.Attr.LoopCount, 'DESC']]
