@@ -135,6 +135,7 @@ describe('avconv', function() {
         });
 
         it('should return the filepath of the cropped video', async function() {
+            this.timeout(SpecUtil.defaultTimeout);
             const croppedVideoPath = await avconv.cropVideoToSize(videoPath, {
                 width: 500,
                 height: 350
@@ -144,6 +145,7 @@ describe('avconv', function() {
         });
 
         it('should resize a video to the specified dimensions', async function() {
+            this.timeout(SpecUtil.defaultTimeout);
             const expectedSize = {
                 width: 500,
                 height: 350
@@ -168,11 +170,13 @@ describe('avconv', function() {
         });
 
         it('should return the video frame filepath', async function() {
+            this.timeout(SpecUtil.defaultTimeout);
             const outputFilepath = await avconv.captureFirstFrameOfVideo(videoPath);
             assert(_.isString(outputFilepath));
         });
 
         it('should generate an image with the same dimensions as the input video', async function() {
+            this.timeout(SpecUtil.defaultTimeout);
             const imageFilepath = await avconv.captureFirstFrameOfVideo(videoPath);
             const imageDimensions = await avconv.getDimensionsOfVisualMediaAtPath(imageFilepath);
             assert(_.isEqual(imageDimensions, actualDimensions));

@@ -61,7 +61,7 @@ module.exports.cropVideoToSize = async function(filepath, cropSize) {
     }
 
     const outputFilePath = path.resolve(config.get(k.TempDir), randomHash() + '.mp4');
-    await exec(`avconv -y -i ${filepath} -vf "crop=${cropSize.width}:${cropSize.height}" -f mp4 ${outputFilePath}`);
+    await exec(`avconv -y -i ${filepath} -vf "crop=${cropSize.width}:${cropSize.height}" -strict experimental -f mp4 ${outputFilePath}`);
 
     return outputFilePath;
 };

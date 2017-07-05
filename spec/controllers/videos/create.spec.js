@@ -505,6 +505,7 @@ describe('POST /videos', function() {
 
         describe('data integrity', function() {
             it('should create a new Video record', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -516,6 +517,7 @@ describe('POST /videos', function() {
             });
 
             it('should create a new Video with the specified subcategory_id', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -527,6 +529,7 @@ describe('POST /videos', function() {
             });
 
             it('should create a new Video with the specified language_id', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -538,6 +541,7 @@ describe('POST /videos', function() {
             });
 
             it('should create a new Video with the specified speaker_id', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -549,6 +553,7 @@ describe('POST /videos', function() {
             });
 
             it('should create a new Video with the specified description', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -560,6 +565,7 @@ describe('POST /videos', function() {
             });
 
             it("should set the video record 'video_url' to the video url", async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -576,6 +582,7 @@ describe('POST /videos', function() {
             });
 
             it("should set the video record 'picture_url' to the picture url", async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -592,6 +599,7 @@ describe('POST /videos', function() {
             });
 
             it('should create a new Video with the specified number of transcripts', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -609,6 +617,7 @@ describe('POST /videos', function() {
             });
 
             it('should create the same number of new collocation occurrence records as specified in the combined transcript text', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -635,6 +644,7 @@ describe('POST /videos', function() {
 
         describe('Google Cloud Storage', function() {
             it('should save a new video asset with the appropriate hash title to Google Cloud Storage', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -650,6 +660,7 @@ describe('POST /videos', function() {
             });
 
             it('should save a new picture asset with the appropriate hash title to Google Cloud Storage', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
