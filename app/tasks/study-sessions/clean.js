@@ -1,17 +1,47 @@
-#!/usr/bin/env node
+const k = require('../../../config/keys.json');
+const db = require('../../models');
 
-const path      = require('path');
-const config    = require('../../../config/application').config;
-const k         = require('../../../config/keys.json');
-const dbconf    = require(path.resolve(__dirname, '..', '..', '..', 'config', 'database.json'))[config.get(k.ENVIRONMENT)];
+const moment = require('moment');
+const _ = require('lodash');
 
-const Sequelize = require('sequelize');
-const util      = require('util');
-const readFile  = util.promisify(require('fs').readFile);
+async function clean() {
+    try {
+        const yesterday = moment().subtract(1, 'days').toDate();
 
-dbconf.dialectOptions = {
-    multipleStatements: true
-};
+        const studySessions = await db[k.Model.StudySession].findAll({
+            attributes: [k.Attr.Id],
+            where: {
+                is_completed: false,
+                created_at: {
+                    $lt: yesterday
+                }
+            }
+        });
 
-const sequelize = new Sequelize(dbconf.database, dbconf.username, dbconf.password, dbconf);
-return readFile(path.resolve(__dirname, 'clean.sql'), 'utf8').then(sequelize.query);
+        const plainStudySessions = _.invokeMap(studySessions, 'get', {plain: true});
+        const studySessionIds = _.map(plainStudySessions, 'id');
+
+        await db[k.Model.WritingAnswer].destroy({
+            where: {
+                study_session_id: {
+                    $in: studySessionIds
+                }
+            }
+        });
+
+        await db[k.Model.StudySession].destroy({
+            where: {
+                is_completed: false,
+                created_at: {
+                    $lt: yesterday
+                }
+            }
+        });
+    } catch (e) {
+        return e;
+    }
+
+    return true;
+}
+
+module.exports = clean;

@@ -40,7 +40,7 @@ describe('clean (VerificationToken)', function() {
         `;
 
         try {
-            await execFile(taskPath, {timeout: SpecUtil.defaultTimeout});
+            await require(taskPath)();
         } catch (e) {
             assert.fail(null, null, e, '');
         }
@@ -70,7 +70,7 @@ describe('clean (VerificationToken)', function() {
         `;
 
         try {
-            await execFile(taskPath, {timeout: SpecUtil.defaultTimeout});
+            await require(taskPath)();
         } catch (e) {
             assert.fail(null, null, e, '');
         }
@@ -79,5 +79,19 @@ describe('clean (VerificationToken)', function() {
         const count = _.first(_.flatten(results))['count'];
 
         assert.notEqual(count, 0);
+    });
+
+    it('should return true if the task is successful', async function() {
+        this.timeout(SpecUtil.defaultTimeout);
+
+        let result;
+
+        try {
+            result = await require(taskPath)();
+        } catch (e) {
+            assert.fail(null, null, e, '');
+        }
+
+        assert.equal(result, true);
     });
 });

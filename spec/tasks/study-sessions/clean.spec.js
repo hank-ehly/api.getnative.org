@@ -10,8 +10,6 @@ const db = require('../../../app/models');
 
 const m = require('mocha');
 const [describe, it, beforeEach] = [m.describe, m.it, m.beforeEach];
-const util = require('util');
-const execFile = util.promisify(require('child_process').execFile);
 const assert = require('assert');
 const moment = require('moment');
 const path = require('path');
@@ -30,7 +28,7 @@ describe('clean (StudySession)', function() {
         this.timeout(SpecUtil.defaultTimeout);
 
         try {
-            await execFile(taskPath, {timeout: SpecUtil.defaultTimeout});
+            await require(taskPath)();
         } catch (e) {
             assert.fail(null, null, e, '');
         }
@@ -43,6 +41,7 @@ describe('clean (StudySession)', function() {
 
         const result = await db.sequelize.query(q, {replacements: [yesterday]});
         const count = _.first(_.flatten(result))['count'];
+
         assert.equal(count, 0);
     });
 
@@ -59,7 +58,7 @@ describe('clean (StudySession)', function() {
         const c1 = _.first(_.flatten(r1)).count;
 
         try {
-            await execFile(taskPath, {timeout: SpecUtil.defaultTimeout});
+            await require(taskPath)();
         } catch (e) {
             assert.fail(null, null, e, '');
         }
@@ -68,5 +67,19 @@ describe('clean (StudySession)', function() {
         const c2 = _.first(_.flatten(r2))['count'];
 
         assert.equal(c1, c2);
+    });
+
+    it('should return true if the task is successful', async function() {
+        this.timeout(SpecUtil.defaultTimeout);
+
+        let result;
+
+        try {
+            result = await require(taskPath)();
+        } catch (e) {
+            assert.fail(null, null, e, '');
+        }
+
+        assert.equal(result, true);
     });
 });
