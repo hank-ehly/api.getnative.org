@@ -476,6 +476,7 @@ describe('POST /videos', function() {
 
         describe('request headers', function() {
             it('should respond with an X-GN-Auth-Token header', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 const response = await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -485,6 +486,7 @@ describe('POST /videos', function() {
             });
 
             it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 const response = await request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
@@ -494,6 +496,7 @@ describe('POST /videos', function() {
             });
 
             it('should respond with 201 Created for a valid request', function() {
+                this.timeout(SpecUtil.defaultTimeout);
                 return request(server)
                     .post('/videos')
                     .set(k.Header.Authorization, authorization)
