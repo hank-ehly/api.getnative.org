@@ -24,7 +24,7 @@ module.exports = function(sequelize, DataTypes) {
         },
         scopes: {
             newestFirst: {
-                order: [[k.Attr.CreatedAt, 'DESC']]
+                order: [[k.Attr.Id, 'DESC']]
             },
             forUserWithLang: function(userId, lang) {
                 return {
