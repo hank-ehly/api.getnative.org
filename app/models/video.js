@@ -20,10 +20,6 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: ''
-        },
-        description: {
-            type: DataTypes.TEXT,
-            allowNull: false
         }
     }, {
         tableName: 'videos',
@@ -37,6 +33,7 @@ module.exports = function(sequelize, DataTypes) {
             models[k.Model.Video].hasMany(models[k.Model.Like], {as: 'likes'});
             models[k.Model.Video].hasMany(models[k.Model.StudySession], {as: 'study_sessions'});
             models[k.Model.Video].hasMany(models[k.Model.Transcript], {as: 'transcripts'});
+            models[k.Model.Video].hasMany(models[k.Model.VideoLocalized], {as: 'videos_localized'});
         },
         scopes: {
             count: function(count) {

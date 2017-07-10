@@ -21,7 +21,8 @@ const _ = require('lodash');
 
 describe('POST /videos', function() {
     const videoFile = path.resolve(__dirname, '..', '..', 'fixtures', '1080x720.mov');
-    const aDescription = chance.paragraph();
+    const eDescription = chance.paragraph({sentences: 2});
+    const jDescription = 'ローラという名は米国のテレビドラマ『大草原の小さな家』の登場人物「ローラ」に由来する。幼少の頃に両親が離婚。実父とともに実父の再婚相手となった中国人の継母と生活して育った。';
     const eTranText = `
         I actually have {a number of} different hobbies. Uhm, {first off} there's music. 
         I grew up in a pretty musical family and my grandpa is actually a famous conductor, 
@@ -48,76 +49,20 @@ describe('POST /videos', function() {
             subcategory_id: aSubcategory.get(k.Attr.Id),
             speaker_id: aSpeaker.get(k.Attr.Id),
             language_id: eLang.get(k.Attr.Id),
-            description: aDescription,
+            descriptions: [
+                {
+                    language_id: eLang.get(k.Attr.Id),
+                    description: eDescription
+                },
+                {
+                    language_id: jLang.get(k.Attr.Id),
+                    description: jDescription
+                }
+            ],
             transcripts: [
                 {
                     language_id: eLang.get(k.Attr.Id),
-                    text: eTranText,
-                    collocation_occurrences: [
-                        {
-                            text: 'a number of',
-                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
-                            usage_examples: [
-                                {
-                                    text: 'a sample usage example..'
-                                }
-                            ]
-                        },
-                        {
-                            text: 'first off',
-                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
-                            usage_examples: [
-                                {
-                                    text: 'a sample usage example..'
-                                }
-                            ]
-                        },
-                        {
-                            text: 'since I was a little kid',
-                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
-                            usage_examples: [
-                                {
-                                    text: 'a sample usage example..'
-                                }
-                            ]
-                        },
-                        {
-                            text: 'for a bit',
-                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
-                            usage_examples: [
-                                {
-                                    text: 'a sample usage example..'
-                                }
-                            ]
-                        },
-                        {
-                            text: 'I have a passion for',
-                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
-                            usage_examples: [
-                                {
-                                    text: 'a sample usage example..'
-                                }
-                            ]
-                        },
-                        {
-                            text: 'Other than that',
-                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
-                            usage_examples: [
-                                {
-                                    text: 'a sample usage example..'
-                                }
-                            ]
-                        },
-                        {
-                            text: 'what I\'m into',
-                            ipa_spelling: 'ɓʙɕçðd͡ʒɖɗəɚ',
-                            usage_examples: [
-                                {
-                                    text: 'a sample usage example..'
-                                }
-                            ]
-                        }
-                    ]
+                    text: eTranText
                 }, {
                     language_id: jLang.get(k.Attr.Id),
                     text: jTranText
@@ -134,6 +79,7 @@ describe('POST /videos', function() {
         await db[k.Model.StudySession].destroy({where: {}});
         await db[k.Model.Like].destroy({where: {}});
         await db[k.Model.CuedVideo].destroy({where: {}});
+        await db[k.Model.VideoLocalized].destroy({where: {}, force: true});
         await db[k.Model.Video].destroy({where: {}, force: true});
     }
 
@@ -318,9 +264,9 @@ describe('POST /videos', function() {
                 });
             });
 
-            describe('description', function() {
-                it('should return 400 Bad Request if description is not present', function() {
-                    delete metadata.description;
+            describe('descriptions', function() {
+                it('should return 400 Bad Request if transcripts is not present', function() {
+                    delete metadata.descriptions;
                     return request(server)
                         .post('/videos')
                         .set(k.Header.Authorization, authorization)
@@ -329,8 +275,8 @@ describe('POST /videos', function() {
                         .expect(400);
                 });
 
-                it('should return 400 Bad Request if description is not a string', function() {
-                    metadata.description = _.stubObject();
+                it('should return 400 Bad Request if descriptions is not an array', function() {
+                    metadata.descriptions = _.stubObject();
                     return request(server)
                         .post('/videos')
                         .set(k.Header.Authorization, authorization)
@@ -339,8 +285,82 @@ describe('POST /videos', function() {
                         .expect(400);
                 });
 
-                it('should return 400 Bad Request if description is 0 length', function() {
-                    metadata.description = _.stubString();
+                it('should return 400 Bad Request if descriptions is 0 length', function() {
+                    metadata.descriptions = _.stubArray();
+                    return request(server)
+                        .post('/videos')
+                        .set(k.Header.Authorization, authorization)
+                        .attach('video', videoFile)
+                        .field('metadata', JSON.stringify(metadata))
+                        .expect(400);
+                });
+            });
+
+            describe('descriptions.language_id', function() {
+                it('should return 400 Bad Request if descriptions.language_id is not present', function() {
+                    delete _.first(metadata.descriptions).language_id;
+                    return request(server)
+                        .post('/videos')
+                        .set(k.Header.Authorization, authorization)
+                        .attach('video', videoFile)
+                        .field('metadata', JSON.stringify(metadata))
+                        .expect(400);
+                });
+
+                it('should return 400 Bad Request if descriptions.language_id is not a number', function() {
+                    _.first(metadata.descriptions).language_id = _.stubString();
+                    return request(server)
+                        .post('/videos')
+                        .set(k.Header.Authorization, authorization)
+                        .attach('video', videoFile)
+                        .field('metadata', JSON.stringify(metadata))
+                        .expect(400);
+                });
+
+                it('should return 400 Bad Request if descriptions.language_id is 0', function() {
+                    _.first(metadata.descriptions).language_id = 0;
+                    return request(server)
+                        .post('/videos')
+                        .set(k.Header.Authorization, authorization)
+                        .attach('video', videoFile)
+                        .field('metadata', JSON.stringify(metadata))
+                        .expect(400);
+                });
+
+                it('should return 404 Not Found if the descriptions.language_id does not correspond to an existing Language record', function() {
+                    _.first(metadata.descriptions).language_id = Math.pow(10, 5);
+                    return request(server)
+                        .post('/videos')
+                        .set(k.Header.Authorization, authorization)
+                        .attach('video', videoFile)
+                        .field('metadata', JSON.stringify(metadata))
+                        .expect(404);
+                });
+            });
+
+            describe('descriptions.description', function() {
+                it('should return 400 Bad Request if descriptions.description is not present', function() {
+                    delete _.first(metadata.descriptions).description;
+                    return request(server)
+                        .post('/videos')
+                        .set(k.Header.Authorization, authorization)
+                        .attach('video', videoFile)
+                        .field('metadata', JSON.stringify(metadata))
+                        .expect(400);
+                });
+
+                it('should return 400 Bad Request if descriptions.description is not a string', function() {
+                    _.first(metadata.descriptions).description = _.stubObject();
+                    return request(server)
+                        .post('/videos')
+                        .set(k.Header.Authorization, authorization)
+                        .attach('video', videoFile)
+                        .field('metadata', JSON.stringify(metadata))
+                        .expect(400);
+                });
+
+                it('should return 400 Bad Request if descriptions.description is 0 length', function() {
+                    _.first(metadata.descriptions).description = _.stubString();
                     return request(server)
                         .post('/videos')
                         .set(k.Header.Authorization, authorization)
@@ -555,18 +575,6 @@ describe('POST /videos', function() {
                 assert.equal(video.get('speaker_id'), metadata.speaker_id);
             });
 
-            it('should create a new Video with the specified description', async function() {
-                this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
-
-                const video = await db[k.Model.Video].find();
-                assert.equal(video.get('description'), metadata.description);
-            });
-
             it("should set the video record 'video_url' to the video url", async function() {
                 this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
@@ -619,6 +627,36 @@ describe('POST /videos', function() {
                 assert.equal(video.get('transcripts').length, metadata.transcripts.length);
             });
 
+            it('should create new VideoLocalized records with the correct descriptions', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                let video = await db[k.Model.Video].find({
+                    include: {
+                        model: db[k.Model.VideoLocalized],
+                        attributes: [k.Attr.Description],
+                        as: 'videos_localized',
+                        include: {
+                            model: db[k.Model.Language],
+                            attributes: [k.Attr.Code],
+                            as: 'language'
+                        }
+                    }
+                });
+
+                video = video.get({plain: true});
+
+                const english = _.find(video.videos_localized, {language: {code: 'en'}})[k.Attr.Description];
+                const japanese = _.find(video.videos_localized, {language: {code: 'ja'}})[k.Attr.Description];
+
+                assert.equal(english, metadata.descriptions[0].description);
+                assert.equal(japanese, metadata.descriptions[1].description);
+            });
+
             it('should create the same number of new collocation occurrence records as specified in the combined transcript text', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
                 await request(server)
@@ -638,10 +676,7 @@ describe('POST /videos', function() {
                     }
                 });
 
-                const expected = _.first(metadata.transcripts).collocation_occurrences.length;
-                const actual = _.first(video.get('transcripts'))['collocation_occurrences'].length;
-
-                assert.equal(actual, expected);
+                assert.equal(_.first(video.get('transcripts'))['collocation_occurrences'].length, eTranText.match(/{/g).length);
             });
         });
 

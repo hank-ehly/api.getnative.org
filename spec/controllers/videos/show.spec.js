@@ -472,16 +472,24 @@ describe('GET /videos/:id', function() {
             assert(/[a-z]/i.test(response.body.speaker[k.Attr.Name]));
         });
 
-        it('should localize the speaker name based on the lang query parameter if present', async function() {
+        it('should localize the speaker description based on the lang query parameter if present', async function() {
             const response = await request(server).get(`/videos/${videoId}`).query({lang: 'ja'}).set('authorization', authorization);
             assert(/[^a-z]/i.test(response.body.speaker[k.Attr.Description]));
         });
 
-        it('should localize the speaker name based on the user preferred interface language if the lang query parameter is missing', async function() {
+        it('should localize the speaker description based on the user preferred interface language if the lang query parameter is missing', async function() {
             const response = await request(server).get(`/videos/${videoId}`).set('authorization', authorization);
             assert(/[a-z]/i.test(response.body.speaker[k.Attr.Description]));
         });
 
-        // todo: Localize video.description
+        it('should localize the video description based on the lang query parameter if present', async function() {
+            const response = await request(server).get(`/videos/${videoId}`).query({lang: 'ja'}).set('authorization', authorization);
+            assert(/[^a-z]/i.test(response.body[k.Attr.Description]));
+        });
+
+        it('should localize the video description based on the user preferred interface language if the lang query parameter is missing', async function() {
+            const response = await request(server).get(`/videos/${videoId}`).set('authorization', authorization);
+            assert(/[a-z]/i.test(response.body[k.Attr.Description]));
+        });
     });
 });

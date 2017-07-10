@@ -161,6 +161,11 @@ module.exports.show = async (req, res, next) => {
                 where: {language_id: interfaceLanguageId}
             }
         }, {
+            model: db[k.Model.VideoLocalized],
+            attributes: [k.Attr.Description],
+            as: 'videos_localized',
+            where: {language_id: interfaceLanguageId}
+        }, {
             model: Language,
             attributes: [k.Attr.Name, k.Attr.Code],
             as: 'language'
@@ -198,7 +203,7 @@ module.exports.show = async (req, res, next) => {
         });
 
         video = await Video.findByPrimary(+req.params[k.Attr.Id], {
-            attributes: [k.Attr.Description, k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length],
+            attributes: [k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length],
             include: videoInclude
         });
     } catch (e) {
@@ -224,10 +229,13 @@ module.exports.show = async (req, res, next) => {
 
     video.speaker[k.Attr.Name] = _.first(video.speaker.speakers_localized)[k.Attr.Name];
     video.speaker[k.Attr.Description] = _.first(video.speaker.speakers_localized)[k.Attr.Description];
-    delete video.speaker.speakers_localized;
+    _.unset(video, 'speaker.speakers_localized');
+
+    video[k.Attr.Description] = _.first(video.videos_localized)[k.Attr.Description];
+    _.unset(video, 'videos_localized');
 
     video.subcategory[k.Attr.Name] = _.first(video.subcategory.subcategories_localized)[k.Attr.Name];
-    delete video.subcategory.subcategories_localized;
+    _.unset(video, 'subcategory.subcategories_localized');
 
     video.related_videos = _.invokeMap(relatedVideos, 'get', {
         plain: true
@@ -237,11 +245,11 @@ module.exports.show = async (req, res, next) => {
         relatedVideo.cued = relatedVideo.cued === 1;
 
         relatedVideo.speaker[k.Attr.Name] = _.first(relatedVideo.speaker.speakers_localized)[k.Attr.Name];
-        delete relatedVideo.speaker.speakers_localized;
-        delete relatedVideo.speaker[k.Attr.Id];
+        _.unset(relatedVideo, 'speaker.speakers_localized');
+        _.unset(relatedVideo, 'speaker.id');
 
         relatedVideo.subcategory[k.Attr.Name] = _.first(relatedVideo.subcategory.subcategories_localized)[k.Attr.Name];
-        delete relatedVideo.subcategory.subcategories_localized;
+        _.unset(relatedVideo, 'subcategory.subcategories_localized');
 
         return relatedVideo;
     }));
@@ -346,6 +354,16 @@ module.exports.create = async (req, res, next) => {
 
     const t2 = await db.sequelize.transaction();
     try {
+        const videosLocalized = [];
+        for (let description of req.body['descriptions']) {
+            videosLocalized.push({
+                video_id: video[k.Attr.Id],
+                language_id: description[k.Attr.LanguageId],
+                description: description[k.Attr.Description]
+            });
+        }
+        await db[k.Model.VideoLocalized].bulkCreate(videosLocalized, {transaction: t2});
+
         const unsavedTranscripts = [];
         for (let transcript of req.body['transcripts']) {
             unsavedTranscripts.push({

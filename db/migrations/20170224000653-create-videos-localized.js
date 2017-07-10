@@ -1,38 +1,42 @@
 /**
- * 20170224000651-create-videos
+ * 20170224000653-create-videos-localized
  * api.get-native.com
  *
- * Created by henryehly on 2017/02/24.
+ * Created by henryehly on 2017/07/10.
  */
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('videos', {
+        return queryInterface.createTable('videos_localized', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            length: {
+            video_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
-                defaultValue: 0
+                references: {
+                    model: 'videos',
+                    key: 'id'
+                },
+                onUpdate: 'restrict',
+                onDelete: 'restrict'
             },
-            picture_url: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                defaultValue: ''
-            },
-            loop_count: {
+            language_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
-                defaultValue: 0
+                references: {
+                    model: 'languages',
+                    key: 'id'
+                },
+                onUpdate: 'restrict',
+                onDelete: 'restrict'
             },
-            video_url: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                defaultValue: ''
+            description: {
+                type: Sequelize.TEXT,
+                allowNull: false
             },
             created_at: {
                 allowNull: false,
@@ -54,6 +58,6 @@ module.exports = {
         });
     },
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('videos');
+        return queryInterface.dropTable('videos_localized');
     }
 };

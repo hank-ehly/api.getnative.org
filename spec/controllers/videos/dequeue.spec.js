@@ -42,12 +42,12 @@ describe('POST /videos/:id/dequeue', function() {
                 const [video] = values;
                 return _.first(video);
             }).then(function(nonQueuedVideo) {
-                return db.CuedVideo.create({
+                return db[k.Model.CuedVideo].create({
                     user_id: user[k.Attr.Id],
                     video_id: nonQueuedVideo[k.Attr.Id]
                 });
             }).then(function(queuedVideo) {
-                return db.Video.findByPrimary(queuedVideo[k.Attr.VideoId]);
+                return db[k.Model.Video].findByPrimary(queuedVideo[k.Attr.VideoId]);
             }).then(function(video) {
                 sampleVideo = video;
             });
@@ -90,7 +90,7 @@ describe('POST /videos/:id/dequeue', function() {
 
         it(`should remove the video from the queue (by destroying the appropriate queued video record)`, function() {
             return request(server).post(`/videos/${sampleVideo[k.Attr.Id]}/dequeue`).set('authorization', authorization).then(function(response) {
-                return db.CuedVideo.find({
+                return db[k.Model.CuedVideo].find({
                     where: {
                         user_id: user[k.Attr.Id],
                         video_id: sampleVideo[k.Attr.Id]

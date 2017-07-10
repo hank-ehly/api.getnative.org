@@ -63,7 +63,6 @@ module.exports = {
                         max: 20000
                     }),
                     video_url: _.sample(videoUrls),
-                    description: chance.paragraph(),
                     speaker_id: chance.integer({
                         min: minSpeakerId,
                         max: maxSpeakerId

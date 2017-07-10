@@ -115,7 +115,8 @@
         "CollocationOccurrence": "CollocationOccurrence",
         "UsageExample": "UsageExample",
         "VerificationToken": "VerificationToken",
-        "Notification": "Notification"
+        "Notification": "Notification",
+        "VideoLocalized": "VideoLocalized"
     },
     "NODE_ENV": "NODE_ENV",
     "NoReply": "",
