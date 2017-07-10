@@ -416,3 +416,26 @@ module.exports.create = async (req, res, next) => {
 
     return res.status(201).send({id: video.get(k.Attr.Id)});
 };
+
+module.exports.videosLocalized = async (req, res, next) => {
+    let countAndRows;
+
+    try {
+        countAndRows = await db[k.Model.VideoLocalized].findAndCount({
+            attributes: [k.Attr.Id, k.Attr.Description, 'language_id', 'video_id'],
+            where: {video_id: req.params[k.Attr.Id]}
+        });
+    } catch (e) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    const {count, rows} = countAndRows;
+
+    const responseBody = {
+        records: _.invokeMap(rows, 'get', {plain: true}),
+        count: count
+    };
+
+    return res.status(200).send(responseBody);
+};

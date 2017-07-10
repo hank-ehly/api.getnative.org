@@ -366,6 +366,14 @@ const schema = {
             params: {
                 id: Joi.number().integer().min(1).required()
             }
+        },
+        videosLocalized: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1).required()
+            }
         }
     },
     writingQuestions: {
