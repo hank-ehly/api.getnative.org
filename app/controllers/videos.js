@@ -167,7 +167,7 @@ module.exports.show = async (req, res, next) => {
             where: {language_id: interfaceLanguageId}
         }, {
             model: Language,
-            attributes: [k.Attr.Name, k.Attr.Code],
+            attributes: [k.Attr.Id, k.Attr.Name, k.Attr.Code],
             as: 'language'
         }, {
             model: Transcript,

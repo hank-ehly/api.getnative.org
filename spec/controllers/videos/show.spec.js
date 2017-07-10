@@ -156,13 +156,13 @@ describe('GET /videos/:id', function() {
 
         it(`should contain a non-null 'picture_url' url string`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isValidURL(response.body.picture_url));
+                assert(SpecUtil.isValidURL(response.body[k.Attr.PictureUrl]));
             });
         });
 
         it(`should contain a non-null 'video_url' url string`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isValidURL(response.body.video_url));
+                assert(SpecUtil.isValidURL(response.body[k.Attr.VideoUrl]));
             });
         });
 
@@ -172,15 +172,21 @@ describe('GET /videos/:id', function() {
             });
         });
 
+        it(`should contain a 'language.id' string`, function() {
+            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
+                assert(_.isNumber(response.body.language[k.Attr.Id]));
+            });
+        });
+
         it(`should contain a 'language.name' string`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.includes(['English', '日本語'], response.body.language.name));
+                assert(_.includes(['English', '日本語'], response.body.language[k.Attr.Name]));
             });
         });
 
         it(`should contain a 'language.code' string`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.includes(['en', 'ja'], response.body.language.code));
+                assert(_.includes(['en', 'ja'], response.body.language[k.Attr.Code]));
             });
         });
 
