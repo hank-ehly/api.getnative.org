@@ -6,6 +6,7 @@
  */
 
 const config = require('../../config/application').config;
+const logger = require('../../config/logger');
 const k = require('../../config/keys.json');
 
 const _ = require('lodash');
@@ -56,8 +57,9 @@ module.exports.upload = async function(filepath, destination) {
 
     let data;
     try {
-        data = await client.bucket(k.GoogleCloud.StorageBucketName).upload(filepath, options);
+        data = await client.bucket(config.get(k.GoogleCloud.StorageBucketName)).upload(filepath, options);
     } catch (e) {
+        logger.info(e, {json: true});
         return e;
     }
 
