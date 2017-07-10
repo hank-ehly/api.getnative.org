@@ -678,6 +678,19 @@ describe('POST /videos', function() {
 
                 assert.equal(_.first(video.get('transcripts'))['collocation_occurrences'].length, eTranText.match(/{/g).length);
             });
+
+            it('should return the ID of the newly created video', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
+                const response = await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find();
+
+                assert.equal(response.body[k.Attr.Id], video.get(k.Attr.Id));
+            });
         });
 
         describe('Google Cloud Storage', function() {

@@ -414,5 +414,5 @@ module.exports.create = async (req, res, next) => {
         return next(e);
     }
 
-    return res.sendStatus(201);
+    return res.status(201).send({id: video.get(k.Attr.Id)});
 };
