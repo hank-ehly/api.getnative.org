@@ -209,8 +209,13 @@ module.exports.show = async (req, res, next) => {
             limit: 3
         });
 
+        const videoAttributes = [k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length];
+        if (await req.user.isAdmin()) {
+            videoAttributes.push(k.Attr.IsPublic);
+        }
+
         video = await Video.findByPrimary(+req.params[k.Attr.Id], {
-            attributes: [k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length],
+            attributes: videoAttributes,
             include: videoInclude
         });
     } catch (e) {

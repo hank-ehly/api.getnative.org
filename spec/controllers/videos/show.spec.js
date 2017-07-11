@@ -100,6 +100,25 @@ describe('GET /videos/:id', function() {
             });
         });
 
+        it('should not contain an "is_public" boolean by default', async function() {
+            const response = await request(server).get(`/videos/${videoId}`).set('authorization', authorization);
+            assert(!_.has(response.body), k.Attr.IsPublic);
+        });
+
+        it('should contain an "is_public" boolean if the user is an admin', function(done) {
+            this.timeout(SpecUtil.defaultTimeout);
+            server.close(function() {
+                SpecUtil.login(true).then(function(result) {
+                    authorization = result.authorization;
+                    server = result.server;
+                    request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
+                        assert(_.isBoolean(response.body[k.Attr.IsPublic]));
+                        done();
+                    }).catch(done);
+                }).catch(done);
+            });
+        });
+
         it(`should contain a non-null 'speaker' object`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
                 assert(_.isPlainObject(response.body.speaker));
