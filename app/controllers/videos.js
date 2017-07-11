@@ -348,12 +348,14 @@ module.exports.create = async (req, res, next) => {
 
     const t1 = await db.sequelize.transaction();
     try {
+        const length = await avconv.getVideoDuration(req.files.video.path);
         video = await Video.create({
             language_id: req.body[k.Attr.LanguageId],
             speaker_id: req.body[k.Attr.SpeakerId],
             subcategory_id: req.body[k.Attr.SubcategoryId],
             description: req.body[k.Attr.Description],
-            is_public: req.body[k.Attr.IsPublic] || false
+            is_public: req.body[k.Attr.IsPublic] || false,
+            length: length
         }, {transaction: t1});
         await t1.commit();
     } catch (e) {

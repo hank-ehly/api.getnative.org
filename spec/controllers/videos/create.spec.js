@@ -724,6 +724,17 @@ describe('POST /videos', function() {
                 assert.equal(video[k.Attr.IsPublic], true);
             });
 
+            it('should set the "length" of the video to the video duration in seconds', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+                const video = await db[k.Model.Video].find();
+                assert.equal(video[k.Attr.Length], 3);
+            });
+
             it('should return the ID of the newly created video', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
                 const response = await request(server)
@@ -731,9 +742,7 @@ describe('POST /videos', function() {
                     .set(k.Header.Authorization, authorization)
                     .attach('video', videoFile)
                     .field('metadata', JSON.stringify(metadata));
-
                 const video = await db[k.Model.Video].find();
-
                 assert.equal(response.body[k.Attr.Id], video.get(k.Attr.Id));
             });
         });
