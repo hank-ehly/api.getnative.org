@@ -19,6 +19,11 @@ module.exports = {
                 allowNull: false,
                 defaultValue: 0
             },
+            is_public: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: 0
+            },
             picture_url: {
                 type: Sequelize.STRING,
                 allowNull: false,

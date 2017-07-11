@@ -6,14 +6,14 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const Utility  = require('../../../app/services')['Utility'];
-const k        = require('../../../config/keys.json');
+const Utility = require('../../../app/services')['Utility'];
+const k = require('../../../config/keys.json');
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
-const request  = require('supertest');
-const assert   = require('assert');
-const _        = require('lodash');
+const request = require('supertest');
+const assert = require('assert');
+const _ = require('lodash');
 
 describe('GET /videos', function() {
     let server = null;
@@ -30,9 +30,9 @@ describe('GET /videos', function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.login().then(function(result) {
             authorization = result.authorization;
-            server        = result.server;
-            user          = result.response.body;
-            db            = result.db;
+            server = result.server;
+            user = result.response.body;
+            db = result.db;
         });
     });
 
@@ -48,6 +48,10 @@ describe('GET /videos', function() {
     describe('failure', function() {
         it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
             request(server).get('/videos').expect(401, done);
+        });
+
+        it('should return 400 Bad Request if "include_private" is not a boolean', function(done) {
+            request(server).get('/videos?include_private=notABoolean').set('authorization', authorization).expect(400, done);
         });
 
         it(`should return a 400 Bad Request response if the request contains an unidentifiable 'lang' code parameter`, function(done) {
@@ -125,6 +129,81 @@ describe('GET /videos', function() {
 
         it('should receive a 200 OK response for a valid request', function(done) {
             request(server).get('/videos').set('authorization', authorization).expect(200, done);
+        });
+
+        it('should return only public videos by default', async function() {
+            // update latest video to make it private & cache ID
+            let videos = await db[k.Model.Video].findAll({
+                order: [[k.Attr.Id, 'DESC']],
+                limit: 1
+            });
+
+            let cachedId = _.first(videos).get(k.Attr.Id);
+
+            await db[k.Model.Video].update({
+                is_public: false
+            }, {
+                where: {id: cachedId}
+            });
+
+            const response = await request(server).get('/videos').set('authorization', authorization);
+            const videoIds = _.map(response.body.records, k.Attr.Id);
+
+            // expect cached ID not to be in response
+            assert(!_.includes(videoIds, cachedId));
+        });
+
+        it('should ignore the "include_private" flag if the user does not have admin privileges', async function() {
+            let videos = await db[k.Model.Video].findAll({
+                order: [[k.Attr.Id, 'DESC']],
+                limit: 1
+            });
+
+            let cachedId = _.first(videos).get(k.Attr.Id);
+
+            await db[k.Model.Video].update({
+                is_public: false
+            }, {
+                where: {id: cachedId}
+            });
+
+            const response = await request(server).get('/videos').query({include_private: true}).set('authorization', authorization);
+            const videoIds = _.map(response.body.records, k.Attr.Id);
+
+            assert(!_.includes(videoIds, cachedId));
+        });
+
+        it('should return private videos if "include_private" is true and the user has admin privileges', function(done) {
+            this.timeout(SpecUtil.defaultTimeout);
+            // close non-admin server connection
+            server.close(async function() {
+                const adminLoginRes = await SpecUtil.login(true);
+                authorization = adminLoginRes.authorization;
+                server = adminLoginRes.server;
+                db = adminLoginRes.db;
+
+                // setup private video
+                let videos = await db[k.Model.Video].findAll({
+                    order: [[k.Attr.Id, 'DESC']],
+                    limit: 1
+                });
+
+                let cachedId = _.first(videos).get(k.Attr.Id);
+
+                await db[k.Model.Video].update({
+                    is_public: false
+                }, {
+                    where: {id: cachedId}
+                });
+
+                // make request with flag
+                const response = await request(server).get('/videos').query({include_private: true}).set('authorization', authorization);
+                const videoIds = _.map(response.body.records, k.Attr.Id);
+
+                // expect cachedId to be in response
+                assert(_.includes(videoIds, cachedId));
+                done();
+            });
         });
 
         it(`should return a 200 OK response regardless of whether the 'lang' parameter value is upper or lower case`, function(done) {
@@ -360,8 +439,6 @@ describe('GET /videos', function() {
             const response = await request(server).get(`/videos`).set('authorization', authorization);
             assert(/[a-z]/i.test(_.first(response.body.records).speaker[k.Attr.Name]));
         });
-
-        // todo e2e (check the category_id and subcategory_id don't conflict
 
         // q
         // full text search

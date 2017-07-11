@@ -22,6 +22,7 @@
         "ExampleAnswer": "example_answer",
         "Id": "id",
         "IsCompleted": "is_completed",
+        "IsPublic": "is_public",
         "IPASpelling": "ipa_spelling",
         "IsSilhouettePicture": "is_silhouette_picture",
         "LanguageId": "language_id",

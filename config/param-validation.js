@@ -283,6 +283,7 @@ const schema = {
                 subcategory_id: Joi.number().integer().min(1).required(),
                 speaker_id: Joi.number().integer().min(1).required(),
                 language_id: Joi.number().integer().min(1).required(),
+                is_public: Joi.boolean(),
                 descriptions: Joi.array().length(validLangCodes.length).items(Joi.object().keys({
                     language_id: Joi.number().integer().min(1).required(),
                     description: Joi.string().min(1).required()
@@ -309,6 +310,7 @@ const schema = {
                 count: Joi.number().integer().min(1).max(9),
                 q: Joi.string().lowercase().max(100),
                 cued_only: Joi.boolean(),
+                include_private: Joi.boolean(),
                 time_zone_offset: Joi.string().regex(regex.timeZoneOffset)
             }
         },

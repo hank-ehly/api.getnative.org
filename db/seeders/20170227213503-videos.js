@@ -57,6 +57,7 @@ module.exports = {
                         min: 30,
                         max: 150
                     }),
+                    is_public: true,
                     picture_url: 'https://dummyimage.com/450x300.png/5fa2dd/ffffff',
                     loop_count: chance.integer({
                         min: 10,

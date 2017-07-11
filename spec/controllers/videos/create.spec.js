@@ -138,6 +138,21 @@ describe('POST /videos', function() {
                     .expect(400);
             });
 
+            describe('is_public', function() {
+                after(function() {
+                    _.unset(metadata, k.Attr.IsPublic);
+                });
+                it('should return 400 Bad Request if is_public is not a boolean', function() {
+                    _.set(metadata, k.Attr.IsPublic, 'notABoolean');
+                    return request(server)
+                        .post('/videos')
+                        .set(k.Header.Authorization, authorization)
+                        .attach('video', videoFile)
+                        .field('metadata', JSON.stringify(metadata))
+                        .expect(400);
+                });
+            });
+
             describe('subcategory_id', function() {
                 it('should return 400 Bad Request if subcategory_id is not present', function() {
                     delete metadata.subcategory_id;
@@ -677,6 +692,36 @@ describe('POST /videos', function() {
                 });
 
                 assert.equal(_.first(video.get('transcripts'))['collocation_occurrences'].length, eTranText.match(/{/g).length);
+            });
+
+            it('should set the video "is_public" to false by default', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find();
+                assert.equal(video[k.Attr.IsPublic], false);
+            });
+
+            it('should set the video "is_public" to true if specified', async function() {
+                after(function() {
+                    _.unset(metadata, k.Attr.IsPublic);
+                });
+
+                this.timeout(SpecUtil.defaultTimeout);
+
+                _.set(metadata, k.Attr.IsPublic, true);
+                await request(server)
+                    .post('/videos')
+                    .set(k.Header.Authorization, authorization)
+                    .attach('video', videoFile)
+                    .field('metadata', JSON.stringify(metadata));
+
+                const video = await db[k.Model.Video].find();
+                assert.equal(video[k.Attr.IsPublic], true);
             });
 
             it('should return the ID of the newly created video', async function() {

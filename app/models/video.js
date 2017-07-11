@@ -16,6 +16,11 @@ module.exports = function(sequelize, DataTypes) {
             defaultValue: ''
         },
         loop_count: DataTypes.INTEGER,
+        is_public: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: 0
+        },
         video_url: {
             type: DataTypes.STRING,
             allowNull: false,

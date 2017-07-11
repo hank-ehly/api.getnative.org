@@ -34,6 +34,13 @@ const _ = require('lodash');
 module.exports.index = async (req, res, next) => {
     let videos, conditions = {};
 
+    _.set(conditions, k.Attr.IsPublic, true);
+    if (req.query.include_private) {
+        if (await req.user.isAdmin()) {
+            _.unset(conditions, k.Attr.IsPublic);
+        }
+    }
+
     const interfaceLanguageCode = _.defaultTo(req.query.interface_lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code));
     const interfaceLanguageId = await Language.findIdForCode(interfaceLanguageCode);
 
@@ -340,7 +347,8 @@ module.exports.create = async (req, res, next) => {
             language_id: req.body[k.Attr.LanguageId],
             speaker_id: req.body[k.Attr.SpeakerId],
             subcategory_id: req.body[k.Attr.SubcategoryId],
-            description: req.body[k.Attr.Description]
+            description: req.body[k.Attr.Description],
+            is_public: req.body[k.Attr.IsPublic] || false
         }, {transaction: t1});
         await t1.commit();
     } catch (e) {
