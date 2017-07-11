@@ -15,15 +15,10 @@ const chance      = require('chance').Chance();
 const moment      = require('moment');
 const _           = require('lodash');
 
-let videoUrls = [
-    'https://storage.googleapis.com/stg.get-native.com/test-video.mp4'
+const videoUrls = [
+    'http://techslides.com/demos/sample-videos/small.mp4',
+    'http://www.sample-videos.com/video/mp4/480/big_buck_bunny_480p_2mb.mp4'
 ];
-
-if ([k.Env.Test, k.Env.CircleCI].includes(process.env.NODE_ENV)) {
-    videoUrls = [
-        'http://techslides.com/demos/sample-videos/small.mp4'
-    ]
-}
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
