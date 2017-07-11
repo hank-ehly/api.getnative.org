@@ -6,7 +6,7 @@
  */
 
 const SpecUtil = require('../spec-util');
-const avconv = require('../../app/services')['Avconv'];
+const avconv = require('../../app/services/avconv');
 
 const assert = require('assert');
 const mocha = require('mocha');
@@ -180,6 +180,24 @@ describe('avconv', function() {
             const imageFilepath = await avconv.captureFirstFrameOfVideo(videoPath);
             const imageDimensions = await avconv.getDimensionsOfVisualMediaAtPath(imageFilepath);
             assert(_.isEqual(imageDimensions, actualDimensions));
+        });
+    });
+
+    describe('getVideoDuration', function() {
+        it('should throw a ReferenceError if no filename is provided', async function() {
+            const asyncTest = avconv.getVideoDuration.bind(null);
+            assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
+        });
+
+        it('should throw a TypeError if the provided filename is not a string', async function() {
+            const asyncTest = avconv.getVideoDuration.bind(null, _.stubObject());
+            assert(await SpecUtil.throwsAsync(asyncTest, TypeError));
+        });
+
+        it('should return the duration of the video at the specified filepath', async function() {
+            this.timeout(SpecUtil.defaultTimeout);
+            const duration = await avconv.getVideoDuration(videoPath); // Duration: 00:00:03.06
+            assert.equal(duration, 3);
         });
     });
 });

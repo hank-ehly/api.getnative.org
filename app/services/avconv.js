@@ -9,6 +9,7 @@ const randomHash = require('./auth').generateRandomHash;
 const config = require('../../config/application').config;
 const k = require('../../config/keys.json');
 
+const moment = require('moment');
 const util = require('util');
 const path = require('path');
 const exec = util.promisify(require('child_process').exec);
@@ -73,4 +74,13 @@ module.exports.captureFirstFrameOfVideo = async function(filepath) {
     await exec(`avconv -y -i ${filepath} -vframes 1 ${outputFilePath}`);
 
     return outputFilePath;
+};
+
+module.exports.getVideoDuration = async function(filepath) {
+    validateFilepath(filepath);
+
+    const {stdout} = await exec(`/usr/bin/env avconv -i ${filepath} 2>&1 | cat`);
+    const duration = _.trim(_.first(stdout.match(/[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{2}/))); // 00:00:03.06
+
+    return moment.duration(duration).seconds();
 };
