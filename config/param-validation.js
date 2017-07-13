@@ -143,6 +143,19 @@ const schema = {
             }
         }
     },
+    usageExamples: {
+        update: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1).required()
+            },
+            body: {
+                text: Joi.string().min(1).max(200)
+            }
+        }
+    },
     sessions: {
         create: {
             body: {

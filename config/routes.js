@@ -28,7 +28,7 @@ router.get(    '/oauth/facebook/callback', passport.authenticate('facebook', {fa
 router.get(    '/oauth/twitter/callback',  passport.authenticate('twitter',  {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
 router.get(    '/oauth/google/callback',   passport.authenticate('google',   {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
 
-router.post(   '/users',                                                                             ValidateParams(pv.users.create),                                           ctrl.users.create);
+router.post(   '/users',                                                                             ValidateParams(pv.users.create),                                                 ctrl.users.create);
 router.post(   '/users/password',                                                                    ValidateParams(pv.users.updatePassword),                Authenticate,            ctrl.users.updatePassword);
 router.post(   '/users/email',                                                                       ValidateParams(pv.users.updateEmail),                   Authenticate,            ctrl.users.updateEmail);
 router.get(    '/users/me',                                                                          ValidateParams(pv.users.me),                            Authenticate,            ctrl.users.show);
@@ -45,8 +45,9 @@ router.post(   '/confirm_email',                                                
 router.post(   '/collocation_occurrences/:id',                                                       ValidateParams(pv.collocationOccurrences.update),       Authenticate, AdminOnly, ctrl['collocation-occurrences'].update);
 router.get(    '/genders',                                                                           ValidateParams(pv.genders.index),                       Authenticate, AdminOnly, ctrl.genders.index);
 router.get(    '/languages',                                                                         ValidateParams(pv.languages.index),                     Authenticate, AdminOnly, ctrl.languages.index);
-router.post(   '/resend_confirmation_email',                                                         ValidateParams(pv.auth.resendConfirmationEmail),                           ctrl.auth.resendConfirmationEmail);
-router.post(   '/sessions',                                                                          ValidateParams(pv.sessions.create),                                        ctrl.sessions.create);
+router.post(   '/usage_examples/:id',                                                                ValidateParams(pv.usageExamples.update),                Authenticate, AdminOnly, ctrl['usage-examples'].update);
+router.post(   '/resend_confirmation_email',                                                         ValidateParams(pv.auth.resendConfirmationEmail),                                 ctrl.auth.resendConfirmationEmail);
+router.post(   '/sessions',                                                                          ValidateParams(pv.sessions.create),                                              ctrl.sessions.create);
 router.post(   '/study',                                                                             ValidateParams(pv.study.createStudySession),            Authenticate,            ctrl.study.createStudySession);
 router.post(   '/study/complete',                                                                    ValidateParams(pv.study.complete),                      Authenticate,            ctrl.study.complete);
 router.get(    '/study/:lang/stats',                                                                 ValidateParams(pv.study.stats),                         Authenticate,            ctrl.study.stats);
