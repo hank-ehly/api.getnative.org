@@ -5,21 +5,18 @@
  * Created by henryehly on 2017/01/18.
  */
 
-const router         = require('express').Router();
-const ctrl           = require('../app/controllers');
-const pv             = require('./param-validation');
-const k              = require('../config/keys.json');
-const middleware     = require('../app/middleware');
-const ValidateParams = middleware['ValidateRequestParameters'];
-const Authenticate   = middleware['Authenticate'];
-const AdminOnly      = middleware['AdminOnly'];
-const FormParser     = middleware['FormParser'];
+const router          = require('express').Router();
+const ctrl            = require('../app/controllers');
+const pv              = require('./param-validation');
+const k               = require('../config/keys.json');
+const middleware      = require('../app/middleware');
+const ValidateParams  = middleware['ValidateRequestParameters'];
+const Authenticate    = middleware['Authenticate'];
+const AdminOnly       = middleware['AdminOnly'];
+const FormParser      = middleware['FormParser'];
 const ExtractMetadata = middleware['ExtractJsonMetadata'];
 
-const passport       = require('passport');
-
-// todo: Combine with /users/password
-router.patch('/users', ValidateParams(pv.users.update),  Authenticate, ctrl.users.update);
+const passport        = require('passport');
 
 router.get(    '/oauth/facebook',          passport.authenticate('facebook', {scope: ['public_profile', 'email']}));
 router.get(    '/oauth/twitter',           passport.authenticate('twitter',  {scope: ['public_profile', 'email']}));
@@ -28,10 +25,6 @@ router.get(    '/oauth/facebook/callback', passport.authenticate('facebook', {fa
 router.get(    '/oauth/twitter/callback',  passport.authenticate('twitter',  {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
 router.get(    '/oauth/google/callback',   passport.authenticate('google',   {failureRedirect: k.Client.BaseURI}), ctrl.oauth.callback);
 
-router.post(   '/users',                                                                             ValidateParams(pv.users.create),                                                 ctrl.users.create);
-router.post(   '/users/password',                                                                    ValidateParams(pv.users.updatePassword),                Authenticate,            ctrl.users.updatePassword);
-router.post(   '/users/email',                                                                       ValidateParams(pv.users.updateEmail),                   Authenticate,            ctrl.users.updateEmail);
-router.get(    '/users/me',                                                                          ValidateParams(pv.users.me),                            Authenticate,            ctrl.users.show);
 router.get(    '/categories',                                                                        ValidateParams(pv.categories.index),                    Authenticate,            ctrl.categories.index);
 router.post(   '/categories',                                                                        ValidateParams(pv.categories.create),                   Authenticate, AdminOnly, ctrl.categories.create);
 router.get(    '/categories/:id',                                                                    ValidateParams(pv.categories.show),                     Authenticate, AdminOnly, ctrl.categories.show);
@@ -45,7 +38,6 @@ router.post(   '/confirm_email',                                                
 router.post(   '/collocation_occurrences/:id',                                                       ValidateParams(pv.collocationOccurrences.update),       Authenticate, AdminOnly, ctrl['collocation-occurrences'].update);
 router.get(    '/genders',                                                                           ValidateParams(pv.genders.index),                       Authenticate, AdminOnly, ctrl.genders.index);
 router.get(    '/languages',                                                                         ValidateParams(pv.languages.index),                     Authenticate, AdminOnly, ctrl.languages.index);
-router.post(   '/usage_examples/:id',                                                                ValidateParams(pv.usageExamples.update),                Authenticate, AdminOnly, ctrl['usage-examples'].update);
 router.post(   '/resend_confirmation_email',                                                         ValidateParams(pv.auth.resendConfirmationEmail),                                 ctrl.auth.resendConfirmationEmail);
 router.post(   '/sessions',                                                                          ValidateParams(pv.sessions.create),                                              ctrl.sessions.create);
 router.post(   '/study',                                                                             ValidateParams(pv.study.createStudySession),            Authenticate,            ctrl.study.createStudySession);
@@ -60,6 +52,12 @@ router.patch(  '/speakers/:id',                                                 
 router.post(   '/speakers/:id/picture',   FormParser,                                                ValidateParams(pv.speakers.picture),                    Authenticate, AdminOnly, ctrl.speakers.picture);
 router.get(    '/speakers/:id/speakers_localized',                                                   ValidateParams(pv.speakersLocalized.show),              Authenticate, AdminOnly, ctrl['speakers-localized'].show);
 router.patch(  '/subcategories/:subcategory_id/subcategories_localized/:subcategories_localized_id', ValidateParams(pv.subcategoriesLocalized.update),       Authenticate, AdminOnly, ctrl['subcategories-localized'].update);
+router.post(   '/usage_examples/:id',                                                                ValidateParams(pv.usageExamples.update),                Authenticate, AdminOnly, ctrl['usage-examples'].update);
+router.post(   '/users',                                                                             ValidateParams(pv.users.create),                                                 ctrl.users.create);
+router.patch(  '/users',                                                                             ValidateParams(pv.users.update),                        Authenticate,            ctrl.users.update);
+router.post(   '/users/password',                                                                    ValidateParams(pv.users.updatePassword),                Authenticate,            ctrl.users.updatePassword);
+router.post(   '/users/email',                                                                       ValidateParams(pv.users.updateEmail),                   Authenticate,            ctrl.users.updateEmail);
+router.get(    '/users/me',                                                                          ValidateParams(pv.users.me),                            Authenticate,            ctrl.users.show);
 router.get(    '/videos/:id/writing_questions',                                                      ValidateParams(pv.writingQuestions.index),              Authenticate,            ctrl['writing-questions'].index);
 router.get(    '/videos',                                                                            ValidateParams(pv.videos.index),                        Authenticate,            ctrl.videos.index);
 router.post(   '/videos',                 FormParser, ExtractMetadata,                               ValidateParams(pv.videos.create),                       Authenticate, AdminOnly, ctrl.videos.create);
