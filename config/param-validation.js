@@ -187,6 +187,23 @@ const schema = {
                 })).required()
             }
         },
+        update: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1)
+            },
+            body: {
+                gender_id: Joi.number().integer().min(1),
+                localizations: Joi.array().max(validLangCodes.length).items(Joi.object().keys({
+                    id: Joi.number().integer().min(1).required(),
+                    description: Joi.string().min(1).max(1000),
+                    location: Joi.string().min(1).max(100),
+                    name: Joi.string().min(1).max(100)
+                }))
+            }
+        },
         show: {
             headers: {
                 authorization: Joi.string().required()

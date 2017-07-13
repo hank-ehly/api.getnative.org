@@ -111,13 +111,14 @@ module.exports.show = async (req, res, next) => {
 };
 
 module.exports.create = async (req, res, next) => {
-    let speaker, speakersLocalized = [];
+    let speaker;
 
     const t = await db.sequelize.transaction();
 
     try {
         speaker = await Speaker.create({gender_id: req.body[k.Attr.GenderId]}, {transaction: t});
 
+        const speakersLocalized = [];
         for (let localization of req.body['localizations']) {
             speakersLocalized.push({
                 speaker_id: speaker.get(k.Attr.Id),
@@ -141,4 +142,40 @@ module.exports.create = async (req, res, next) => {
     }
 
     return res.status(201).send({id: speaker.get(k.Attr.Id)});
+};
+
+module.exports.update = async (req, res, next) => {
+    if (_.size(req.body) === 0) {
+        return res.sendStatus(304);
+    }
+
+    const t = await db.sequelize.transaction();
+    const speakerUpdates = _.pick(req.body, [k.Attr.GenderId]);
+
+    try {
+        if (_.size(speakerUpdates) > 0) {
+            await Speaker.update(speakerUpdates, {
+                where: {id: req.params[k.Attr.Id]},
+                transaction: t
+            });
+        }
+
+        if (_.has(req.body, 'localizations') && _.size(req.body['localizations']) > 0) {
+            for (let localization of req.body['localizations']) {
+                let changes = _.pick(localization, [k.Attr.Description, k.Attr.Location, k.Attr.Name]);
+                await SpeakerLocalized.update(changes, {
+                    where: {id: localization[k.Attr.Id]},
+                    transaction: t
+                });
+            }
+        }
+
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    return res.sendStatus(204);
 };

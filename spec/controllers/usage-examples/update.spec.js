@@ -75,10 +75,6 @@ describe('POST /usage_examples/:id', function() {
             const longString = _.times(201, _.constant('x')).join('');
             return request(server).post(`/usage_examples/${usageExample.get(k.Attr.Id)}`).set(k.Header.Authorization, authorization).send({text: longString}).expect(400);
         });
-
-        it('should respond with 304 if the request body is empty', function() {
-            return request(server).post(`/usage_examples/${usageExample.get(k.Attr.Id)}`).set(k.Header.Authorization, authorization).send({}).expect(304);
-        });
     });
 
     describe('success', function() {
@@ -94,6 +90,10 @@ describe('POST /usage_examples/:id', function() {
 
         it('should return a 204 response for a valid request', function() {
             return request(server).post(`/usage_examples/${usageExample.get(k.Attr.Id)}`).set(k.Header.Authorization, authorization).send(validBody).expect(204);
+        });
+
+        it('should respond with 304 if the request body is empty', function() {
+            return request(server).post(`/usage_examples/${usageExample.get(k.Attr.Id)}`).set(k.Header.Authorization, authorization).send({}).expect(304);
         });
 
         it('should update the "text" property of the UsageExample record', async function() {

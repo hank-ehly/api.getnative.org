@@ -37,10 +37,10 @@ describe('POST /speakers', function() {
         if (!genders) {
             genders = await db[k.Model.Gender].findAll();
         }
-        newSpeaker = await buildUniqueRequest();
+        newSpeaker = buildUniqueRequest();
     });
 
-    async function buildUniqueRequest() {
+    function buildUniqueRequest() {
         const localizations = [];
 
         for (let language of languages) {

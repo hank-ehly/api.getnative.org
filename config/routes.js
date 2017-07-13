@@ -56,7 +56,8 @@ router.post(   '/study/writing_answers',                                        
 router.get(    '/speakers',                                                                          ValidateParams(pv.speakers.index),                      Authenticate, AdminOnly, ctrl.speakers.index);
 router.post(   '/speakers',                                                                          ValidateParams(pv.speakers.create),                     Authenticate, AdminOnly, ctrl.speakers.create);
 router.get(    '/speakers/:id',                                                                      ValidateParams(pv.speakers.show),                       Authenticate,            ctrl.speakers.show);
-router.get(    '/speakers/:id/speakers_localized',                                                   ValidateParams(pv.speakersLocalized.show),              Authenticate,            ctrl['speakers-localized'].show);
+router.patch(  '/speakers/:id',                                                                      ValidateParams(pv.speakers.update),                     Authenticate, AdminOnly, ctrl.speakers.update);
+router.get(    '/speakers/:id/speakers_localized',                                                   ValidateParams(pv.speakersLocalized.show),              Authenticate, AdminOnly, ctrl['speakers-localized'].show);
 router.patch(  '/subcategories/:subcategory_id/subcategories_localized/:subcategories_localized_id', ValidateParams(pv.subcategoriesLocalized.update),       Authenticate, AdminOnly, ctrl['subcategories-localized'].update);
 router.get(    '/videos/:id/writing_questions',                                                      ValidateParams(pv.writingQuestions.index),              Authenticate,            ctrl['writing-questions'].index);
 router.get(    '/videos',                                                                            ValidateParams(pv.videos.index),                        Authenticate,            ctrl.videos.index);
