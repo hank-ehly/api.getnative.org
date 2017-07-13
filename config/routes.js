@@ -60,6 +60,7 @@ router.get(    '/videos',                                                       
 router.post(   '/videos',                 FormParser, ExtractMetadata,                               ValidateParams(pv.videos.create),                 Authenticate, AdminOnly, ctrl.videos.create);
 router.get(    '/videos/:id',                                                                        ValidateParams(pv.videos.show),                   Authenticate,            ctrl.videos.show);
 router.get(    '/videos/:id/videos_localized',                                                       ValidateParams(pv.videos.videosLocalized),        Authenticate, AdminOnly, ctrl.videos.videosLocalized);
+router.get(    '/videos/:id/collocation_occurrences',                                                ValidateParams(pv.videos.collocationOccurrences), Authenticate, AdminOnly, ctrl.videos.collocationOccurrences);
 router.post(   '/videos/:id/dequeue',                                                                ValidateParams(pv.videos.dequeue),                Authenticate,            ctrl.videos.dequeue);
 router.post(   '/videos/:id/like',                                                                   ValidateParams(pv.videos.like),                   Authenticate,            ctrl.videos.like);
 router.post(   '/videos/:id/queue',                                                                  ValidateParams(pv.videos.queue),                  Authenticate,            ctrl.videos.queue);

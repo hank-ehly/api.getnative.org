@@ -6,39 +6,56 @@
  */
 
 const k = require('../../config/keys.json');
-const Transcript = require('../../app/models')[k.Model.Transcript];
+const db = require('../../app/models');
+const jaCorpus = require('../fixtures/ja-corpus.json');
+const enWords = require('../fixtures/en-words.json');
 
 const chance = require('chance').Chance();
 
+function getJACollocation() {
+    let phrase = chance.pickone(jaCorpus);
+    let to = chance.natural({
+        min: 2,
+        max: Math.floor(phrase.length / 4)
+    });
+    return phrase.substring(0, to);
+}
+
+function getENCollocation() {
+    const count = chance.natural({
+        min: 1,
+        max: 4
+    });
+    return chance.pickset(enWords, count).join(' ');
+}
+
 module.exports = {
-    up: function(queryInterface, Sequelize) {
-        return Promise.all([Transcript.min(k.Attr.Id), Transcript.max(k.Attr.Id)]).then(values => {
-            const [minTranscriptId, maxTranscriptId] = values;
-            const occurrences = [];
-            const ipa_pool = 'ɑæɐɑ̃βɓʙɕçðd͡ʒɖɗəɚɵɘɛɜɝɛ̃ɞɠʛɢɥɦɧħʜɪɪ̈ɨʝɟʄɫʟɬɭɮɱŋɲɴɳɔœøɒɔ̃ɶɸɐɾʁɹɻʀɽɺʃʂθt͡ʃt͡sʈʊʊ̈ʉʌʋⱱʍɯɰχʎʏʏɤɣʒʐʑʔʕʢʡ';
+    up: async function(queryInterface, Sequelize) {
+        const occurrences = [];
+        const ipa_pool = 'ɑæɐɑ̃βɓʙɕçðd͡ʒɖɗəɚɵɘɛɜɝɛ̃ɞɠʛɢɥɦɧħʜɪɪ̈ɨʝɟʄɫʟɬɭɮɱŋɲɴɳɔœøɒɔ̃ɶɸɐɾʁɹɻʀɽɺʃʂθt͡ʃt͡sʈʊʊ̈ʉʌʋⱱʍɯɰχʎʏʏɤɣʒʐʑʔʕʢʡ';
 
-            for (let i = minTranscriptId; i <= maxTranscriptId; i++) {
-                let numOccurrences = chance.integer({
-                    min: 5,
-                    max: 10
-                });
-
-                for (let j = 0; j < numOccurrences; j++) {
-                    occurrences.push({
-                        text: chance.sentence({
-                            words: chance.integer({
-                                min: 1,
-                                max: 4
-                            })
-                        }),
-                        transcript_id: i,
-                        ipa_spelling: chance.string({pool: ipa_pool})
-                    });
-                }
+        const transcripts = await db[k.Model.Transcript].findAll({
+            attributes: [k.Attr.Id],
+            include: {
+                model: db[k.Model.Language],
+                attributes: [k.Attr.Code],
+                as: 'language'
             }
-
-            return queryInterface.bulkInsert('collocation_occurrences', occurrences);
         });
+
+        for (let transcript of transcripts) {
+            const numberOfOccurrences = chance.natural({min: 5, max: 10});
+            for (let i = 0; i < numberOfOccurrences; i++) {
+                let text = transcript.get('language').get(k.Attr.Code) === 'ja' ? getJACollocation() : getENCollocation();
+                occurrences.push({
+                    transcript_id: transcript.get(k.Attr.Id),
+                    ipa_spelling: chance.string({pool: ipa_pool}),
+                    text: text
+                });
+            }
+        }
+
+        return queryInterface.bulkInsert('collocation_occurrences', occurrences);
     },
 
     down: function(queryInterface, Sequelize) {

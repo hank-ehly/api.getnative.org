@@ -275,6 +275,14 @@ const schema = {
         }
     },
     videos: {
+        collocationOccurrences: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1).required()
+            }
+        },
         create: {
             headers: {
                 authorization: Joi.string().required()
