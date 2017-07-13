@@ -14,7 +14,7 @@ const assert = require('assert');
 const request = require('supertest');
 const _ = require('lodash');
 
-describe('GET /collocation_occurrences', function() {
+describe('GET /videos/:id/collocation_occurrences', function() {
     let authorization = null;
     let server = null;
     let video = null;

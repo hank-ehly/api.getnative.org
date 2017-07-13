@@ -455,7 +455,9 @@ module.exports.videosLocalized = async (req, res, next) => {
     return res.status(200).send(responseBody);
 };
 
-module.exports.collocationOccurrences = async (req, res, next) => {
+module.exports.collocationOccurrences = {};
+
+module.exports.collocationOccurrences.index = async (req, res, next) => {
     let video;
 
     try {
