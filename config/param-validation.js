@@ -204,6 +204,17 @@ const schema = {
                 }))
             }
         },
+        picture: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1)
+            },
+            files: {
+                picture: Joi.object().required()
+            }
+        },
         show: {
             headers: {
                 authorization: Joi.string().required()

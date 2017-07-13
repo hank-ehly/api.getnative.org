@@ -21,9 +21,7 @@ module.exports = {
                 let gender = _.sample(genders);
 
                 speakers.push({
-                    gender_id: gender.get(k.Attr.Id),
-                    picture_url: 'https://dummyimage.com/100x100.png/5fa2dd/ffffff',
-                    is_silhouette_picture: chance.bool()
+                    gender_id: gender.get(k.Attr.Id)
                 });
             }
 

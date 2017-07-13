@@ -10,7 +10,10 @@ const db = require('../models');
 const Speaker = db[k.Model.Speaker];
 const Language = db[k.Model.Language];
 const SpeakerLocalized = db[k.Model.SpeakerLocalized];
-const GetNativeError = require('../services')['GetNativeError'];
+const GetNativeError = require('../services/get-native-error');
+const Utility = require('../services/utility');
+const Storage = require('../services/storage');
+const config = require('../../config/application').config;
 
 const _ = require('lodash');
 
@@ -178,4 +181,21 @@ module.exports.update = async (req, res, next) => {
     }
 
     return res.sendStatus(204);
+};
+
+module.exports.picture = async (req, res, next) => {
+    let pictureUrl;
+    const speakerId = req.params[k.Attr.Id];
+    const hash = Utility.getHashForId(_.toNumber(speakerId));
+
+    try {
+        const destination = `speakers/${hash}${config.get(k.ImageFileExtension)}`;
+        await Storage.upload(req.files.picture.path, destination);
+        pictureUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/speakers/${hash}.jpg`;
+        await Speaker.update({is_silhouette_picture: false, picture_url: pictureUrl}, {where: {id: speakerId}});
+    } catch (e) {
+        return next(e);
+    }
+
+    return res.status(200).send({picture_url: pictureUrl});
 };
