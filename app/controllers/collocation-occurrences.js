@@ -35,3 +35,31 @@ module.exports.update = async (req, res, next) => {
 
     return res.sendStatus(204);
 };
+
+module.exports.show = async (req, res, next) => {
+    let col;
+
+    try {
+        col = await db[k.Model.CollocationOccurrence].findByPrimary(req.params[k.Attr.Id], {
+            include: {
+                model: db[k.Model.UsageExample],
+                attributes: [k.Attr.Id, k.Attr.Text],
+                as: 'usage_examples'
+            }
+        });
+    } catch (e) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    if (!col) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    col = col.get({plain: true});
+
+    _.set(col, 'usage_examples', _.zipObject(['records', 'count'], [col.usage_examples, col.usage_examples.length]));
+
+    return res.send(col);
+};

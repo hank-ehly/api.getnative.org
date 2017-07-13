@@ -36,6 +36,7 @@ router.patch(  '/categories/:category_id/subcategories/:subcategory_id',        
 router.delete( '/categories/:category_id/subcategories/:subcategory_id',                             ValidateParams(pv.subcategories.delete),                Authenticate, AdminOnly, ctrl.subcategories.delete);
 router.post(   '/confirm_email',                                                                     ValidateParams(pv.auth.confirmEmail),                                            ctrl.auth.confirmEmail);
 router.post(   '/collocation_occurrences/:id',                                                       ValidateParams(pv.collocationOccurrences.update),       Authenticate, AdminOnly, ctrl['collocation-occurrences'].update);
+router.get(    '/collocation_occurrences/:id',                                                       ValidateParams(pv.collocationOccurrences.show),         Authenticate, AdminOnly, ctrl['collocation-occurrences'].show);
 router.get(    '/genders',                                                                           ValidateParams(pv.genders.index),                       Authenticate, AdminOnly, ctrl.genders.index);
 router.get(    '/languages',                                                                         ValidateParams(pv.languages.index),                     Authenticate, AdminOnly, ctrl.languages.index);
 router.post(   '/resend_confirmation_email',                                                         ValidateParams(pv.auth.resendConfirmationEmail),                                 ctrl.auth.resendConfirmationEmail);
