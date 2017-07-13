@@ -173,6 +173,20 @@ const schema = {
                 lang: Joi.string().lowercase().valid(validLangCodes)
             }
         },
+        create: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            body: {
+                gender_id: Joi.number().integer().min(1).required(),
+                localizations: Joi.array().length(validLangCodes.length).items(Joi.object().keys({
+                    language_id: Joi.number().integer().min(1).required(),
+                    description: Joi.string().min(1).max(1000).required(),
+                    location: Joi.string().min(1).max(100).required(),
+                    name: Joi.string().min(1).max(100).required()
+                })).required()
+            }
+        },
         show: {
             headers: {
                 authorization: Joi.string().required()

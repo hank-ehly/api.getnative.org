@@ -20,6 +20,7 @@
         "EmailNotificationsEnabled": "email_notifications_enabled",
         "EmailVerified": "email_verified",
         "ExampleAnswer": "example_answer",
+        "GenderId": "gender_id",
         "Id": "id",
         "IsCompleted": "is_completed",
         "IsPublic": "is_public",

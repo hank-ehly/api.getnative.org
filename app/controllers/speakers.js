@@ -109,3 +109,36 @@ module.exports.show = async (req, res, next) => {
 
     res.send(speaker);
 };
+
+module.exports.create = async (req, res, next) => {
+    let speaker, speakersLocalized = [];
+
+    const t = await db.sequelize.transaction();
+
+    try {
+        speaker = await Speaker.create({gender_id: req.body[k.Attr.GenderId]}, {transaction: t});
+
+        for (let localization of req.body['localizations']) {
+            speakersLocalized.push({
+                speaker_id: speaker.get(k.Attr.Id),
+                language_id: localization[k.Attr.LanguageId],
+                description: localization[k.Attr.Description],
+                location: localization[k.Attr.Location],
+                name: localization[k.Attr.Name]
+            });
+        }
+
+        await db[k.Model.SpeakerLocalized].bulkCreate(speakersLocalized, {transaction: t});
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    if (!speaker) {
+        throw new ReferenceError('speaker variable is undefined');
+    }
+
+    return res.status(201).send({id: speaker.get(k.Attr.Id)});
+};
