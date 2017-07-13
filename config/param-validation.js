@@ -116,6 +116,19 @@ const schema = {
             }
         }
     },
+    collocationOccurrences: {
+        update: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1).required()
+            },
+            body: {
+                ipa_spelling: Joi.string().min(1).max(100)
+            }
+        }
+    },
     genders: {
         index: {
             headers: {
