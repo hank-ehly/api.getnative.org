@@ -63,12 +63,12 @@ describe('POST /usage_examples/:id', function() {
             return request(server).post(`/usage_examples/${Math.pow(10, 6)}`).set(k.Header.Authorization, authorization).send(validBody).expect(404);
         });
 
-        it('should respond with 400 Bad Request if the "text" parameter is an empty string', function() {
-            return request(server).post(`/usage_examples/${usageExample.get(k.Attr.Id)}`).set(k.Header.Authorization, authorization).send({text: _.stubString()}).expect(400);
-        });
-
         it('should respond with 400 Bad Request if the "text" parameter is not a string', function() {
             return request(server).post(`/usage_examples/${usageExample.get(k.Attr.Id)}`).set(k.Header.Authorization, authorization).send({text: _.stubObject()}).expect(400);
+        });
+
+        it('should respond with 400 Bad Request if the "text" parameter is an empty string', function() {
+            return request(server).post(`/usage_examples/${usageExample.get(k.Attr.Id)}`).set(k.Header.Authorization, authorization).send({text: _.stubString()}).expect(400);
         });
 
         it('should respond with 400 Bad Request if the "text" parameter is longer than 200 chars', function() {
