@@ -38,6 +38,27 @@ module.exports.create = async (req, res, next) => {
     return res.status(201).send(responseBody);
 };
 
+module.exports.delete = async (req, res, next) => {
+    let rowsAffected;
+
+    try {
+        rowsAffected = await db[k.Model.UsageExample].destroy({
+            where: {
+                id: req.params[k.Attr.Id]
+            }
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!rowsAffected) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    return res.sendStatus(204);
+};
+
 module.exports.update = async (req, res, next) => {
     if (_.size(req.body) === 0) {
         return res.sendStatus(304);

@@ -55,6 +55,7 @@ router.post(   '/speakers/:id/picture',   FormParser,                           
 router.get(    '/speakers/:id/speakers_localized',                                                   ValidateParams(pv.speakersLocalized.show),              Authenticate, AdminOnly, ctrl['speakers-localized'].show);
 router.patch(  '/subcategories/:subcategory_id/subcategories_localized/:subcategories_localized_id', ValidateParams(pv.subcategoriesLocalized.update),       Authenticate, AdminOnly, ctrl['subcategories-localized'].update);
 router.patch(  '/usage_examples/:id',                                                                ValidateParams(pv.usageExamples.update),                Authenticate, AdminOnly, ctrl['usage-examples'].update);
+router.delete( '/usage_examples/:id',                                                                ValidateParams(pv.usageExamples.delete),                Authenticate, AdminOnly, ctrl['usage-examples'].delete);
 router.post(   '/users',                                                                             ValidateParams(pv.users.create),                                                 ctrl.users.create);
 router.patch(  '/users',                                                                             ValidateParams(pv.users.update),                        Authenticate,            ctrl.users.update);
 router.post(   '/users/password',                                                                    ValidateParams(pv.users.updatePassword),                Authenticate,            ctrl.users.updatePassword);
