@@ -214,6 +214,14 @@ const schema = {
                 })).required()
             }
         },
+        delete: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1)
+            }
+        },
         update: {
             headers: {
                 authorization: Joi.string().required()

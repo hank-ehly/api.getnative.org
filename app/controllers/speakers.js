@@ -199,3 +199,37 @@ module.exports.picture = async (req, res, next) => {
 
     return res.status(200).send({picture_url: pictureUrl});
 };
+
+module.exports.delete = async (req, res, next) => {
+    const t = await db.sequelize.transaction();
+
+    try {
+        await SpeakerLocalized.destroy({
+            where: {
+                speaker_id: req.params[k.Attr.Id]
+            },
+            transaction: t
+        });
+
+        await Speaker.destroy({
+            where: {
+                id: req.params[k.Attr.Id]
+            },
+            transaction: t,
+            limit: 1
+        });
+
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+
+        if (e instanceof db.sequelize.ForeignKeyConstraintError) {
+            res.status(422);
+            return next(new GetNativeError(k.Error.ForeignKeyConstraintError))
+        }
+
+        return next(e);
+    }
+
+    return res.sendStatus(204);
+};
