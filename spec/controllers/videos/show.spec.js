@@ -143,10 +143,9 @@ describe('GET /videos/:id', function() {
             });
         });
 
-        it(`should contain a non-null 'speaker.picture_url' url string`, function() {
-            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isValidURL(response.body.speaker.picture_url));
-            });
+        it(`should contain a non-null 'speaker.picture_url' url string`, async function() {
+            const response = await request(server).get(`/videos/${videoId}`).set('authorization', authorization);
+            assert(_.isString(response.body.speaker[k.Attr.PictureUrl]));
         });
 
         it(`should contain a non-null 'subcategory' object`, function() {

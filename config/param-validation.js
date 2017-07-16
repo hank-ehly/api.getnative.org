@@ -397,14 +397,38 @@ const schema = {
                 speaker_id: Joi.number().integer().min(1).required(),
                 language_id: Joi.number().integer().min(1).required(),
                 is_public: Joi.boolean(),
-                descriptions: Joi.array().length(validLangCodes.length).items(Joi.object().keys({
+                localizations: Joi.array().length(validLangCodes.length).items(Joi.object().keys({
                     language_id: Joi.number().integer().min(1).required(),
-                    description: Joi.string().min(1).required()
-                })).required(),
-                transcripts: Joi.array().length(validLangCodes.length).items(Joi.object().keys({
-                    language_id: Joi.number().integer().min(1).required(),
-                    text: Joi.string().min(1).required()
+                    description: Joi.string().min(1).required(),
+                    transcript: Joi.string().min(1).required()
                 })).required()
+            }
+        },
+        update: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1).required()
+            },
+            body: {
+                subcategory_id: Joi.number().integer().min(1),
+                speaker_id: Joi.number().integer().min(1),
+                language_id: Joi.number().integer().min(1),
+                is_public: Joi.boolean(),
+                localizations: Joi.array().length(validLangCodes.length).items(Joi.object().keys({
+                    id: Joi.number().integer().min(1).required(),
+                    description: Joi.string().min(1),
+                    transcript: Joi.string().min(1)
+                }))
+            }
+        },
+        upload: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            params: {
+                id: Joi.number().integer().min(1).required()
             },
             files: {
                 video: Joi.object().required()

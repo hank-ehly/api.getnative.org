@@ -20,7 +20,6 @@ const fs = require('fs');
 const _ = require('lodash');
 
 describe('POST /videos', function() {
-    const videoFile = path.resolve(__dirname, '..', '..', 'fixtures', '1080x720.mov');
     const eDescription = chance.paragraph({sentences: 2});
     const jDescription = 'ローラという名は米国のテレビドラマ『大草原の小さな家』の登場人物「ローラ」に由来する。幼少の頃に両親が離婚。実父とともに実父の再婚相手となった中国人の継母と生活して育った。';
     const eTranText = `
@@ -38,9 +37,9 @@ describe('POST /videos', function() {
         物事を考えて独立して生活できなくなる危険性もあると思います。私は元々アメリカに住んでいたが、二十歳で日本に引っ越したのです。日本はいい国だが、人はアメリカより
         排他的で、孤独になりやすいタイプだと思います。
     `;
-    let authorization, server, db, metadata;
+    let authorization, server, db, body;
 
-    async function setupRequestMetadata() {
+    async function setupRequestBody() {
         const eLang = await db[k.Model.Language].find({where: {code: 'en'}});
         const jLang = await db[k.Model.Language].find({where: {code: 'ja'}});
         const aSubcategory = await db[k.Model.Subcategory].find();
@@ -49,23 +48,16 @@ describe('POST /videos', function() {
             subcategory_id: aSubcategory.get(k.Attr.Id),
             speaker_id: aSpeaker.get(k.Attr.Id),
             language_id: eLang.get(k.Attr.Id),
-            descriptions: [
+            localizations: [
                 {
                     language_id: eLang.get(k.Attr.Id),
-                    description: eDescription
+                    description: eDescription,
+                    transcript: eTranText
                 },
                 {
                     language_id: jLang.get(k.Attr.Id),
-                    description: jDescription
-                }
-            ],
-            transcripts: [
-                {
-                    language_id: eLang.get(k.Attr.Id),
-                    text: eTranText
-                }, {
-                    language_id: jLang.get(k.Attr.Id),
-                    text: jTranText
+                    description: jDescription,
+                    transcript: jTranText
                 }
             ]
         };
@@ -97,7 +89,7 @@ describe('POST /videos', function() {
         db = results.db;
 
         await destroyAllVideos();
-        metadata = await setupRequestMetadata();
+        body = await setupRequestBody();
     });
 
     afterEach(function(done) {
@@ -110,445 +102,181 @@ describe('POST /videos', function() {
     });
 
     describe('failure', function() {
-        describe('video', function() {
-            it('should return 400 Bad Request if the video field is missing', function() {
-                return request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .field('metadata', JSON.stringify(metadata))
-                    .expect(400);
+        describe('is_public', function() {
+            after(function() {
+                _.unset(body, k.Attr.IsPublic);
+            });
+
+            it('should return 400 Bad Request if is_public is not a boolean', function() {
+                _.set(body, k.Attr.IsPublic, 'notABoolean');
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
         });
 
-        describe('metadata', function() {
-            it('should return 400 Bad Request if the metadata field is missing', function() {
-                return request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .expect(400);
+        describe('subcategory_id', function() {
+            it('should return 400 Bad Request if subcategory_id is not present', function() {
+                delete body.subcategory_id;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
-            it('should return 400 Bad Request if the metadata field is not a parsable JSON object', function() {
-                return request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', '["foo": "bar"}')
-                    .expect(400);
+            it('should return 400 Bad Request if subcategory_id is not a number', function() {
+                body.subcategory_id = 'not_a_number';
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
-            describe('is_public', function() {
-                after(function() {
-                    _.unset(metadata, k.Attr.IsPublic);
-                });
-                it('should return 400 Bad Request if is_public is not a boolean', function() {
-                    _.set(metadata, k.Attr.IsPublic, 'notABoolean');
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
+            it('should return 400 Bad Request if subcategory_id is 0', function() {
+                body.subcategory_id = 0;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
-            describe('subcategory_id', function() {
-                it('should return 400 Bad Request if subcategory_id is not present', function() {
-                    delete metadata.subcategory_id;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
+            it('should return 404 Not Found if the subcategory_id does not correspond to an existing Subcategory record', function() {
+                body.subcategory_id = Math.pow(10, 5);
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(404);
+            });
+        });
 
-                it('should return 400 Bad Request if subcategory_id is not a number', function() {
-                    metadata.subcategory_id = 'not_a_number';
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if subcategory_id is 0', function() {
-                    metadata.subcategory_id = 0;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 404 Not Found if the subcategory_id does not correspond to an existing Subcategory record', function() {
-                    metadata.subcategory_id = Math.pow(10, 5);
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(404);
-                });
+        describe('language_id', function() {
+            it('should return 400 Bad Request if language_id is not present', function() {
+                delete body.language_id;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
-            describe('language_id', function() {
-                it('should return 400 Bad Request if language_id is not present', function() {
-                    delete metadata.language_id;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if language_id is not a number', function() {
-                    metadata.language_id = 'not_a_number';
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if language_id is 0', function() {
-                    metadata.language_id = 0;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 404 Not Found if the language_id does not correspond to an existing Language record', function() {
-                    metadata.language_id = Math.pow(10, 5);
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(404);
-                });
+            it('should return 400 Bad Request if language_id is not a number', function() {
+                body.language_id = 'not_a_number';
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
-            describe('speaker_id', function() {
-                it('should return 400 Bad Request if speaker_id is not present', function() {
-                    delete metadata.speaker_id;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if speaker_id is not a number', function() {
-                    metadata.speaker_id = 'not_a_number';
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if speaker_id is 0', function() {
-                    metadata.speaker_id = 0;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 404 Not Found if the speaker_id does not correspond to an existing Speaker record', function() {
-                    metadata.speaker_id = Math.pow(10, 5);
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(404);
-                });
+            it('should return 400 Bad Request if language_id is 0', function() {
+                body.language_id = 0;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
-            describe('descriptions', function() {
-                it('should return 400 Bad Request if transcripts is not present', function() {
-                    delete metadata.descriptions;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
+            it('should return 404 Not Found if the language_id does not correspond to an existing Language record', function() {
+                body.language_id = Math.pow(10, 5);
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(404);
+            });
+        });
 
-                it('should return 400 Bad Request if descriptions is not an array', function() {
-                    metadata.descriptions = _.stubObject();
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if descriptions is 0 length', function() {
-                    metadata.descriptions = _.stubArray();
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
+        describe('speaker_id', function() {
+            it('should return 400 Bad Request if speaker_id is not present', function() {
+                delete body.speaker_id;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
-            describe('descriptions.language_id', function() {
-                it('should return 400 Bad Request if descriptions.language_id is not present', function() {
-                    delete _.first(metadata.descriptions).language_id;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if descriptions.language_id is not a number', function() {
-                    _.first(metadata.descriptions).language_id = _.stubString();
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if descriptions.language_id is 0', function() {
-                    _.first(metadata.descriptions).language_id = 0;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 404 Not Found if the descriptions.language_id does not correspond to an existing Language record', function() {
-                    _.first(metadata.descriptions).language_id = Math.pow(10, 5);
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(404);
-                });
+            it('should return 400 Bad Request if speaker_id is not a number', function() {
+                body.speaker_id = 'not_a_number';
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
-            describe('descriptions.description', function() {
-                it('should return 400 Bad Request if descriptions.description is not present', function() {
-                    delete _.first(metadata.descriptions).description;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if descriptions.description is not a string', function() {
-                    _.first(metadata.descriptions).description = _.stubObject();
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if descriptions.description is 0 length', function() {
-                    _.first(metadata.descriptions).description = _.stubString();
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
+            it('should return 400 Bad Request if speaker_id is 0', function() {
+                body.speaker_id = 0;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
-            describe('transcripts', function() {
-                it('should return 400 Bad Request if transcripts is not present', function() {
-                    delete metadata.transcripts;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
+            it('should return 404 Not Found if the speaker_id does not correspond to an existing Speaker record', function() {
+                body.speaker_id = Math.pow(10, 5);
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(404);
+            });
+        });
 
-                it('should return 400 Bad Request if transcripts is not an array', function() {
-                    metadata.transcripts = _.stubObject();
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if transcripts is 0 length', function() {
-                    metadata.transcripts = _.stubArray();
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
+        describe('localizations', function() {
+            it('should return 400 Bad Request if localizations is not present', function() {
+                delete body.localizations;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
-            describe('transcripts.language_id', function() {
-                it('should return 400 Bad Request if transcripts.language_id is not present', function() {
-                    delete _.first(metadata.transcripts).language_id;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if transcripts.language_id is not a number', function() {
-                    _.first(metadata.transcripts).language_id = _.stubString();
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 400 Bad Request if transcripts.language_id is 0', function() {
-                    _.first(metadata.transcripts).language_id = 0;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
-
-                it('should return 404 Not Found if the transcripts.language_id does not correspond to an existing Language record', function() {
-                    _.first(metadata.transcripts).language_id = Math.pow(10, 5);
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(404);
-                });
+            it('should return 400 Bad Request if localizations is not an array', function() {
+                body.localizations = _.stubObject();
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
-            describe('transcripts.text', function() {
-                it('should return 400 Bad Request if transcripts.text is not present', function() {
-                    delete _.first(metadata.transcripts).text;
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
+            it('should return 400 Bad Request if localizations is 0 length', function() {
+                body.localizations = _.stubArray();
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+        });
 
-                it('should return 400 Bad Request if transcripts.text is not a string', function() {
-                    _.first(metadata.transcripts).text = _.stubObject();
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
+        describe('localizations.language_id', function() {
+            it('should return 400 Bad Request if localizations.language_id is not present', function() {
+                delete _.first(body.localizations).language_id;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
 
-                it('should return 400 Bad Request if transcripts.text is 0 length', function() {
-                    _.first(metadata.transcripts).text = _.stubString();
-                    return request(server)
-                        .post('/videos')
-                        .set(k.Header.Authorization, authorization)
-                        .attach('video', videoFile)
-                        .field('metadata', JSON.stringify(metadata))
-                        .expect(400);
-                });
+            it('should return 400 Bad Request if localizations.language_id is not a number', function() {
+                _.first(body.localizations).language_id = _.stubString();
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+
+            it('should return 400 Bad Request if localizations.language_id is 0', function() {
+                _.first(body.localizations).language_id = 0;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+
+            it('should return 404 Not Found if the localizations.language_id does not correspond to an existing Language record', function() {
+                _.first(body.localizations).language_id = Math.pow(10, 5);
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(404);
+            });
+        });
+
+        describe('localizations.description', function() {
+            it('should return 400 Bad Request if localizations.description is not present', function() {
+                delete _.first(body.localizations).description;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+
+            it('should return 400 Bad Request if localizations.description is not a string', function() {
+                _.first(body.localizations).description = _.stubObject();
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+
+            it('should return 400 Bad Request if localizations.description is 0 length', function() {
+                _.first(body.localizations).description = _.stubString();
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+        });
+
+        describe('localizations.transcript', function() {
+            it('should return 400 Bad Request if localizations.transcript is not present', function() {
+                delete _.first(body.localizations).transcript;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+
+            it('should return 400 Bad Request if localizations.transcript is not a string', function() {
+                _.first(body.localizations).transcript = _.stubObject();
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+
+            it('should return 400 Bad Request if localizations.transcript is 0 length', function() {
+                _.first(body.localizations).transcript = _.stubString();
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
         });
     });
 
     describe('success', function() {
-        before(function() {
-            fs.mkdirSync(path.resolve(config.get(k.TempDir), 'videos'));
-        });
-
-        afterEach(function() {
-            const files = fs.readdirSync(path.resolve(config.get(k.TempDir), 'videos'));
-            _.each(files, function(file) {
-                fs.unlinkSync(path.resolve(config.get(k.TempDir), 'videos', file));
-            });
-        });
-
-        after(function() {
-            fs.rmdirSync(path.resolve(config.get(k.TempDir), 'videos'));
-        });
-
         describe('request headers', function() {
             it('should respond with an X-GN-Auth-Token header', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                const response = await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                const response = await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
                 assert(_.gt(response.header[k.Header.AuthToken].length, 0));
             });
 
             it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                const response = await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                const response = await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
                 assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
             });
 
             it('should respond with 201 Created for a valid request', function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                return request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata))
-                    .expect(201);
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(201);
             });
         });
 
         describe('data integrity', function() {
             it('should create a new Video record', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
 
                 const videoCount = await db[k.Model.Video].count();
                 assert.equal(videoCount, 1);
@@ -556,81 +284,31 @@ describe('POST /videos', function() {
 
             it('should create a new Video with the specified subcategory_id', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
 
                 const video = await db[k.Model.Video].find();
-                assert.equal(video.get('subcategory_id'), metadata.subcategory_id);
+                assert.equal(video.get('subcategory_id'), body.subcategory_id);
             });
 
             it('should create a new Video with the specified language_id', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
 
                 const video = await db[k.Model.Video].find();
-                assert.equal(video.get('language_id'), metadata.language_id);
+                assert.equal(video.get('language_id'), body.language_id);
             });
 
             it('should create a new Video with the specified speaker_id', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
 
                 const video = await db[k.Model.Video].find();
-                assert.equal(video.get('speaker_id'), metadata.speaker_id);
-            });
-
-            it("should set the video record 'video_url' to the video url", async function() {
-                this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
-
-                const video = await db[k.Model.Video].find();
-
-                const actualUrl = video.get(k.Attr.VideoUrl);
-                const videoIdHash = Utility.getHashForId(_.toNumber(video.get(k.Attr.Id)));
-                const expectedUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/videos/${videoIdHash}.mp4`;
-
-                assert.equal(actualUrl, expectedUrl);
-            });
-
-            it("should set the video record 'picture_url' to the picture url", async function() {
-                this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
-
-                const video = await db[k.Model.Video].find();
-
-                const actualUrl = video.get(k.Attr.PictureUrl);
-                const videoIdHash = Utility.getHashForId(_.toNumber(video.get(k.Attr.Id)));
-                const expectedUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/videos/${videoIdHash}.jpg`;
-
-                assert.equal(actualUrl, expectedUrl);
+                assert.equal(video.get('speaker_id'), body.speaker_id);
             });
 
             it('should create a new Video with the specified number of transcripts', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
 
                 const video = await db[k.Model.Video].find({
                     include: {
@@ -639,16 +317,12 @@ describe('POST /videos', function() {
                     }
                 });
 
-                assert.equal(video.get('transcripts').length, metadata.transcripts.length);
+                assert.equal(video.get('transcripts').length, body.localizations.length);
             });
 
             it('should create new VideoLocalized records with the correct descriptions', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
 
                 let video = await db[k.Model.Video].find({
                     include: {
@@ -668,17 +342,13 @@ describe('POST /videos', function() {
                 const english = _.find(video.videos_localized, {language: {code: 'en'}})[k.Attr.Description];
                 const japanese = _.find(video.videos_localized, {language: {code: 'ja'}})[k.Attr.Description];
 
-                assert.equal(english, metadata.descriptions[0].description);
-                assert.equal(japanese, metadata.descriptions[1].description);
+                assert.equal(english, body.localizations[0].description);
+                assert.equal(japanese, body.localizations[1].description);
             });
 
             it('should create the same number of new collocation occurrence records as specified in the combined transcript text', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
 
                 const video = await db[k.Model.Video].find({
                     include: {
@@ -696,11 +366,7 @@ describe('POST /videos', function() {
 
             it('should set the video "is_public" to false by default', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
 
                 const video = await db[k.Model.Video].find();
                 assert.equal(video[k.Attr.IsPublic], false);
@@ -708,76 +374,23 @@ describe('POST /videos', function() {
 
             it('should set the video "is_public" to true if specified', async function() {
                 after(function() {
-                    _.unset(metadata, k.Attr.IsPublic);
+                    _.unset(body, k.Attr.IsPublic);
                 });
 
                 this.timeout(SpecUtil.defaultTimeout);
 
-                _.set(metadata, k.Attr.IsPublic, true);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                _.set(body, k.Attr.IsPublic, true);
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
 
                 const video = await db[k.Model.Video].find();
                 assert.equal(video[k.Attr.IsPublic], true);
             });
 
-            it('should set the "length" of the video to the video duration in seconds', async function() {
-                this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
-                const video = await db[k.Model.Video].find();
-                assert.equal(video[k.Attr.Length], 3);
-            });
-
             it('should return the ID of the newly created video', async function() {
                 this.timeout(SpecUtil.defaultTimeout);
-                const response = await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
+                const response = await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
                 const video = await db[k.Model.Video].find();
                 assert.equal(response.body[k.Attr.Id], video.get(k.Attr.Id));
-            });
-        });
-
-        describe('Google Cloud Storage', function() {
-            it('should save a new video asset with the appropriate hash title to Google Cloud Storage', async function() {
-                this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
-
-                const video = await db[k.Model.Video].find();
-
-                const expectedHash = Utility.getHashForId(video.get(k.Attr.Id));
-                const videoPath = path.resolve(config.get(k.TempDir), 'videos', expectedHash + config.get(k.VideoFileExtension));
-
-                assert(fs.existsSync(videoPath));
-            });
-
-            it('should save a new picture asset with the appropriate hash title to Google Cloud Storage', async function() {
-                this.timeout(SpecUtil.defaultTimeout);
-                await request(server)
-                    .post('/videos')
-                    .set(k.Header.Authorization, authorization)
-                    .attach('video', videoFile)
-                    .field('metadata', JSON.stringify(metadata));
-
-                const video = await db[k.Model.Video].find();
-
-                const expectedHash = Utility.getHashForId(video.get(k.Attr.Id));
-                const imagePath = path.resolve(config.get(k.TempDir), 'videos', expectedHash + config.get(k.ImageFileExtension));
-
-                assert(fs.existsSync(imagePath));
             });
         });
     });

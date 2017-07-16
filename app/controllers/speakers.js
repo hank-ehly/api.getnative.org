@@ -189,7 +189,7 @@ module.exports.picture = async (req, res, next) => {
     const hash = Utility.getHashForId(_.toNumber(speakerId));
 
     try {
-        const destination = `speakers/${hash}${config.get(k.ImageFileExtension)}`;
+        const destination = `speakers/${hash}.${config.get(k.ImageFileExtension)}`;
         await Storage.upload(req.files.picture.path, destination);
         pictureUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/speakers/${hash}.jpg`;
         await Speaker.update({is_silhouette_picture: false, picture_url: pictureUrl}, {where: {id: speakerId}});

@@ -32,7 +32,7 @@ defaults[k.OAuth.Google.CallbackURL] = 'http://localhost:3000/oauth/google/callb
 
 defaults[k.GoogleCloud.ProjectId] = 'get-native';
 defaults[k.GoogleCloud.StorageBucketName] = 'mock-bucket-name';
-defaults[k.VideoFileExtension] = '.mp4';
-defaults[k.ImageFileExtension] = '.jpg';
+defaults[k.VideoFileExtension] = 'mp4';
+defaults[k.ImageFileExtension] = 'jpg';
 
 module.exports = defaults;

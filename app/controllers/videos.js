@@ -10,7 +10,7 @@ const config = require('../../config/application').config;
 const logger = require('../../config/logger');
 const services = require('../services');
 const ResponseWrapper = services['ResponseWrapper'];
-const GetNativeError = services['GetNativeError'];
+const GetNativeError = require('../services/get-native-error');
 const Utility = services['Utility'];
 const Storage = services['Storage'];
 const Speech = services['Speech'];
@@ -344,84 +344,48 @@ module.exports.transcribe = async (req, res) => {
 };
 
 module.exports.create = async (req, res, next) => {
-    let video;
+    let video, t = await db.sequelize.transaction();
 
-    const t1 = await db.sequelize.transaction();
     try {
-        const length = await avconv.getVideoDuration(req.files.video.path);
         video = await Video.create({
             language_id: req.body[k.Attr.LanguageId],
             speaker_id: req.body[k.Attr.SpeakerId],
             subcategory_id: req.body[k.Attr.SubcategoryId],
             description: req.body[k.Attr.Description],
-            is_public: req.body[k.Attr.IsPublic] || false,
-            length: length
-        }, {transaction: t1});
-        await t1.commit();
-    } catch (e) {
-        await t1.rollback();
-        if (e instanceof db.sequelize.ForeignKeyConstraintError) {
-            res.status(404);
-            return next(new GetNativeError(k.Error.ResourceNotFound));
-        }
-        return next(e);
-    }
+            is_public: req.body[k.Attr.IsPublic] || false
+        }, {transaction: t});
 
-    const t2 = await db.sequelize.transaction();
-    try {
         const videosLocalized = [];
-        for (let description of req.body['descriptions']) {
+        const transcripts = [];
+        for (let localization of req.body['localizations']) {
             videosLocalized.push({
                 video_id: video[k.Attr.Id],
-                language_id: description[k.Attr.LanguageId],
-                description: description[k.Attr.Description]
+                language_id: localization[k.Attr.LanguageId],
+                description: localization[k.Attr.Description]
             });
-        }
-        await db[k.Model.VideoLocalized].bulkCreate(videosLocalized, {transaction: t2});
-
-        const unsavedTranscripts = [];
-        for (let transcript of req.body['transcripts']) {
-            unsavedTranscripts.push({
+            transcripts.push({
                 video_id: video[k.Attr.Id],
-                language_id: transcript[k.Attr.LanguageId],
-                text: transcript[k.Attr.Text]
+                language_id: localization[k.Attr.LanguageId],
+                text: localization['transcript']
             });
         }
-        const savedTranscripts = await Transcript.bulkCreate(unsavedTranscripts, {transaction: t2});
+        await db[k.Model.VideoLocalized].bulkCreate(videosLocalized, {transaction: t});
+        const persistedTranscripts = await Transcript.bulkCreate(transcripts, {transaction: t});
 
         const unsavedCollocationOccurrences = [];
-        for (let transcript of savedTranscripts) {
+        for (let transcript of persistedTranscripts) {
             let occurrenceTextValues = Utility.pluckCurlyBraceEnclosedContent(transcript.get(k.Attr.Text));
             for (let text of occurrenceTextValues) {
                 unsavedCollocationOccurrences.push({
                     transcript_id: transcript.get(k.Attr.Id),
-                    text: text,
-                    ipa_spelling: '-unset-'
+                    text: text
                 });
             }
         }
-        await CollocationOccurrence.bulkCreate(unsavedCollocationOccurrences, {transaction: t2});
-
-        const videoDimensions = await avconv.getDimensionsOfVisualMediaAtPath(req.files.video.path);
-        const maxSize = Utility.findMaxSizeForAspectInSize({width: 3, height: 2}, videoDimensions);
-        const croppedVideoPath = await avconv.cropVideoToSize(req.files.video.path, maxSize);
-        const videoIdHash = Utility.getHashForId(_.toNumber(video[k.Attr.Id]));
-        const thumbnailImagePath = await avconv.captureFirstFrameOfVideo(croppedVideoPath);
-
-        await Storage.upload(croppedVideoPath, ['videos/', videoIdHash, config.get(k.VideoFileExtension)].join(''));
-        await Storage.upload(thumbnailImagePath, ['videos/', videoIdHash, config.get(k.ImageFileExtension)].join(''));
-
-        await Video.update({
-            video_url: `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/videos/${videoIdHash}.mp4`,
-            picture_url: `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/videos/${videoIdHash}.jpg`
-        }, {
-            where: {id: video[k.Attr.Id]},
-            transaction: t2
-        });
-
-        await t2.commit();
+        await CollocationOccurrence.bulkCreate(unsavedCollocationOccurrences, {transaction: t});
+        await t.commit();
     } catch (e) {
-        await t2.rollback();
+        await t.rollback();
         if (e instanceof db.sequelize.ForeignKeyConstraintError) {
             res.status(404);
             return next(new GetNativeError(k.Error.ResourceNotFound));
@@ -429,7 +393,94 @@ module.exports.create = async (req, res, next) => {
         return next(e);
     }
 
-    return res.status(201).send({id: video.get(k.Attr.Id)});
+    const responseBody = {
+        id: video.get(k.Attr.Id)
+    };
+
+    return res.status(201).send(responseBody);
+};
+
+module.exports.update = async (req, res, next) => {
+    if (_.size(req.body) === 0) {
+        return res.sendStatus(304);
+    }
+
+    const t = await db.sequelize.transaction();
+    const videoUpdates = _.pick(req.body, [k.Attr.IsPublic, k.Attr.LanguageId, k.Attr.SpeakerId, k.Attr.SubcategoryId]);
+
+    try {
+        if (_.size(videoUpdates) > 0) {
+            await Video.update(videoUpdates, {
+                where: {id: req.params[k.Attr.Id]},
+                transaction: t
+            });
+        }
+
+        if (_.has(req.body, 'localizations') && _.size(req.body['localizations']) > 0) {
+            for (let localization of req.body['localizations']) {
+                let changes = _.pick(localization, [k.Attr.Description, 'transcript']);
+                await db[k.Model.VideoLocalized].update(changes, {
+                    where: {id: localization[k.Attr.Id]},
+                    transaction: t
+                });
+            }
+        }
+
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    return res.sendStatus(204);
+};
+
+module.exports.upload = async (req, res, next) => {
+    let video;
+
+    try {
+        video = await Video.findByPrimary(req.params[k.Attr.Id]);
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!video) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    const videoIdHash = Utility.getHashForId(_.toNumber(req.params[k.Attr.Id]));
+
+    const length = await avconv.getVideoDuration(req.files.video.path);
+
+    const videoDimensions = await avconv.getDimensionsOfVisualMediaAtPath(req.files.video.path);
+    const maxSize = Utility.findMaxSizeForAspectInSize({width: 3, height: 2}, videoDimensions);
+
+    const croppedVideoPath = await avconv.cropVideoToSize(req.files.video.path, maxSize);
+    const thumbnailImagePath = await avconv.captureFirstFrameOfVideo(croppedVideoPath);
+
+    await Storage.upload(croppedVideoPath, ['videos/', videoIdHash, '.', config.get(k.VideoFileExtension)].join(''));
+    await Storage.upload(thumbnailImagePath, ['videos/', videoIdHash, '.', config.get(k.ImageFileExtension)].join(''));
+
+    const bucket = config.get(k.GoogleCloud.StorageBucketName);
+    const googleStorageBaseURI = 'https://storage.googleapis.com';
+
+    try {
+        await video.update({
+            video_url: `${googleStorageBaseURI}/${bucket}/videos/${videoIdHash}.${config.get(k.VideoFileExtension)}`,
+            picture_url: `${googleStorageBaseURI}/${bucket}/videos/${videoIdHash}.${config.get(k.ImageFileExtension)}`,
+            length: length
+        });
+
+        await video.reload({
+            attributes: [k.Attr.VideoUrl, k.Attr.PictureUrl]
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    return res.status(200).send(video.get({plain: true}));
 };
 
 module.exports.videosLocalized = async (req, res, next) => {

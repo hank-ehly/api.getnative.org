@@ -95,7 +95,7 @@ describe('POST /speakers/:id/picture', function() {
         it('should respond with the Speaker record "picture_url" string', async function() {
             const response = await request(server).post(`/speakers/${speaker.get(k.Attr.Id)}/picture`).set(k.Header.Authorization, authorization).attach('picture', pictureFile);
             const idHash = Utility.getHashForId(speaker.get(k.Attr.Id));
-            const expectedUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/speakers/${idHash}${config.get(k.ImageFileExtension)}`;
+            const expectedUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/speakers/${idHash}.${config.get(k.ImageFileExtension)}`;
             assert.equal(response.body[k.Attr.PictureUrl], expectedUrl);
         });
 
@@ -109,14 +109,14 @@ describe('POST /speakers/:id/picture', function() {
             await request(server).post(`/speakers/${speaker.get(k.Attr.Id)}/picture`).set(k.Header.Authorization, authorization).attach('picture', pictureFile);
             await speaker.reload();
             const idHash = Utility.getHashForId(speaker.get(k.Attr.Id));
-            const expectedUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/speakers/${idHash}${config.get(k.ImageFileExtension)}`;
+            const expectedUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/speakers/${idHash}.${config.get(k.ImageFileExtension)}`;
             assert.equal(speaker.get(k.Attr.PictureUrl), expectedUrl);
         });
 
         it('should upload the image file to /speakers/{id hash}', async function() {
             await request(server).post(`/speakers/${speaker.get(k.Attr.Id)}/picture`).set(k.Header.Authorization, authorization).attach('picture', pictureFile);
             const idHash = Utility.getHashForId(speaker.get(k.Attr.Id));
-            const uploadedPicturePath = path.resolve(config.get(k.TempDir), 'speakers', idHash + config.get(k.ImageFileExtension));
+            const uploadedPicturePath = path.resolve(config.get(k.TempDir), 'speakers', idHash + '.' + config.get(k.ImageFileExtension));
             assert(fs.existsSync(uploadedPicturePath));
         });
     });
