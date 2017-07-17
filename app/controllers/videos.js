@@ -192,7 +192,7 @@ module.exports.show = async (req, res, next) => {
                     }
                 }, {
                     model: Language,
-                    attributes: [k.Attr.Name, k.Attr.Code],
+                    attributes: [k.Attr.Id, k.Attr.Name, k.Attr.Code],
                     as: 'language'
                 }
             ]
@@ -480,7 +480,7 @@ module.exports.upload = async (req, res, next) => {
         return next(e);
     }
 
-    return res.status(200).send(video.get({plain: true}));
+    return res.status(200).send(_.pick(video.get({plain: true}), [k.Attr.VideoUrl, k.Attr.PictureUrl]));
 };
 
 module.exports.videosLocalized = async (req, res, next) => {

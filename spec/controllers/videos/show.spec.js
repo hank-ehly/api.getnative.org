@@ -390,15 +390,21 @@ describe('GET /videos/:id', function() {
             });
         });
 
+        it(`should contain a non-null 'transcripts.records[N].language.id' number`, function() {
+            return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
+                assert(_.isNumber(_.first(response.body.transcripts.records).language[k.Attr.Id]));
+            });
+        });
+
         it(`should contain a non-null 'transcripts.records[N].language.code' string`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isString(_.first(response.body.transcripts.records).language.code));
+                assert(_.isString(_.first(response.body.transcripts.records).language[k.Attr.Code]));
             });
         });
 
         it(`should contain a non-null 'transcripts.records[N].language.name' string`, function() {
             return request(server).get(`/videos/${videoId}`).set('authorization', authorization).then(function(response) {
-                assert(_.isString(_.first(response.body.transcripts.records).language.name));
+                assert(_.isString(_.first(response.body.transcripts.records).language[k.Attr.Name]));
             });
         });
 
