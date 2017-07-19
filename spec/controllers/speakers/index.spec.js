@@ -101,7 +101,7 @@ describe('GET /speakers', function() {
 
         it('should contain a "records[N].picture_url" url string', async function() {
             const response = await request(server).get('/speakers').set('authorization', authorization);
-            assert(SpecUtil.isValidURL(_.first(response.body.records)[k.Attr.PictureUrl]));
+            assert(_.isString(_.first(response.body.records)[k.Attr.PictureUrl]));
         });
 
         it('should contain a "records[N].is_silhouette_picture" boolean', async function() {

@@ -5,9 +5,9 @@
  * Created by henryehly on 2017/03/16.
  */
 
-const Speaker = require('../../../app/models')['Speaker'];
-const SpecUtil = require('../../spec-util');
 const k = require('../../../config/keys.json');
+const Speaker = require('../../../app/models')[k.Model.Speaker];
+const SpecUtil = require('../../spec-util');
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
@@ -139,9 +139,7 @@ describe('GET /speakers/:id', function() {
 
         it(`should return an object containing the speaker's valid picture url`, () => {
             return request(server).get(`/speakers/${testSpeaker[k.Attr.Id]}`).set('authorization', authorization).then(function(speaker) {
-                let parsedURL = url.parse(speaker.body.picture_url);
-                assert(parsedURL.protocol);
-                assert(parsedURL.hostname);
+                assert(_.isString(speaker.body[k.Attr.PictureUrl]));
             });
         });
 
