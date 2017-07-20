@@ -5,12 +5,10 @@
  * Created by henryehly on 2017/05/12.
  */
 
-const services = require('../../app/services');
-const Auth = services['Auth'];
-const Utility = services['Utility'];
+const Auth = require('../../app/services/auth');
+const Utility = require('../../app/services/utility');
 const k = require('../../config/keys.json');
-const User = require('../../app/models')[k.Model.User];
-const Language = require('../../app/models')[k.Model.Language];
+const db = require('../../app/models');
 
 const _ = require('lodash');
 
@@ -18,29 +16,24 @@ function CustomStrategy() {
     this.name = 'custom';
 }
 
-CustomStrategy.prototype.authenticate = function(req) {
-    const self = this;
+CustomStrategy.prototype.authenticate = async function(req) {
+    let user, token;
 
-    let token = null;
     try {
         token = Utility.extractAuthTokenFromRequest(req);
+        const decodedToken = await Auth.verifyToken(token);
+        user = await db[k.Model.User].findByPrimary(decodedToken.sub);
+        const refreshedToken = await Auth.refreshToken(decodedToken);
+        Auth.setAuthHeadersOnResponseWithToken(req.res, refreshedToken);
     } catch (e) {
-        return self.error(e);
+        return this.error(e);
     }
 
-    return Auth.verifyToken(token).then(decodedToken => {
-        return Promise.all([User.findByPrimary(decodedToken.sub), Auth.refreshToken(decodedToken)]);
-    }).then(values => {
-        const [user, refreshedToken] = values;
-
-        Auth.setAuthHeadersOnResponseWithToken(req.res, refreshedToken);
-
-        if (user) {
-            self.success(user);
-        } else {
-            self.fail();
-        }
-    }).catch(self.error);
+    if (user) {
+        this.success(user);
+    } else {
+        this.fail();
+    }
 };
 
 const strategy = new CustomStrategy();

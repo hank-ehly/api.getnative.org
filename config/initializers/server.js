@@ -5,19 +5,20 @@
  * Created by henryehly on 2017/01/18.
  */
 
-const middleware = require('../../app/middleware');
-const config     = require('../application').config;
-const routes     = require('../routes');
-const logger     = require('../logger');
-const i18n       = require('../i18n');
-const k          = require('../keys.json');
+const cors = require('../../app/middleware/cors');
+const error = require('../../app/middleware/error');
+const config = require('../application').config;
+const routes = require('../routes');
+const logger = require('../logger');
+const i18n = require('../i18n');
+const k = require('../keys.json');
 
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const passport   = require('passport');
-const express    = require('express');
-const morgan     = require('morgan');
-const path       = require('path');
+const passport = require('passport');
+const express = require('express');
+const morgan = require('morgan');
+const path = require('path');
 
 for (let provider of ['custom', 'facebook', 'twitter', 'google']) {
     passport.use(provider, require('../passport/' + provider));
@@ -41,19 +42,19 @@ module.exports = () => {
     app.set('view engine', 'ejs');
 
     app.use(bodyParser.json());
-    app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true })); // todo
+    app.use(require('express-session')({secret: 'keyboard cat', resave: true, saveUninitialized: true})); // todo
     app.use(cookieParser());
     app.use(i18n.init);
-    app.use(middleware['Cors']);
+    app.use(cors);
 
     app.use(passport.initialize());
     app.use(passport.session());
 
     app.use(routes);
 
-    app.use(middleware['Error'].logErrors);
-    app.use(middleware['Error'].clientErrorHandler);
-    app.use(middleware['Error'].fallbackErrorHandler);
+    app.use(error.logErrors);
+    app.use(error.clientErrorHandler);
+    app.use(error.fallbackErrorHandler);
 
     return new Promise(resolve => {
         const port = config.get(k.API.Port);
