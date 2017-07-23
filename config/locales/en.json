@@ -1,4 +1,7 @@
 {
+    "confirm-email-update": {
+        "title": "Confirm Email Update"
+    },
     "email-verified": {
         "title": "Email Verified"
     },

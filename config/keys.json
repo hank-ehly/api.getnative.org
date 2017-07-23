@@ -97,6 +97,7 @@
         "WritingAnswer": "WritingAnswer",
         "UserRole": "UserRole",
         "Credential": "Credential",
+        "EmailChangeRequest": "EmailChangeRequest",
         "Gender": "Gender",
         "Language": "Language",
         "WritingQuestion": "WritingQuestion",

@@ -139,11 +139,11 @@ module.exports.generateRandomHash = () => {
 
 module.exports.generateConfirmationURLForToken = token => {
     if (!token) {
-        throw new ReferenceError(`Missing required token`);
+        throw new ReferenceError('Missing required token');
     }
 
     if (!_.isString(token)) {
-        throw new TypeError(`Invalid token`)
+        throw new TypeError('Invalid token')
     }
 
     return url.format({
