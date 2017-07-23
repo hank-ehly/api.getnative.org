@@ -5,7 +5,7 @@
  * Created by henryehly on 2017/03/20.
  */
 
-const GetNativeError = require('../services')['GetNativeError'];
+const GetNativeError = require('../services/get-native-error');
 const k = require('../../config/keys.json');
 
 const Joi = require('joi');
