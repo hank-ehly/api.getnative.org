@@ -5,12 +5,13 @@
  * Created by henryehly on 2017/05/12.
  */
 
-const logger = require('../../config/logger');
-const Auth   = require('../services')['Auth'];
+const Auth = require('../services/auth');
 const config = require('../../config/application').config;
-const k      = require('../../config/keys.json');
+const k = require('../../config/keys.json');
+const db = require('../models');
 
 const moment = require('moment');
+const querystring = require('querystring');
 
 module.exports.callback = async (req, res, next) => {
     let jsonWebToken;
@@ -25,8 +26,13 @@ module.exports.callback = async (req, res, next) => {
         throw new ReferenceError('variable jsonWebToken is undefined');
     }
 
-    const tokenExpirationDate = moment().add(1, 'hours').valueOf().toString();
-    const redirectUrl = `${config.get(k.Client.BaseURI)}/oauth/callback?token=${jsonWebToken}&expires=${tokenExpirationDate}`;
+    const query = querystring.stringify({
+        token: jsonWebToken,
+        expires: moment().add(1, 'hours').valueOf().toString()
+    });
+
+    const preferredInterfaceLangCode = req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code);
+    const redirectUrl = [config.get(k.Client.BaseURI), '/', 'dashboard', '?', query].join('');
 
     res.redirect(redirectUrl);
 };
