@@ -21,7 +21,7 @@ const mailer            = require('../../config/initializers/mailer');
 const i18n              = require('i18n');
 const _                 = require('lodash');
 
-module.exports.confirmEmail = async (req, res, next) => {
+module.exports.confirmRegistrationEmail = async (req, res, next) => {
     let verificationToken, user, jsonWebToken;
 
     try {
@@ -94,30 +94,103 @@ module.exports.confirmEmail = async (req, res, next) => {
     }));
 };
 
-module.exports.resendConfirmationEmail = async (req, res, next) => {
-    let userAlreadyExists, user, verificationToken, mailHtml;
+module.exports.confirmEmailUpdate = async (req, res, next) => {
+    return res.sendStatus(204);
+};
+
+module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
+    let user, token, html;
 
     try {
-        userAlreadyExists = await User.existsForEmail(req.body[k.Attr.Email]);
+        if (await db[k.Model.User].existsForEmail(req.body[k.Attr.Email])) {
+            res.status(422);
+            return next(new GetNativeError(k.Error.UserAlreadyExists));
+        }
     } catch (e) {
         return next(e);
     }
 
-    if (!userAlreadyExists) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.UserMissing));
-    }
-
     try {
-        user = await User.find({
-            where: {email: req.body[k.Attr.Email]}
-        });
+        user = await User.findByPrimary(req.params[k.Attr.Id]);
     } catch (e) {
         return next(e);
     }
 
     if (!user) {
-        // this overlaps with existsForEmail
+        res.status(404);
+        return next(new GetNativeError(k.Error.UserMissing));
+    }
+
+    let t = await db.sequelize.transaction();
+    try {
+        token = await VerificationToken.create({
+            user_id: user.get(k.Attr.Id),
+            token: Auth.generateRandomHash(),
+            expiration_date: Utility.tomorrow()
+        }, {transaction: t});
+
+        await db[k.Model.EmailChangeRequest].create({
+            verification_token_id: token.get(k.Attr.Id),
+            email: req.body[k.Attr.Email]
+        }, {transaction: t});
+
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+        return next(e);
+    }
+
+    if (!token) {
+        throw new Error('variable verificationToken is undefined');
+    }
+
+    try {
+        const templateVariables = {
+            confirmationURL: Auth.generateConfirmationURLForTokenWithPath(token.get(k.Attr.Token), 'confirm_email_update'),
+            __: i18n.__
+        };
+
+        html = await new Promise((resolve, reject) => {
+            res.app.render('confirm-email-update', templateVariables, (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!html) {
+        throw new Error('variable mailHtml is undefined');
+    }
+
+    try {
+        await mailer.sendMail({
+            subject: i18n.__('confirm-email-update.title'),
+            from:    config.get(k.NoReply),
+            to:      req.body[k.Attr.Email],
+            html:    html
+        }, null);
+    } catch (e) {
+        return next(e);
+    }
+
+    res.sendStatus(204);
+};
+
+module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
+    let user, verificationToken, html;
+
+    try {
+        user = await User.find({where: {email: req.body[k.Attr.Email]}});
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!user) {
         res.status(404);
         return next(new GetNativeError(k.Error.UserMissing));
     }
@@ -143,12 +216,11 @@ module.exports.resendConfirmationEmail = async (req, res, next) => {
 
     try {
         const templateVariables = {
-            confirmationURL: Auth.generateConfirmationURLForToken(verificationToken.get(k.Attr.Token)),
+            confirmationURL: Auth.generateConfirmationURLForTokenWithPath(verificationToken.get(k.Attr.Token), 'confirm_email'),
             __: i18n.__
         };
 
-        // this syntax is ugly -- but promisify/Promise.method/Promisify.fromCallback don't work
-        mailHtml = await new Promise((resolve, reject) => {
+        html = await new Promise((resolve, reject) => {
             res.app.render('welcome', templateVariables, (err, html) => {
                 if (err) {
                     reject(err);
@@ -161,7 +233,7 @@ module.exports.resendConfirmationEmail = async (req, res, next) => {
         return next(e);
     }
 
-    if (!mailHtml) {
+    if (!html) {
         throw new Error('variable mailHtml is undefined');
     }
 
@@ -170,8 +242,8 @@ module.exports.resendConfirmationEmail = async (req, res, next) => {
             subject: i18n.__('welcome.title'),
             from:    config.get(k.NoReply),
             to:      req.body[k.Attr.Email],
-            html:    mailHtml
-        });
+            html:    html
+        }, null);
     } catch (e) {
         return next(e);
     }

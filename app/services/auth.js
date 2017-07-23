@@ -137,19 +137,19 @@ module.exports.generateRandomHash = () => {
     return crypto.randomBytes(16).toString('hex');
 };
 
-module.exports.generateConfirmationURLForToken = token => {
-    if (!token) {
-        throw new ReferenceError('Missing required token');
+module.exports.generateConfirmationURLForTokenWithPath = (token, pathname) => {
+    if (!token || !pathname) {
+        throw new ReferenceError('Missing required token and/or pathname');
     }
 
-    if (!_.isString(token)) {
-        throw new TypeError('Invalid token')
+    if (!_.isString(token) || !_.isString(pathname)) {
+        throw new TypeError('Invalid token and/or pathname');
     }
 
     return url.format({
         protocol: config.get(k.Client.Protocol),
         host: config.get(k.Client.Host),
-        pathname: 'confirm_email',
+        pathname: pathname,
         query: {token: token}
     });
 };

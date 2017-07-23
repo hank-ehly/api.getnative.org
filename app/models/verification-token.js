@@ -6,9 +6,10 @@
  */
 
 const moment = require('moment');
+const k = require('../../config/keys.json');
 
 module.exports = function(sequelize, DataTypes) {
-    const VerificationToken = sequelize.define('VerificationToken', {
+    const VerificationToken = sequelize.define(k.Model.VerificationToken, {
         id: {
             allowNull: false,
             autoIncrement: true,
@@ -28,8 +29,8 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'verification_tokens',
         timestamps: false,
         underscored: true,
-        associations: function(models) {
-            models.VerificationToken.belongsTo(models.User);
+        associations: function(db) {
+            db[k.Model.VerificationToken].belongsTo(db[k.Model.User]);
         }
     });
 

@@ -32,13 +32,14 @@ router.patch(  '/categories/:category_id/categories_localized/:categories_locali
 router.get(    '/categories/:category_id/subcategories/:subcategory_id',                             validateParams(pv.subcategories.show),                  auth, adminOnly, ctrl.subcategories.show);
 router.patch(  '/categories/:category_id/subcategories/:subcategory_id',                             validateParams(pv.subcategories.update),                auth, adminOnly, ctrl.subcategories.update);
 router.delete( '/categories/:category_id/subcategories/:subcategory_id',                             validateParams(pv.subcategories.delete),                auth, adminOnly, ctrl.subcategories.delete);
-router.post(   '/confirm_email',                                                                     validateParams(pv.auth.confirmEmail),                                    ctrl.auth.confirmEmail);
+router.post(   '/confirm_email',                                                                     validateParams(pv.auth.confirmRegistrationEmail),                        ctrl.auth.confirmRegistrationEmail);
+router.post(   '/confirm_email_update',                                                              validateParams(pv.auth.confirmEmailUpdate),                              ctrl.auth.confirmEmailUpdate);
 router.patch(  '/collocation_occurrences/:id',                                                       validateParams(pv.collocationOccurrences.update),       auth, adminOnly, ctrl['collocation-occurrences'].update);
 router.get(    '/collocation_occurrences/:id',                                                       validateParams(pv.collocationOccurrences.show),         auth, adminOnly, ctrl['collocation-occurrences'].show);
 router.post(   '/collocation_occurrences/:id/usage_examples',                                        validateParams(pv.usageExamples.create),                auth, adminOnly, ctrl['usage-examples'].create);
 router.get(    '/genders',                                                                           validateParams(pv.genders.index),                       auth, adminOnly, ctrl.genders.index);
 router.get(    '/languages',                                                                         validateParams(pv.languages.index),                     auth, adminOnly, ctrl.languages.index);
-router.post(   '/resend_confirmation_email',                                                         validateParams(pv.auth.resendConfirmationEmail),                         ctrl.auth.resendConfirmationEmail);
+router.post(   '/resend_confirmation_email',                                                         validateParams(pv.auth.resendRegistrationConfirmationEmail),             ctrl.auth.resendRegistrationConfirmationEmail);
 router.post(   '/sessions',                                                                          validateParams(pv.sessions.create),                                      ctrl.sessions.create);
 router.post(   '/study',                                                                             validateParams(pv.study.createStudySession),            auth,            ctrl.study.createStudySession);
 router.post(   '/study/complete',                                                                    validateParams(pv.study.complete),                      auth,            ctrl.study.complete);
@@ -58,7 +59,7 @@ router.delete( '/usage_examples/:id',                                           
 router.post(   '/users',                                                                             validateParams(pv.users.create),                                         ctrl.users.create);
 router.patch(  '/users',                                                                             validateParams(pv.users.update),                        auth,            ctrl.users.update);
 router.post(   '/users/password',                                                                    validateParams(pv.users.updatePassword),                auth,            ctrl.users.updatePassword);
-router.post(   '/users/email',                                                                       validateParams(pv.users.updateEmail),                   auth,            ctrl.users.updateEmail);
+router.post(   '/users/:id/email',                                                                   validateParams(pv.auth.sendEmailUpdateConfirmationEmail), auth,          ctrl.auth.sendEmailUpdateConfirmationEmail);
 router.get(    '/users/me',                                                                          validateParams(pv.users.me),                            auth,            ctrl.users.show);
 router.get(    '/videos/:id/writing_questions',                                                      validateParams(pv.writingQuestions.index),              auth,            ctrl['writing-questions'].index);
 router.get(    '/videos',                                                                            validateParams(pv.videos.index),                        auth,            ctrl.videos.index);

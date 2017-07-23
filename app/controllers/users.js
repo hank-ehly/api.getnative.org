@@ -24,11 +24,11 @@ const i18n              = require('i18n');
 const _                 = require('lodash');
 
 // todo: move all this to passport custom
-module.exports.create = (req, res, next) => {
+// todo: refactor
+module.exports.create = async (req, res, next) => {
     let cache = {};
-
-    return User.existsForEmail(req.body[k.Attr.Email]).then(alreadyExists => {
-        if (alreadyExists) {
+    return User.existsForEmail(req.body[k.Attr.Email]).then(userExists => {
+        if (userExists) {
             return User.find({
                 where: {
                     email: req.body[k.Attr.Email]
@@ -142,7 +142,7 @@ module.exports.create = (req, res, next) => {
     }).then(verificationToken => {
         return new Promise((resolve, reject) => {
             res.app.render(k.Templates.Welcome, {
-                confirmationURL: Auth.generateConfirmationURLForToken(verificationToken.get(k.Attr.Token)),
+                confirmationURL: Auth.generateConfirmationURLForTokenWithPath(verificationToken.get(k.Attr.Token)),
                 __: i18n.__
             }, (err, html) => {
                 if (err) {
@@ -223,17 +223,13 @@ module.exports.update = async (req, res, next) => {
     return res.sendStatus(204);
 };
 
-module.exports.updatePassword = (req, res, next) => {
+module.exports.updatePassword = async (req, res, next) => {
     const hashPassword = Auth.hashPassword(req.body[k.Attr.NewPassword]);
 
-    return Credential.update({
-        password: hashPassword
-    }, {
-        where: {
-            user_id: req.user[k.Attr.Id]
-        }
-    }).then(() => {
-        return new Promise((resolve, reject) => {
+    try {
+        await Credential.update({password: hashPassword}, {where: {user_id: req.user[k.Attr.Id]}});
+
+        const html = await new Promise((resolve, reject) => {
             res.app.render(k.Templates.PasswordUpdated, {__: i18n.__}, (err, html) => {
                 if (err) {
                     reject(err);
@@ -242,21 +238,17 @@ module.exports.updatePassword = (req, res, next) => {
                 }
             });
         });
-    }).then(html => {
-        return mailer.sendMail({
+
+        await mailer.sendMail({
             subject: i18n.__('password-updated.title'),
             from: config.get(k.NoReply),
             to: req.user.get(k.Attr.Email),
             html: html
-        });
-    }).then(() => {
-        res.sendStatus(204);
-    }).catch(GetNativeError, e => {
+        }, null);
+    } catch (e) {
         res.status(404);
-        next(e);
-    }).catch(next);
-};
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
 
-module.exports.updateEmail = (req, res) => {
-    res.sendStatus(204);
+    return res.sendStatus(204);
 };

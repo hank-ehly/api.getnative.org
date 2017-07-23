@@ -16,6 +16,7 @@ const m = require('mocha');
 const [describe, it] = [m.describe, m.it];
 const assert = require('assert');
 const _ = require('lodash');
+const url = require('url');
 
 describe('Auth', function() {
     describe('refreshToken', function() {
@@ -108,10 +109,20 @@ describe('Auth', function() {
         });
     });
 
-    describe('generateConfirmationURLForToken', function() {
+    describe('generateConfirmationURLForTokenWithPath', function() {
         it(`should throw a ReferenceError if no verification token is provided`, function() {
             function test() {
-                Auth.generateConfirmationURLForToken();
+                Auth.generateConfirmationURLForTokenWithPath(null, 'pathname');
+            }
+
+            assert.throws(test, ReferenceError);
+        });
+
+        it(`should throw a ReferenceError if no pathname is provided`, function() {
+            const token = Auth.generateRandomHash();
+
+            function test() {
+                Auth.generateConfirmationURLForTokenWithPath(token);
             }
 
             assert.throws(test, ReferenceError);
@@ -119,7 +130,17 @@ describe('Auth', function() {
 
         it(`should throw a TypeError if the provided verification token is not a string`, function() {
             function test() {
-                Auth.generateConfirmationURLForToken({not: ['a', 'string']});
+                Auth.generateConfirmationURLForTokenWithPath({not: ['a', 'string']}, 'pathname');
+            }
+
+            assert.throws(test, TypeError);
+        });
+
+        it(`should throw a TypeError if the provided pathname is not a string`, function() {
+            const token = Auth.generateRandomHash();
+
+            function test() {
+                Auth.generateConfirmationURLForTokenWithPath(token, {not: ['a', 'string']});
             }
 
             assert.throws(test, TypeError);
@@ -127,22 +148,27 @@ describe('Auth', function() {
 
         it(`should return a valid URL string`, function() {
             const token = Auth.generateRandomHash();
-            const url = Auth.generateConfirmationURLForToken(token);
-            assert(SpecUtil.isValidURL(url));
+            const response = Auth.generateConfirmationURLForTokenWithPath(token, 'test');
+            assert(SpecUtil.isValidURL(response));
         });
 
         it(`should return a string containing the verification token`, function() {
             const token = Auth.generateRandomHash();
-            const url = Auth.generateConfirmationURLForToken(token);
-            assert(_.includes(url, token));
+            const response = Auth.generateConfirmationURLForTokenWithPath(token, 'test');
+            assert(_.includes(response, token));
+        });
+
+        it(`should return a string containing the correct pathname`, function() {
+            const token = Auth.generateRandomHash();
+            const response = Auth.generateConfirmationURLForTokenWithPath(token, 'test');
+            const parsedUrl = url.parse(response);
+            assert.equal(parsedUrl.pathname, '/test');
         });
 
         it(`should return a url with the correct scheme, hostname, pathname and query`, function() {
             const token = Auth.generateRandomHash();
-            const actual = Auth.generateConfirmationURLForToken(token);
-
-            const expected = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/confirm_email?token=${token}`;
-
+            const actual = Auth.generateConfirmationURLForTokenWithPath(token, 'test');
+            const expected = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/test?token=${token}`;
             assert.equal(actual, expected);
         });
     });

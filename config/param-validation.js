@@ -59,14 +59,27 @@ const schema = {
         }
     },
     auth: {
-        confirmEmail: {
+        confirmRegistrationEmail: {
             body: {
                 token: Joi.string().length(32).required()
             }
         },
-        resendConfirmationEmail: {
+        confirmEmailUpdate: {
+            body: {
+                token: Joi.string().length(32).required()
+            }
+        },
+        resendRegistrationConfirmationEmail: {
             body: {
                 email: Joi.string().regex(regex.email).required()
+            }
+        },
+        sendEmailUpdateConfirmationEmail: {
+            body: {
+                email: Joi.string().regex(regex.email).required()
+            },
+            params: {
+                id: Joi.number().integer().min(1).required()
             }
         }
     },
