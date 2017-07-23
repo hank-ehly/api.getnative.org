@@ -51,18 +51,10 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
             }
         });
 
-        user = await User.find({
-            where: {
-                id: verificationToken[k.Attr.UserId]
-            },
+        user = await User.findByPrimary(verificationToken[k.Attr.UserId], {
             attributes: [
-                k.Attr.Id,
-                k.Attr.BrowserNotificationsEnabled,
-                k.Attr.Email,
-                k.Attr.EmailNotificationsEnabled,
-                k.Attr.EmailVerified,
-                k.Attr.PictureUrl,
-                k.Attr.IsSilhouettePicture
+                k.Attr.Id, k.Attr.BrowserNotificationsEnabled, k.Attr.Email, k.Attr.EmailNotificationsEnabled, k.Attr.EmailVerified,
+                k.Attr.PictureUrl, k.Attr.IsSilhouettePicture
             ]
         });
     } catch (e) {
@@ -89,9 +81,7 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
 
     Auth.setAuthHeadersOnResponseWithToken(res, jsonWebToken);
 
-    return res.status(200).send(user.get({
-        plain: true
-    }));
+    return res.status(200).send(user.get({plain: true}));
 };
 
 module.exports.confirmEmailUpdate = async (req, res, next) => {

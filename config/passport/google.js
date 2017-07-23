@@ -14,8 +14,9 @@ const Strategy = require('passport-google-oauth20').Strategy;
 const strategy = new Strategy({
     clientID: config.get(k.OAuth.Google.ClientID),
     clientSecret: config.get(k.OAuth.Google.ClientSecret),
-    callbackURL: config.get(k.OAuth.Google.CallbackURL)
-}, async (accessToken, refreshToken, profile, callback) => {
+    callbackURL: config.get(k.OAuth.Google.CallbackURL),
+    passReqToCallback: true
+}, async (req, accessToken, refreshToken, profile, callback) => {
     return callback(null, await User.findOrCreateFromPassportProfile(profile));
 });
 

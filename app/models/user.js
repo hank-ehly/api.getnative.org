@@ -57,6 +57,7 @@ module.exports = function(sequelize, DataTypes) {
             models[k.Model.User].hasMany(models[k.Model.CuedVideo], {as: 'cued_videos'});
             models[k.Model.User].hasMany(models[k.Model.Like], {as: 'likes'});
             models[k.Model.User].hasMany(models[k.Model.StudySession], {as: 'study_sessions'});
+            models[k.Model.User].hasMany(models[k.Model.Identity], {as: 'identities'});
             models[k.Model.User].belongsTo(models[k.Model.Language], {as: k.Attr.DefaultStudyLanguage});
             models[k.Model.User].belongsTo(models[k.Model.Language], {as: k.Attr.InterfaceLanguage});
         },
@@ -91,38 +92,24 @@ module.exports = function(sequelize, DataTypes) {
         });
     };
 
-    User.findOrCreateFromPassportProfile = async function(profile) {
+    User.findOrCreateFromPassportProfile = async function(req, profile) {
         if (!profile.id || !profile.provider || !profile.displayName || !profile.emails) {
             throw new ReferenceError('arguments id, provider, displayName and emails must be present');
         }
 
-        const languageId = await sequelize.models[k.Model.Language].findIdForCode('en');
+        const lang = await sequelize.models[k.Model.Language].findIdForCode('en');
 
-        let user = await User.find({
-            where: {
-                email: _.first(profile.emails).value
-            }
+        const [user] = await this.findOrCreate({
+            where: {email: _.first(profile.emails).value},
+            defaults: {default_study_language_id: lang, interface_language_id: lang, name: profile.displayName}
         });
 
-        if (!user) {
-            user = await User.create({
-                default_study_language_id: languageId,
-                interface_language_id: languageId,
-                email: _.first(profile.emails).value,
-                name: profile.displayName
-            });
-
-            user = await user.reload();
-        }
+        await user.reload();
 
         const authAdapterTypeId = await sequelize.models[k.Model.AuthAdapterType].findIdForProvider(profile.provider);
 
         await sequelize.models[k.Model.Identity].findOrCreate({
-            where: {
-                user_id: user.get(k.Attr.Id),
-                auth_adapter_user_id: profile.id,
-                auth_adapter_type_id: authAdapterTypeId
-            }
+            where: {user_id: user.get(k.Attr.Id), auth_adapter_user_id: profile.id, auth_adapter_type_id: authAdapterTypeId}
         });
 
         return user;

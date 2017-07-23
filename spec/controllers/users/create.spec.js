@@ -78,10 +78,9 @@ describe('POST /users', function() {
             }).expect(400, done);
         });
 
-        it(`should send a 422 Unprocessable Entity response if the registration email is already in use`, function(done) {
-            request(server).post('/users').send(credential).then(function() {
-                request(server).post('/users').send(credential).expect(422, done);
-            });
+        it(`should send a 422 Unprocessable Entity response if the registration email is already in use`, async function() {
+            const response = await request(server).post('/users').send(credential);
+            return request(server).post('/users').send(credential).expect(422);
         });
     });
 
@@ -224,49 +223,31 @@ describe('POST /users', function() {
             });
         });
 
-        it(`should create a 'local' Identity record even if a user already has a 'facebook' Identity`, function() {
-            const cache = {};
-
-            return db[k.Model.Language].find().then(function(language) {
-                const findAuthAdapterTypes = db[k.Model.AuthAdapterType].findAll();
-
-                const createUser = db[k.Model.User].create({
-                    email: credential[k.Attr.Email],
-                    default_study_language_id: language.get(k.Attr.Id),
-                    interface_language_id: language.get(k.Attr.Id)
-                });
-
-                return Promise.all([findAuthAdapterTypes, createUser]);
-            }).then(function(values) {
-                const [authAdapterTypes, user] = values;
-                cache.authAdapterTypes = authAdapterTypes;
-
-                return db[k.Model.Identity].create({
-                    auth_adapter_type_id: _.find(authAdapterTypes, {name: 'facebook'}).get(k.Attr.Id),
-                    user_id: user.get(k.Attr.Id)
-                });
-            }).then(function() {
-                return request(server).post('/users').send(credential).then(function(response) {
-                    return db[k.Model.Identity].findAll({
-                        where: {
-                            user_id: response.body[k.Attr.Id]
-                        }
-                    }).then(function(identities) {
-                        assert.equal(identities.length, 2);
-
-                        let facebookIdentity = _.find(identities, {
-                            auth_adapter_type_id: _.find(cache.authAdapterTypes, {name: 'facebook'}).get(k.Attr.Id)
-                        });
-
-                        let localIdentity = _.find(identities, {
-                            auth_adapter_type_id: _.find(cache.authAdapterTypes, {name: 'local'}).get(k.Attr.Id)
-                        });
-
-                        assert(facebookIdentity);
-                        assert(localIdentity);
-                    });
-                });
+        it(`should create a 'local' Identity record even if a user already has a 'facebook' Identity`, async function() {
+            const language = await db[k.Model.Language].find();
+            const user = await db[k.Model.User].create({
+                email: credential[k.Attr.Email],
+                default_study_language_id: language.get(k.Attr.Id),
+                interface_language_id: language.get(k.Attr.Id)
             });
+
+            const facebookProviderId = await db[k.Model.AuthAdapterType].findIdForProvider('facebook');
+            const localProviderId = await db[k.Model.AuthAdapterType].findIdForProvider('local');
+
+            await db[k.Model.Identity].create({
+                auth_adapter_type_id: facebookProviderId,
+                user_id: user.get(k.Attr.Id)
+            });
+
+            const response = await request(server).post('/users').send(credential);
+
+            const identities = await db[k.Model.Identity].findAll({
+                where: {user_id: response.body[k.Attr.Id]}
+            });
+
+            assert.equal(identities.length, 2);
+            assert(_.find(identities, {auth_adapter_type_id: facebookProviderId}));
+            assert(_.find(identities, {auth_adapter_type_id: localProviderId}));
         });
 
         it(`should create Credential record if a user already has a 'facebook' Identity`, function() {

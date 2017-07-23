@@ -17,8 +17,9 @@ const strategy = new Strategy({
     clientID: config.get(k.OAuth.Facebook.ClientID),
     clientSecret: config.get(k.OAuth.Facebook.ClientSecret),
     profileFields: ['id', 'displayName', 'age_range', 'locale', 'photos', 'emails'],
-    callbackURL: config.get(k.OAuth.Facebook.CallbackURL)
-}, async (accessToken, refreshToken, profile, callback) => {
+    callbackURL: config.get(k.OAuth.Facebook.CallbackURL),
+    passReqToCallback: true
+}, async (req, accessToken, refreshToken, profile, callback) => {
     return callback(null, await User.findOrCreateFromPassportProfile(profile));
 });
 

@@ -24,152 +24,93 @@ const i18n              = require('i18n');
 const _                 = require('lodash');
 
 // todo: move all this to passport custom
-// todo: refactor
 module.exports.create = async (req, res, next) => {
-    let cache = {};
-    return User.existsForEmail(req.body[k.Attr.Email]).then(userExists => {
-        if (userExists) {
-            return User.find({
-                where: {
-                    email: req.body[k.Attr.Email]
-                }
-            }).then(user => {
-                cache.user = user;
+    let user, vt, localAuthAdapterTypeId = await AuthAdapterType.findIdForProvider('local');
 
-                return AuthAdapterType.find({
-                    where: {
-                        name: 'local'
-                    }
-                });
-            }).then(authAdapterType => {
-                return Promise.all([
-                    authAdapterType, Identity.find({
-                        where: {
-                            auth_adapter_type_id: authAdapterType.get(k.Attr.Id),
-                            user_id: cache.user.get(k.Attr.Id)
-                        }
-                    })
-                ]);
-            }).then((values) => {
-                const [authAdapterType, identity] = values;
-                if (identity) {
-                    throw new GetNativeError(k.Error.UserAlreadyExists);
-                }
-
-                return User.find({
-                    where: {
-                        email: req.body[k.Attr.Email]
-                    }
-                }).then(user => {
-
-                    return cache.user.update({
-                        email_verified: false
-                    });
-                }).then(() => {
-                    return Identity.create({
-                        user_id: cache.user.get(k.Attr.Id),
-                        auth_adapter_type_id: authAdapterType.get(k.Attr.Id)
-                    });
-                }).then(identity => {
-                    if (!identity) {
-                        throw new Error('Failed to create new user');
-                    }
-
-                    return Credential.create({
-                        user_id: cache.user.get(k.Attr.Id),
-                        password: Auth.hashPassword(req.body[k.Attr.Password])
-                    });
-                });
-            });
-        } else {
-            return Language.find({
-                where: {
-                    code: 'en'
-                }
-            }).then(language => {
-                return User.create({
-                    default_study_language_id: language.get(k.Attr.Id),
-                    interface_language_id: language.get(k.Attr.Id),
-                    email: req.body[k.Attr.Email]
-                });
-            }).then(user => {
-                if (!user) {
-                    throw new Error('Failed to create new user');
-                }
-
-                cache.user = user;
-
-                return Credential.create({
-                    user_id: user.get(k.Attr.Id),
-                    password: Auth.hashPassword(req.body[k.Attr.Password])
-                });
-            }).then(credential => {
-                return AuthAdapterType.find({
-                    where: {
-                        name: 'local'
-                    }
-                });
-            }).then(authAdapterType => {
-                return Identity.create({
-                    user_id: cache.user.get(k.Attr.Id),
-                    auth_adapter_type_id: authAdapterType.get(k.Attr.Id)
-                });
-            });
-        }
-    }).then(() => {
-        return User.find({
-            where: {
-                id: cache.user.get(k.Attr.Id)
-            },
-            attributes: [
-                k.Attr.Id,
-                k.Attr.Email,
-                k.Attr.BrowserNotificationsEnabled,
-                k.Attr.EmailNotificationsEnabled,
-                k.Attr.EmailVerified,
-                k.Attr.PictureUrl,
-                k.Attr.IsSilhouettePicture
-            ]
+    try {
+        user = await db[k.Model.User].find({
+            where: {email: req.body[k.Attr.Email]},
+            include: [{
+                model: db[k.Model.Identity],
+                as: 'identities',
+                required: true,
+                where: {auth_adapter_type_id: localAuthAdapterTypeId},
+            }]
         });
-    }).then(user => {
-        cache.user = user;
+    } catch (e) {
+        return next(e);
+    }
 
-        return VerificationToken.create({
+    if (user) {
+        res.status(422);
+        return next(new GetNativeError(k.Error.UserAlreadyExists));
+    }
+
+    const t = await db.sequelize.transaction();
+
+    try {
+        // todo: what if viewing other language?
+        const l = await db[k.Model.Language].findIdForCode('en');
+
+        [user] = await User.findOrCreate({
+            where: {email: req.body[k.Attr.Email]},
+            defaults: {default_study_language_id: l, interface_language_id: l},
+            transaction: t
+        });
+
+        await Identity.findOrCreate({
+            where: {user_id: user.get(k.Attr.Id), auth_adapter_type_id: localAuthAdapterTypeId},
+            transaction: t
+        });
+
+        await Credential.findOrCreate({
+            where: {user_id: user.get(k.Attr.Id), password: Auth.hashPassword(req.body[k.Attr.Password])},
+            transaction: t
+        });
+
+        vt = await VerificationToken.create({
             user_id: user.get(k.Attr.Id),
             token: Auth.generateRandomHash(),
             expiration_date: Utility.tomorrow()
+        }, {transaction: t});
+
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+        return next(new GetNativeError(k.Error.CreateResourceFailure));
+    }
+
+    const html = await new Promise((resolve, reject) => {
+        res.app.render(k.Templates.Welcome, {
+            confirmationURL: Auth.generateConfirmationURLForTokenWithPath(vt.get(k.Attr.Token), 'confirm_email'),
+            __: i18n.__
+        }, (err, html) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(html);
+            }
         });
-    }).then(verificationToken => {
-        return new Promise((resolve, reject) => {
-            res.app.render(k.Templates.Welcome, {
-                confirmationURL: Auth.generateConfirmationURLForTokenWithPath(verificationToken.get(k.Attr.Token)),
-                __: i18n.__
-            }, (err, html) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(html);
-                }
-            });
-        });
-    }).then(html => {
-        return mailer.sendMail({
-            subject: i18n.__('welcome.title'),
-            from: config.get(k.NoReply),
-            to: req.body[k.Attr.Email],
-            html: html
-        });
-    }).then(() => {
-        return Auth.generateTokenForUserId(cache.user.get(k.Attr.Id));
-    }).then(token => {
-        Auth.setAuthHeadersOnResponseWithToken(res, token);
-        res.status(201).send(cache.user.get({plain: true}));
-    }).catch(GetNativeError, e => {
-        if (e.code === k.Error.UserAlreadyExists) {
-            res.status(422);
-        }
-        next(e);
-    }).catch(next);
+    });
+
+    await mailer.sendMail({
+        subject: i18n.__('welcome.title'),
+        from: config.get(k.NoReply),
+        to: req.body[k.Attr.Email],
+        html: html
+    }, null);
+
+    await user.reload({
+        plain: true,
+        attributes: [
+            k.Attr.Id, k.Attr.Email, k.Attr.BrowserNotificationsEnabled, k.Attr.EmailNotificationsEnabled, k.Attr.EmailVerified,
+            k.Attr.PictureUrl, k.Attr.IsSilhouettePicture
+        ]
+    });
+
+    const token = await Auth.generateTokenForUserId(user[k.Attr.Id]);
+    Auth.setAuthHeadersOnResponseWithToken(res, token);
+    res.status(201).send(user);
 };
 
 module.exports.show = (req, res) => {

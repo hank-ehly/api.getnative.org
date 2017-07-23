@@ -15,8 +15,9 @@ const strategy = new Strategy({
     consumerKey: config.get(k.OAuth.Twitter.ConsumerKey),
     consumerSecret: config.get(k.OAuth.Twitter.ConsumerSecret),
     callbackURL: config.get(k.OAuth.Twitter.CallbackURL),
-    includeEmail: true
-}, async (token, tokenSecret, profile, callback) => {
+    includeEmail: true,
+    passReqToCallback: true
+}, async (req, token, tokenSecret, profile, callback) => {
     return callback(null, await User.findOrCreateFromPassportProfile(profile));
 });
 
