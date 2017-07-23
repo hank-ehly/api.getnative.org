@@ -6,22 +6,22 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const Auth     = require('../../../app/services')['Auth'];
-const k        = require('../../../config/keys.json');
+const Auth = require('../../../app/services')['Auth'];
+const k = require('../../../config/keys.json');
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
-const request  = require('supertest');
-const assert   = require('assert');
-const moment   = require('moment');
-const chance   = require('chance').Chance();
-const _        = require('lodash');
+const request = require('supertest');
+const assert = require('assert');
+const moment = require('moment');
+const chance = require('chance').Chance();
+const _ = require('lodash');
 
 describe('POST /confirm_email', function() {
     let server = null;
-    let token  = null;
-    let user   = null;
-    let db     = null;
+    let token = null;
+    let user = null;
+    let db = null;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -32,7 +32,7 @@ describe('POST /confirm_email', function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.startServer().then(function(results) {
             server = results.server;
-            db     = results.db;
+            db = results.db;
 
             return db.sequelize.query(`UPDATE users SET email_verified = true`).then(function() {
                 return db.sequelize.query(`SELECT id FROM users LIMIT 1`);
@@ -73,34 +73,44 @@ describe('POST /confirm_email', function() {
     });
 
     describe('failure', function() {
-        it(`should respond with 400 Bad Request if the 'token' body parameter is missing`, function(done) {
-            request(server).post('/confirm_email').expect(400, done);
+        it(`should respond with 400 Bad Request if the 'token' body parameter is missing`, function() {
+            return request(server).post('/confirm_email_update').expect(400);
         });
 
-        it(`should respond with 400 Bad Request if the 'token' query parameter is less than 32 characters in length`, function(done) {
-            request(server).post('/confirm_email').send({token: 'less_than_32_characters'}).expect(400, done);
+        it(`should respond with 400 Bad Request if the 'token' body parameter is less than 32 characters in length`, function() {
+            return request(server).post('/confirm_email_update').send({token: 'less_than_32_characters'}).expect(400);
         });
 
-        it(`should respond with 400 Bad Request if the 'token' query parameter is more than 32 characters in length`, function(done) {
-            request(server).post('/confirm_email').send('more_than_32_characters_more_than_32_characters').expect(400, done);
+        it(`should respond with 400 Bad Request if the 'token' body parameter is more than 32 characters in length`, function() {
+            return request(server).post('/confirm_email_update').send('more_than_32_characters_more_than_32_characters').expect(400);
         });
 
-        it(`should respond with 404 Not Found if the verification token does not exist`, function(done) {
-            request(server).post('/confirm_email').send({token: 'bf294bed1332e34f9faf00413d0e61ab'}).expect(404, done);
+        it(`should respond with 404 Not Found if the verification token does not exist`, function() {
+            return request(server).post('/confirm_email_update').send({token: 'bf294bed1332e34f9faf00413d0e61ab'}).expect(404);
         });
 
-        it(`should respond with 404 Not Found if the verification token is expired`, function(done) {
-            db[k.Model.VerificationToken].create({
+        it(`should respond with 404 Not Found if the verification token is expired`, async function() {
+            const _token = await db[k.Model.VerificationToken].create({
                 user_id: user.id,
                 token: Auth.generateRandomHash(),
                 expiration_date: moment().subtract(1, 'days').toDate()
-            }).then(function(_token) {
-                request(server).post(`/confirm_email`).send({token: _token.get(k.Attr.Token)}).expect(404, done);
             });
+
+            return request(server).post(`/confirm_email`).send({token: _token.get(k.Attr.Token)}).expect(404);
         });
     });
 
     describe('success', function() {
+        it('should respond with an X-GN-Auth-Token header', async function() {
+            const response = await request(server).post(`/confirm_email`).send({token: token});
+            assert(_.gt(response.headers[k.Header.AuthToken].length, 0));
+        });
+
+        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', async function() {
+            const response = await request(server).post(`/confirm_email`).send({token: token});
+            assert(SpecUtil.isParsableTimestamp(+response.headers[k.Header.AuthExpire]));
+        });
+
         it(`should respond with 200 OK if the verification succeeds`, function(done) {
             request(server).post(`/confirm_email`).send({token: token}).expect(200, done);
         });

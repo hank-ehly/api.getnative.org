@@ -140,7 +140,6 @@ describe('POST /users/:id/email', function() {
 
         it('should send an email to the specified address', async function() {
             await request(server).post(`/users/${user.get(k.Attr.Id)}/email`).set(k.Header.Authorization, auth).send(body);
-            const token = await db[k.Model.VerificationToken].find({where: {user_id: user.id}});
             const emails = await SpecUtil.getAllEmail();
             const recipientEmailAddress = _.first(_.last(emails).envelope.to).address;
             assert.equal(recipientEmailAddress, body.email);

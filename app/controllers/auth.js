@@ -95,7 +95,91 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
 };
 
 module.exports.confirmEmailUpdate = async (req, res, next) => {
-    return res.sendStatus(204);
+    let vt, emailChangeRequest, userBeforeUpdate, user, jwt, html;
+
+    try {
+        vt = await VerificationToken.find({where: {token: req.body.token}});
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!vt || vt.isExpired()) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.TokenExpired));
+    }
+
+    try {
+        emailChangeRequest = await db[k.Model.EmailChangeRequest].find({where: {verification_token_id: vt.get(k.Attr.Id)}});
+    } catch (e) {
+       return next(e);
+    }
+
+    if (!emailChangeRequest) {
+        return next(e);
+    }
+
+    try {
+        userBeforeUpdate = await db[k.Model.User].findByPrimary(vt.get(k.Attr.UserId));
+
+        await db[k.Model.User].update({email: emailChangeRequest.get(k.Attr.Email)}, {where: {id: vt.get(k.Attr.UserId)}});
+
+        user = await User.findByPrimary(vt.get(k.Attr.UserId), {
+            attributes: [
+                k.Attr.Id, k.Attr.BrowserNotificationsEnabled, k.Attr.Email, k.Attr.EmailNotificationsEnabled, k.Attr.EmailVerified,
+                k.Attr.PictureUrl, k.Attr.IsSilhouettePicture
+            ]
+        });
+
+        jwt = await Auth.generateTokenForUserId(user.get(k.Attr.Id));
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!jwt) {
+        throw new Error('variable jwt is undefined');
+    }
+
+    Auth.setAuthHeadersOnResponseWithToken(res, jwt);
+
+    try {
+        const priorAddressNotificationHtml = await new Promise((resolve, reject) => {
+            res.app.render('notify-email-update',  {updatedEmail: user.get(k.Attr.Email), __: i18n.__}, (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
+        });
+
+        await mailer.sendMail({
+            subject: i18n.__('notify-email-update.title'),
+            from:    config.get(k.NoReply),
+            to:      userBeforeUpdate[k.Attr.Email],
+            html:    priorAddressNotificationHtml
+        }, null);
+
+        const newAddressSuccessNotificationHtml = await new Promise((resolve, reject) => {
+            res.app.render('notify-email-update-success', (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
+        });
+
+        await mailer.sendMail({
+            subject: i18n.__('notify-email-update-success.title'),
+            from:    config.get(k.NoReply),
+            to:      user.get(k.Attr.Email),
+            html:    newAddressSuccessNotificationHtml
+        }, null);
+    } catch (e) {
+        return next(e);
+    }
+
+    return res.status(200).send(user.get({plain: true}));
 };
 
 module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {

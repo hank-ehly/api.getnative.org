@@ -23,6 +23,12 @@
         "MetadataFormat": "The provided metadata is not parsable JSON"
     },
     "lang": "en",
+    "notify-email-update": {
+        "title": "Notification Of Email Update"
+    },
+    "notify-email-update-success": {
+        "title": "Email Updated Successfully"
+    },
     "password-updated": {
         "title": "Password Updated"
     },

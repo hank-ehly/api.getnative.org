@@ -14,6 +14,11 @@ module.exports = function(sequelize, DataTypes) {
             autoIncrement: true,
             primaryKey: true,
             type: DataTypes.INTEGER
+        },
+        email: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: ''
         }
     }, {
         tableName: 'email_change_requests',
