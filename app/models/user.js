@@ -92,7 +92,7 @@ module.exports = function(sequelize, DataTypes) {
         });
     };
 
-    User.findOrCreateFromPassportProfile = async function(req, profile) {
+    User.findOrCreateFromPassportProfile = async function(profile) {
         if (!profile.id || !profile.provider || !profile.displayName || !profile.emails) {
             throw new ReferenceError('arguments id, provider, displayName and emails must be present');
         }
