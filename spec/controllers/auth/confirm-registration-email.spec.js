@@ -1,5 +1,5 @@
 /**
- * confirm-email
+ * confirm-registration-email.spec
  * get-native.com
  *
  * Created by henryehly on 2017/04/18.

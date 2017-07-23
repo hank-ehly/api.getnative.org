@@ -1,5 +1,5 @@
 /**
- * resend-confirmation-email
+ * resend-confirmation-email.spec
  * get-native.com
  *
  * Created by henryehly on 2017/04/19.
@@ -137,8 +137,6 @@ describe('POST /resend_confirmation_email', function() {
             });
         });
 
-        // todo: Use superagent 'query' helper method here and elsewhere
-        // .query({ action: 'edit', city: 'London' })
         it(`should send an email containing the confirmation URL (with the correct VerificationToken token)`, function() {
             return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
                 return db[k.Model.VerificationToken].find({
