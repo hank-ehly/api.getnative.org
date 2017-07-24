@@ -103,7 +103,7 @@ module.exports.create = async (req, res, next) => {
         attachments: [
             {
                 path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
-                cid: 'fc308da3cb46bc38888401787835d584'
+                cid: 'logo'
             }
         ]
     }, null);
