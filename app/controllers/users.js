@@ -193,3 +193,125 @@ module.exports.updatePassword = async (req, res, next) => {
 
     return res.sendStatus(204);
 };
+
+module.exports.delete = async (req, res, next) => {
+    const t = await db.sequelize.transaction();
+
+    try {
+        const options = {
+            where: {
+                user_id: req.user.get(k.Attr.Id)
+            },
+            transaction: t
+        };
+
+        await db[k.Model.Credential].destroy(options);
+        await db[k.Model.CuedVideo].destroy(options);
+        await db[k.Model.Identity].destroy(options);
+        await db[k.Model.UserRole].destroy(options);
+        await db[k.Model.Like].destroy(options);
+
+        const emailChangeRequestIds = [], writingAnswerIds = [];
+
+        let verificationTokens = await db[k.Model.VerificationToken].findAll({
+            attributes: [k.Attr.Id],
+            where: {user_id: req.user.get(k.Attr.Id)},
+            include: [
+                {
+                    model: db[k.Model.EmailChangeRequest],
+                    required: true,
+                    attributes: [k.Attr.Id],
+                    as: 'email_change_requests'
+                }
+            ]
+        });
+
+        verificationTokens = _.invokeMap(verificationTokens, 'get', {plain: true});
+
+        for (let i = 0; i < verificationTokens.length; i++) {
+            for (let j = 0; j < verificationTokens[i].email_change_requests.length; j++) {
+                emailChangeRequestIds.push(verificationTokens[i].email_change_requests[j][k.Attr.Id]);
+            }
+        }
+
+        let studySessions = await db[k.Model.StudySession].findAll({
+            attributes: [k.Attr.Id],
+            where: {user_id: req.user.get(k.Attr.Id)},
+            include: [
+                {
+                    model: db[k.Model.WritingAnswer],
+                    attributes: [k.Attr.Id],
+                    as: 'writing_answers',
+                    required: true
+                }
+            ]
+        });
+
+        studySessions = _.invokeMap(studySessions, 'get', {plain: true});
+
+        for (let i = 0; i < studySessions.length; i++) {
+            for (let j = 0; j < studySessions[i].writing_answers.length; j++) {
+                writingAnswerIds.push(studySessions[i].writing_answers[j][k.Attr.Id]);
+            }
+        }
+
+        await db[k.Model.EmailChangeRequest].destroy({
+            where: {
+                id: {
+                    $in: emailChangeRequestIds
+                }
+            },
+            transaction: t
+        });
+
+        await db[k.Model.VerificationToken].destroy(options);
+
+        await db[k.Model.WritingAnswer].destroy({
+            where: {
+                id: {
+                    $in: writingAnswerIds
+                }
+            },
+            transaction: t
+        });
+
+        await db[k.Model.StudySession].destroy(options);
+
+        await req.user.destroy({transaction: t});
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+        return next(e);
+    }
+
+    if (req.body['reason'] && req.body['reason'].length > 0) {
+        try {
+            const html = await new Promise((resolve, reject) => {
+                const variables = {
+                    __: i18n.__,
+                    email: req.user.get(k.Attr.Email),
+                    reason: req.body['reason']
+                };
+
+                res.app.render(k.Templates.DeletedAccount, variables, (err, html) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(html);
+                    }
+                });
+            });
+
+            await mailer.sendMail({
+                subject: i18n.__('delete-account-reason.title'),
+                from: config.get(k.NoReply),
+                to: config.get(k.EmailAddress.Contact),
+                html: html
+            }, null);
+        } catch (e) {
+            return next(e);
+        }
+    }
+
+    res.sendStatus(204);
+};

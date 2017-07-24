@@ -24,6 +24,14 @@ const schema = {
                 password: Joi.string().required().min(8)
             }
         },
+        delete: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            body: {
+                reason: Joi.string()
+            }
+        },
         update: {
             headers: {
                 authorization: Joi.string().required()

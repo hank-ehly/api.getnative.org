@@ -2,6 +2,9 @@
     "confirm-email-update": {
         "title": "Confirm Email Update"
     },
+    "delete-account-reason": {
+        "title": "Deleted Account"
+    },
     "email-verified": {
         "title": "Email Verified"
     },

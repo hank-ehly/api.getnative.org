@@ -34,5 +34,6 @@ defaults[k.GoogleCloud.ProjectId] = 'get-native';
 defaults[k.GoogleCloud.StorageBucketName] = 'mock-bucket-name';
 defaults[k.VideoFileExtension] = 'mp4';
 defaults[k.ImageFileExtension] = 'jpg';
+defaults[k.EmailAddress.Contact] = 'contact@foobar.com';
 
 module.exports = defaults;

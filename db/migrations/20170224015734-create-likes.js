@@ -8,6 +8,12 @@
 module.exports = {
     up: function(queryInterface, Sequelize) {
         return queryInterface.createTable('likes', {
+            id: {
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+                type: Sequelize.INTEGER
+            },
             video_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
@@ -16,24 +22,26 @@ module.exports = {
                     key: 'id'
                 },
                 onUpdate: 'restrict',
-                onDelete: 'restrict',
-                primaryKey: true
+                onDelete: 'restrict'
             },
             user_id: {
                 type: Sequelize.INTEGER,
-                allowNull: false,
+                allowNull: true,
                 references: {
                     model: 'users',
                     key: 'id'
                 },
                 onUpdate: 'restrict',
-                onDelete: 'restrict',
-                primaryKey: true
+                onDelete: 'set null'
             },
             created_at: {
                 allowNull: false,
                 type: Sequelize.DATE,
                 defaultValue: Sequelize.fn('NOW')
+            },
+            deleted_at: {
+                allowNull: true,
+                type: Sequelize.DATE
             }
         }, {
             engine: 'InnoDB',

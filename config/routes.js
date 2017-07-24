@@ -58,6 +58,7 @@ router.patch(  '/usage_examples/:id',                                           
 router.delete( '/usage_examples/:id',                                                                validateParams(pv.usageExamples.delete),                auth, adminOnly, ctrl['usage-examples'].delete);
 router.post(   '/users',                                                                             validateParams(pv.users.create),                                         ctrl.users.create);
 router.patch(  '/users',                                                                             validateParams(pv.users.update),                        auth,            ctrl.users.update);
+router.delete( '/users',                                                                             validateParams(pv.users.delete),                        auth,            ctrl.users.delete);
 router.post(   '/users/password',                                                                    validateParams(pv.users.updatePassword),                auth,            ctrl.users.updatePassword);
 router.post(   '/users/:id/email',                                                                   validateParams(pv.auth.sendEmailUpdateConfirmationEmail), auth,          ctrl.auth.sendEmailUpdateConfirmationEmail);
 router.get(    '/users/me',                                                                          validateParams(pv.users.me),                            auth,            ctrl.users.show);

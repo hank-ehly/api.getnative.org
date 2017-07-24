@@ -31,5 +31,6 @@ config[k.OAuth.Google.ClientSecret] = oauthSecrets.staging.google.clientSecret;
 config[k.OAuth.Google.CallbackURL] = 'https://api.stg.get-native.com/oauth/google/callback';
 
 config[k.GoogleCloud.StorageBucketName] = 'stg.get-native.com';
+config[k.EmailAddress.Contact] = 'contact@get-native.com';
 
 module.exports = config;

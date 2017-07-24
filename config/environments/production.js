@@ -16,5 +16,6 @@ config[k.Client.Host] = 'get-native.com';
 config[k.Client.Protocol] = 'https';
 config[k.NoReply] = 'noreply@get-native.com';
 config[k.GoogleCloud.StorageBucketName] = 'get-native.com';
+config[k.EmailAddress.Contact] = 'contact@get-native.com';
 
 module.exports = config;

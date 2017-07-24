@@ -31,6 +31,7 @@ module.exports = function(sequelize, DataTypes) {
         underscored: true,
         associations: function(db) {
             db[k.Model.VerificationToken].belongsTo(db[k.Model.User]);
+            db[k.Model.VerificationToken].hasMany(db[k.Model.EmailChangeRequest], {as: 'email_change_requests'});
         }
     });
 

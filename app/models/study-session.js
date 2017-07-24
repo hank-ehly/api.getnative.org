@@ -26,7 +26,7 @@ module.exports = function(sequelize, DataTypes) {
         associations: function(models) {
             models[k.Model.StudySession].belongsTo(models[k.Model.User], {as: 'user'});
             models[k.Model.StudySession].belongsTo(models[k.Model.Video], {as: 'video'});
-            models[k.Model.StudySession].hasOne(models[k.Model.WritingAnswer], {as: 'writing_answer'});
+            models[k.Model.StudySession].hasMany(models[k.Model.WritingAnswer], {as: 'writing_answers'});
         }
     });
 };

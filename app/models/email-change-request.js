@@ -25,7 +25,7 @@ module.exports = function(sequelize, DataTypes) {
         timestamps: false,
         underscored: true,
         associations: function(db) {
-            db[k.Model.EmailChangeRequest].belongsTo(db[k.Model.VerificationToken]);
+            db[k.Model.EmailChangeRequest].belongsTo(db[k.Model.VerificationToken], {as: 'verification_token'});
         }
     });
 };

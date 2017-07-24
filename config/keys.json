@@ -59,6 +59,9 @@
         "Welcome": "Welcome",
         "ResetPassword": "ResetPassword"
     },
+    "EmailAddress": {
+        "Contact": "kEmailAddressContact"
+    },
     "Error": {
         "JWT": "JWT",
         "RequestParam": "RequestParam",
@@ -154,6 +157,7 @@
         "Host": "smtp:host"
     },
     "Templates": {
+        "DeletedAccount": "delete-account-reason",
         "EmailVerified": "email-verified",
         "PasswordUpdated": "password-updated",
         "Welcome": "welcome"

@@ -5,18 +5,17 @@
  * Created by henryehly on 2017/02/24.
  */
 
+const k = require('../../config/keys.json');
+
 module.exports = function(sequelize, DataTypes) {
-    const Like = sequelize.define('Like', {}, {
+    return sequelize.define(k.Model.Like, {}, {
         tableName: 'likes',
         underscored: true,
+        paranoid: true,
         updatedAt: false,
-        associations: function(models) {
-            models.Like.belongsTo(models.User);
-            models.Like.belongsTo(models.Video);
+        associations: function(db) {
+            db[k.Model.Like].belongsTo(db[k.Model.User]);
+            db[k.Model.Like].belongsTo(db[k.Model.Video]);
         }
     });
-
-    Like.removeAttribute('id');
-
-    return Like;
 };
