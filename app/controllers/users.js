@@ -21,6 +21,7 @@ const VerificationToken = db[k.Model.VerificationToken];
 
 const mailer            = require('../../config/initializers/mailer');
 const i18n              = require('i18n');
+const path              = require('path');
 const _                 = require('lodash');
 
 // todo: move all this to passport custom
@@ -83,7 +84,8 @@ module.exports.create = async (req, res, next) => {
     const html = await new Promise((resolve, reject) => {
         res.app.render(k.Templates.Welcome, {
             confirmationURL: Auth.generateConfirmationURLForTokenWithPath(vt.get(k.Attr.Token), 'confirm_email'),
-            __: i18n.__
+            __: i18n.__,
+            contactEmail: config.get(k.EmailAddress.Contact)
         }, (err, html) => {
             if (err) {
                 reject(err);
@@ -97,7 +99,13 @@ module.exports.create = async (req, res, next) => {
         subject: i18n.__('welcome.title'),
         from: config.get(k.NoReply),
         to: req.body[k.Attr.Email],
-        html: html
+        html: html,
+        attachments: [
+            {
+                path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                cid: 'fc308da3cb46bc38888401787835d584'
+            }
+        ]
     }, null);
 
     await user.reload({
