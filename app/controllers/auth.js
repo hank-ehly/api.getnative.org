@@ -40,13 +40,11 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
         return next(new GetNativeError(k.Error.TokenExpired));
     }
 
-    const changes = {
-        email_verified: true,
-        email_notifications_enabled: true
-    };
-
     try {
-        await User.update(changes, {
+        await User.update({
+            email_verified: true,
+            email_notifications_enabled: true
+        }, {
             where: {
                 id: verificationToken[k.Attr.UserId]
             }
@@ -58,16 +56,35 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
                 k.Attr.PictureUrl, k.Attr.IsSilhouettePicture
             ]
         });
-    } catch (e) {
-        return next(e);
-    }
 
-    if (!user) {
-        throw new Error('variable user is undefined');
-    }
-
-    try {
         jsonWebToken = await Auth.generateTokenForUserId(user.get(k.Attr.Id));
+        Auth.setAuthHeadersOnResponseWithToken(res, jsonWebToken);
+
+        const emailTemplateVariables = await new Promise((resolve, reject) => {
+            res.app.render(k.Templates.RegistrationEmailVerified, {
+                contact: config.get(k.EmailAddress.Contact),
+                __: i18n.__
+            }, (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
+        });
+
+        await mailer.sendMail({
+            subject: i18n.__('registration-email-confirmed.title'),
+            from:    config.get(k.NoReply),
+            to:      user.get(k.Attr.Email),
+            html:    emailTemplateVariables,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
+        }, null);
     } catch (e) {
         if (e instanceof GetNativeError && e.code === k.Error.TokenExpired) {
             res.status(404);
@@ -75,12 +92,6 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
 
         return next(e);
     }
-
-    if (!jsonWebToken) {
-        throw new Error('variable jsonWebToken is undefined');
-    }
-
-    Auth.setAuthHeadersOnResponseWithToken(res, jsonWebToken);
 
     return res.status(200).send(user.get({plain: true}));
 };
@@ -239,14 +250,12 @@ module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
     }
 
     try {
-        const templateVariables = {
-            confirmationURL: Auth.generateConfirmationURLForTokenWithPath(token.get(k.Attr.Token), 'confirm_email_update'),
-            contact: config.get(k.EmailAddress.Contact),
-            __: i18n.__
-        };
-
         html = await new Promise((resolve, reject) => {
-            res.app.render(k.Templates.ConfirmEmailUpdate, templateVariables, (err, html) => {
+            res.app.render(k.Templates.ConfirmEmailUpdate, {
+                confirmationURL: Auth.generateConfirmationURLForTokenWithPath(token.get(k.Attr.Token), 'confirm_email_update'),
+                contact: config.get(k.EmailAddress.Contact),
+                __: i18n.__
+            }, (err, html) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -323,7 +332,7 @@ module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
         };
 
         html = await new Promise((resolve, reject) => {
-            res.app.render('welcome', templateVariables, (err, html) => {
+            res.app.render(k.Templates.Welcome, templateVariables, (err, html) => {
                 if (err) {
                     reject(err);
                 } else {

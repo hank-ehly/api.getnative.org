@@ -123,16 +123,10 @@ describe('POST /resend_confirmation_email', function() {
         });
 
         it(`should send an email to the specified address if it is linked to an user`, function() {
-            return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
-                return db[k.Model.VerificationToken].find({
-                    where: {
-                        user_id: user.id
-                    }
-                }).then(function(token) {
-                    return SpecUtil.getAllEmail().then(function(emails) {
-                        const recipientEmailAddress = _.first(_.last(emails).envelope.to).address;
-                        assert.equal(recipientEmailAddress, user.email);
-                    });
+            return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function() {
+                return SpecUtil.getAllEmail().then(function(emails) {
+                    const recipientEmailAddress = _.first(_.last(emails).envelope.to).address;
+                    assert.equal(recipientEmailAddress, user.email);
                 });
             });
         });

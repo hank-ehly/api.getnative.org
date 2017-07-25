@@ -157,13 +157,13 @@
         "Host": "smtp:host"
     },
     "Templates": {
-        "ConfirmEmailUpdate": "confirm-email-update",
-        "DeletedAccount": "delete-account-reason",
-        "EmailVerified": "email-verified",
-        "NotifyEmailUpdate": "notify-email-update",
-        "EmailUpdateSuccess": "notify-email-update-success",
-        "PasswordUpdated": "password-updated",
-        "Welcome": "welcome"
+        "ConfirmEmailUpdate": "01",
+        "DeleteAccountReason": "02",
+        "RegistrationEmailVerified": "03",
+        "NotifyEmailUpdate": "04",
+        "EmailUpdateSuccess": "05",
+        "PasswordUpdated": "06",
+        "Welcome": "07"
     },
     "TempDir": "kTempDir",
     "VideoFileExtension": "kVideoFileExtension",

@@ -18,10 +18,7 @@ const chance = require('chance').Chance();
 const _ = require('lodash');
 
 describe('POST /confirm_email', function() {
-    let server = null;
-    let token = null;
-    let user = null;
-    let db = null;
+    let server, token, user, db;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -35,7 +32,7 @@ describe('POST /confirm_email', function() {
             db = results.db;
 
             return db.sequelize.query(`UPDATE users SET email_verified = true`).then(function() {
-                return db.sequelize.query(`SELECT id FROM users LIMIT 1`);
+                return db.sequelize.query(`SELECT id, email FROM users LIMIT 1`);
             }).then(function(result) {
                 user = _.toPlainObject(result[0][0]);
                 return db[k.Model.VerificationToken].create({
@@ -91,7 +88,7 @@ describe('POST /confirm_email', function() {
 
         it(`should respond with 404 Not Found if the verification token is expired`, async function() {
             const _token = await db[k.Model.VerificationToken].create({
-                user_id: user.id,
+                user_id: user[k.Attr.Id],
                 token: Auth.generateRandomHash(),
                 expiration_date: moment().subtract(1, 'days').toDate()
             });
@@ -195,6 +192,13 @@ describe('POST /confirm_email', function() {
             }).then(function(a) {
                 assert.equal(a.get(k.Attr.EmailNotificationsEnabled), true);
             });
+        });
+
+        it('should send a notification email to the verified user', async function() {
+            await request(server).post('/confirm_email').send({token: token});
+            const emails = await SpecUtil.getAllEmail();
+            const recipientEmailAddress = _.first(_.last(emails).envelope.to).address;
+            assert.equal(recipientEmailAddress, user[k.Attr.Email]);
         });
     });
 

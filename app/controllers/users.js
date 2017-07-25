@@ -312,7 +312,7 @@ module.exports.delete = async (req, res, next) => {
                     reason: req.body['reason']
                 };
 
-                res.app.render(k.Templates.DeletedAccount, variables, (err, html) => {
+                res.app.render(k.Templates.DeleteAccountReason, variables, (err, html) => {
                     if (err) {
                         reject(err);
                     } else {

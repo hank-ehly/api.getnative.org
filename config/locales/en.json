@@ -35,6 +35,9 @@
     "password-updated": {
         "title": "Password Updated"
     },
+    "registration-email-confirmed": {
+        "title": "Email Address Confirmed"
+    },
     "welcome": {
         "title": "Welcome to Get Native!",
         "instructions": "",
