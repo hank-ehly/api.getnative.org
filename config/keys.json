@@ -159,7 +159,7 @@
     "Templates": {
         "ConfirmEmailUpdate": "01",
         "DeleteAccountReason": "02",
-        "RegistrationEmailVerified": "03",
+        "RegistrationEmailConfirmed": "03",
         "NotifyEmailUpdate": "04",
         "EmailUpdateSuccess": "05",
         "PasswordUpdated": "06",

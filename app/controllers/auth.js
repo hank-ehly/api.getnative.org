@@ -61,7 +61,7 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
         Auth.setAuthHeadersOnResponseWithToken(res, jsonWebToken);
 
         const emailTemplateVariables = await new Promise((resolve, reject) => {
-            res.app.render(k.Templates.RegistrationEmailVerified, {
+            res.app.render(k.Templates.RegistrationEmailConfirmed, {
                 contact: config.get(k.EmailAddress.Contact),
                 __: i18n.__
             }, (err, html) => {

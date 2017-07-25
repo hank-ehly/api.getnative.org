@@ -1,9 +1,18 @@
 {
     "confirm-email-update": {
-        "title": "Confirm Email Update"
+        "title": "Confirm Email Update",
+        "subtitle": "Please confirm your email address.",
+        "instructions": "To confirm your new email address for <strong>getnative</strong>, please click the button below.",
+        "confirm-button-title": "CONFIRM",
+        "footer": "Didn't expect to receive an email from us?&#160;Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"<%= contact %>\" href=\"mailto:<%= contact %>\">contact us</a> so it doesn't happen again."
     },
     "delete-account-reason": {
         "title": "Deleted Account"
+    },
+    "email-update-success": {
+        "header": "Your email address was updated!",
+        "message": "Your email address for <strong>getnative</strong> has been successfully updated.",
+        "footer": "Didn't expect to receive an email from us?&#160;Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"<%= contact %>\" href=\"mailto:<%= contact %>\">contact us</a> so it doesn't happen again."
     },
     "email-verified": {
         "title": "Email Verified"
@@ -27,21 +36,31 @@
     },
     "lang": "en",
     "notify-email-update": {
-        "title": "Notification Of Email Update"
+        "title": "Notification Of Email Update",
+        "header": "Your email address was changed!",
+        "message": "Your email address for <strong>getnative</strong> has been updated to <strong><%= updatedEmail %></strong>. This email address will no longer receive messages from getnative. If you think this is a mistake, please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"<%= contact %>\" href=\"mailto:<%= contact %>\">contact us</a> immediately.",
+        "footer": "Didn't expect to receive an email from us?&#160;Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"<%= contact %>\" href=\"mailto:<%= contact %>\">contact us</a> so it doesn't happen again."
     },
     "notify-email-update-success": {
         "title": "Email Updated Successfully"
     },
     "password-updated": {
-        "title": "Password Updated"
+        "title": "Password Updated",
+        "message-1": "Your password for signing in to <strong>getnative</strong> was recently changed. If you did this yourself, then there's nothing to worry about.",
+        "message-2": "If you did not make this change, please <a style=\"color:#33CC99;text-decoration: underline;\" title=\"<%= contact %>\" href=\"mailto:<%= contact %>\">notify us</a>.",
+        "message-3": "Either way, feel free to reach out with any questions you might have. We're here to help.",
+        "thank-you-message": "Thanks,<br>getnative team",
+        "footer": "Didn't expect to receive an email from us?&#160;Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"<%= contact %>\" href=\"mailto:<%= contact %>\">contact us</a> so it doesn't happen again."
     },
     "registration-email-confirmed": {
-        "title": "Email Address Confirmed"
+        "title": "Email Address Confirmed",
+        "message": "Thank you for signing up with <strong>getnative</strong>! Your email address has successfully been confirmed.",
+        "footer": "Didn't expect to receive an email from us?&#160;Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"<%= contact %>\" href=\"mailto:<%= contact %>\">contact us</a> so it doesn't happen again."
     },
     "welcome": {
-        "title": "Welcome to Get Native!",
-        "instructions": "",
-        "confirmationLinkLabel": "Confirm Email Address",
-        "footer": "Footer.."
+        "title": "Welcome to getnative!",
+        "instructions": "Thank you for registering for getnative! Please verify your email address by clicking the button below.",
+        "confirmationLinkLabel": "CONFIRM",
+        "footer": "Didn't expect to receive an email from us?&#160;Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"<%= contact %>\" href=\"mailto:<%= contact %>\">contact us</a> so it doesn't happen again."
     }
 }
