@@ -157,8 +157,11 @@
         "Host": "smtp:host"
     },
     "Templates": {
+        "ConfirmEmailUpdate": "confirm-email-update",
         "DeletedAccount": "delete-account-reason",
         "EmailVerified": "email-verified",
+        "NotifyEmailUpdate": "notify-email-update",
+        "EmailUpdateSuccess": "notify-email-update-success",
         "PasswordUpdated": "password-updated",
         "Welcome": "welcome"
     },

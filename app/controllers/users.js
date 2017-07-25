@@ -84,6 +84,7 @@ module.exports.create = async (req, res, next) => {
     const html = await new Promise((resolve, reject) => {
         res.app.render(k.Templates.Welcome, {
             confirmationURL: Auth.generateConfirmationURLForTokenWithPath(vt.get(k.Attr.Token), 'confirm_email'),
+            contact: config.get(k.EmailAddress.Contact),
             __: i18n.__,
             contactEmail: config.get(k.EmailAddress.Contact)
         }, (err, html) => {
@@ -179,7 +180,10 @@ module.exports.updatePassword = async (req, res, next) => {
         await Credential.update({password: hashPassword}, {where: {user_id: req.user[k.Attr.Id]}});
 
         const html = await new Promise((resolve, reject) => {
-            res.app.render(k.Templates.PasswordUpdated, {__: i18n.__}, (err, html) => {
+            res.app.render(k.Templates.PasswordUpdated, {
+                contact: config.get(k.EmailAddress.Contact),
+                __: i18n.__
+            }, (err, html) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -192,7 +196,13 @@ module.exports.updatePassword = async (req, res, next) => {
             subject: i18n.__('password-updated.title'),
             from: config.get(k.NoReply),
             to: req.user.get(k.Attr.Email),
-            html: html
+            html: html,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
         }, null);
     } catch (e) {
         res.status(404);
@@ -298,6 +308,7 @@ module.exports.delete = async (req, res, next) => {
                 const variables = {
                     __: i18n.__,
                     email: req.user.get(k.Attr.Email),
+                    contact: config.get(k.EmailAddress.Contact),
                     reason: req.body['reason']
                 };
 
@@ -314,7 +325,13 @@ module.exports.delete = async (req, res, next) => {
                 subject: i18n.__('delete-account-reason.title'),
                 from: config.get(k.NoReply),
                 to: config.get(k.EmailAddress.Contact),
-                html: html
+                html: html,
+                attachments: [
+                    {
+                        path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                        cid: 'logo'
+                    }
+                ]
             }, null);
         } catch (e) {
             return next(e);

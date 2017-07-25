@@ -19,6 +19,7 @@ const Language          = db[k.Model.Language];
 
 const mailer            = require('../../config/initializers/mailer');
 const i18n              = require('i18n');
+const path              = require('path');
 const _                 = require('lodash');
 
 module.exports.confirmRegistrationEmail = async (req, res, next) => {
@@ -133,7 +134,11 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
 
     try {
         const priorAddressNotificationHtml = await new Promise((resolve, reject) => {
-            res.app.render('notify-email-update',  {updatedEmail: user.get(k.Attr.Email), __: i18n.__}, (err, html) => {
+            res.app.render(k.Templates.NotifyEmailUpdate, {
+                updatedEmail: user.get(k.Attr.Email),
+                contact: config.get(k.EmailAddress.Contact),
+                __: i18n.__
+            }, (err, html) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -146,11 +151,20 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
             subject: i18n.__('notify-email-update.title'),
             from:    config.get(k.NoReply),
             to:      userBeforeUpdate[k.Attr.Email],
-            html:    priorAddressNotificationHtml
+            html:    priorAddressNotificationHtml,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
         }, null);
 
         const newAddressSuccessNotificationHtml = await new Promise((resolve, reject) => {
-            res.app.render('notify-email-update-success', (err, html) => {
+            res.app.render(k.Templates.EmailUpdateSuccess, {
+                contact: config.get(k.EmailAddress.Contact),
+                __: i18n.__
+            }, (err, html) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -163,7 +177,13 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
             subject: i18n.__('notify-email-update-success.title'),
             from:    config.get(k.NoReply),
             to:      user.get(k.Attr.Email),
-            html:    newAddressSuccessNotificationHtml
+            html:    newAddressSuccessNotificationHtml,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
         }, null);
     } catch (e) {
         return next(e);
@@ -221,11 +241,12 @@ module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
     try {
         const templateVariables = {
             confirmationURL: Auth.generateConfirmationURLForTokenWithPath(token.get(k.Attr.Token), 'confirm_email_update'),
+            contact: config.get(k.EmailAddress.Contact),
             __: i18n.__
         };
 
         html = await new Promise((resolve, reject) => {
-            res.app.render('confirm-email-update', templateVariables, (err, html) => {
+            res.app.render(k.Templates.ConfirmEmailUpdate, templateVariables, (err, html) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -246,7 +267,13 @@ module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
             subject: i18n.__('confirm-email-update.title'),
             from:    config.get(k.NoReply),
             to:      req.body[k.Attr.Email],
-            html:    html
+            html:    html,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
         }, null);
     } catch (e) {
         return next(e);
@@ -291,6 +318,7 @@ module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
     try {
         const templateVariables = {
             confirmationURL: Auth.generateConfirmationURLForTokenWithPath(verificationToken.get(k.Attr.Token), 'confirm_email'),
+            contact: config.get(k.EmailAddress.Contact),
             __: i18n.__
         };
 
@@ -316,7 +344,13 @@ module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
             subject: i18n.__('welcome.title'),
             from:    config.get(k.NoReply),
             to:      req.body[k.Attr.Email],
-            html:    html
+            html:    html,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
         }, null);
     } catch (e) {
         return next(e);
