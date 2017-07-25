@@ -302,41 +302,43 @@ module.exports.delete = async (req, res, next) => {
         return next(e);
     }
 
-    if (req.body['reason'] && req.body['reason'].length > 0) {
-        try {
-            const html = await new Promise((resolve, reject) => {
-                const variables = {
-                    __: i18n.__,
-                    email: req.user.get(k.Attr.Email),
-                    contact: config.get(k.EmailAddress.Contact),
-                    reason: req.body['reason']
-                };
-
-                res.app.render(k.Templates.DeleteAccountReason, variables, (err, html) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(html);
-                    }
-                });
-            });
-
-            await mailer.sendMail({
-                subject: i18n.__('delete-account-reason.title'),
-                from: config.get(k.NoReply),
-                to: config.get(k.EmailAddress.Contact),
-                html: html,
-                attachments: [
-                    {
-                        path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
-                        cid: 'logo'
-                    }
-                ]
-            }, null);
-        } catch (e) {
-            return next(e);
-        }
+    if (!req.body['reason']) {
+        return res.sendStatus(204);
     }
 
-    res.sendStatus(204);
+    try {
+        const html = await new Promise((resolve, reject) => {
+            const variables = {
+                __: i18n.__,
+                email: req.user.get(k.Attr.Email),
+                contact: config.get(k.EmailAddress.Contact),
+                reason: req.body['reason']
+            };
+
+            res.app.render(k.Templates.DeleteAccountReason, variables, (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
+        });
+
+        await mailer.sendMail({
+            subject: i18n.__('delete-account-reason.title'),
+            from: config.get(k.NoReply),
+            to: config.get(k.EmailAddress.Contact),
+            html: html,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
+        }, null);
+    } catch (e) {
+        return next(e);
+    }
+
+    return res.sendStatus(204);
 };

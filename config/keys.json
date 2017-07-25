@@ -84,7 +84,8 @@
         "Development": "development",
         "Test": "test",
         "CircleCI": "circle_ci",
-        "Production": "production"
+        "Production": "production",
+        "Staging": "staging"
     },
     "ImageFileExtension": "kImageFileExtension",
     "Header": {
