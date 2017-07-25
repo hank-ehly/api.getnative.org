@@ -11,7 +11,7 @@ const k = require('../../config/keys.json');
 const db = require('../models');
 
 const moment = require('moment');
-const querystring = require('querystring');
+const url = require('url');
 
 module.exports.callback = async (req, res, next) => {
     let jsonWebToken;
@@ -26,13 +26,20 @@ module.exports.callback = async (req, res, next) => {
         throw new ReferenceError('variable jsonWebToken is undefined');
     }
 
-    const query = querystring.stringify({
-        token: jsonWebToken,
-        expires: moment().add(1, 'hours').valueOf().toString()
-    });
+    let pathname = 'dashboard';
+    if ([k.Env.Staging, k.Env.Production].includes(config.get(k.ENVIRONMENT))) {
+        pathname = [req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code), '/', pathname].join('');
+    }
 
-    const preferredInterfaceLangCode = req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code);
-    const redirectUrl = [config.get(k.Client.BaseURI), '/', 'dashboard', '?', query].join('');
+    const redirectUrl = url.format({
+        protocol: config.get(k.Client.Protocol),
+        host: config.get(k.Client.Host),
+        pathname: pathname,
+        query: {
+            token: jsonWebToken,
+            expires: moment().add(1, 'hours').valueOf().toString()
+        }
+    });
 
     res.redirect(redirectUrl);
 };
