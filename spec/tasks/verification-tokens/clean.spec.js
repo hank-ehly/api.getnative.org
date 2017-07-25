@@ -81,6 +81,34 @@ describe('clean (VerificationToken)', function() {
         assert.notEqual(count, 0);
     });
 
+    it('should delete VerificationTokens with dependencies', async function() {
+        this.timeout(SpecUtil.defaultTimeout);
+
+        const user = await User.find({attributes: [k.Attr.Id]});
+        const userId = user.get(k.Attr.Id);
+
+        const vt = await VerificationToken.create({
+            user_id: userId,
+            token: Auth.generateRandomHash(),
+            expiration_date: moment().subtract(1, 'days').toDate()
+        });
+
+        const emailChangeRequest = await db[k.Model.EmailChangeRequest].create({
+            email: 'foo@bar.com',
+            verification_token_id: vt.get(k.Attr.Id)
+        });
+
+        try {
+            await require(taskPath)();
+        } catch (e) {
+            assert.fail(null, null, e, '');
+        }
+
+        const deletedEmailChangeRequest = await db[k.Model.EmailChangeRequest].findByPrimary(emailChangeRequest.get(k.Attr.Id));
+
+        assert(!deletedEmailChangeRequest);
+    });
+
     it('should return true if the task is successful', async function() {
         this.timeout(SpecUtil.defaultTimeout);
 

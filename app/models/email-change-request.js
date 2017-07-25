@@ -9,12 +9,6 @@ const k = require('../../config/keys.json');
 
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define(k.Model.EmailChangeRequest, {
-        id: {
-            allowNull: false,
-            autoIncrement: true,
-            primaryKey: true,
-            type: DataTypes.INTEGER
-        },
         email: {
             type: DataTypes.STRING,
             allowNull: false,
