@@ -96,6 +96,171 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
     return res.status(200).send(user.get({plain: true}));
 };
 
+module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
+    let user, verificationToken, html;
+
+    try {
+        user = await User.find({where: {email: req.body[k.Attr.Email]}});
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!user) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.UserMissing));
+    }
+
+    if (user.get(k.Attr.EmailVerified)) {
+        res.status(422);
+        return next(new GetNativeError(k.Error.UserAlreadyVerified));
+    }
+
+    try {
+        verificationToken = await VerificationToken.create({
+            user_id: user.get(k.Attr.Id),
+            token: Auth.generateRandomHash(),
+            expiration_date: Utility.tomorrow()
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!verificationToken) {
+        throw new Error('variable verificationToken is undefined');
+    }
+
+    try {
+        const templateVariables = {
+            confirmationURL: Auth.generateConfirmationURLForTokenWithPath(verificationToken.get(k.Attr.Token), 'confirm_email'),
+            contact: config.get(k.EmailAddress.Contact),
+            __: i18n.__
+        };
+
+        html = await new Promise((resolve, reject) => {
+            res.app.render(k.Templates.Welcome, templateVariables, (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!html) {
+        throw new Error('variable mailHtml is undefined');
+    }
+
+    try {
+        await mailer.sendMail({
+            subject: i18n.__('welcome.title'),
+            from:    config.get(k.NoReply),
+            to:      req.body[k.Attr.Email],
+            html:    html,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
+        }, null);
+    } catch (e) {
+        return next(e);
+    }
+
+    res.sendStatus(204);
+};
+
+module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
+    let user, token, html;
+
+    try {
+        if (await db[k.Model.User].existsForEmail(req.body[k.Attr.Email])) {
+            res.status(422);
+            return next(new GetNativeError(k.Error.UserAlreadyExists));
+        }
+    } catch (e) {
+        return next(e);
+    }
+
+    try {
+        user = await User.findByPrimary(req.params[k.Attr.Id]);
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!user) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.UserMissing));
+    }
+
+    let t = await db.sequelize.transaction();
+    try {
+        token = await VerificationToken.create({
+            user_id: user.get(k.Attr.Id),
+            token: Auth.generateRandomHash(),
+            expiration_date: Utility.tomorrow()
+        }, {transaction: t});
+
+        await db[k.Model.EmailChangeRequest].create({
+            verification_token_id: token.get(k.Attr.Id),
+            email: req.body[k.Attr.Email]
+        }, {transaction: t});
+
+        await t.commit();
+    } catch (e) {
+        await t.rollback();
+        return next(e);
+    }
+
+    if (!token) {
+        throw new Error('variable verificationToken is undefined');
+    }
+
+    try {
+        html = await new Promise((resolve, reject) => {
+            res.app.render(k.Templates.ConfirmEmailUpdate, {
+                confirmationURL: Auth.generateConfirmationURLForTokenWithPath(token.get(k.Attr.Token), 'confirm_email_update'),
+                contact: config.get(k.EmailAddress.Contact),
+                __: i18n.__
+            }, (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
+        });
+    } catch (e) {
+        return next(e);
+    }
+
+    if (!html) {
+        throw new Error('variable mailHtml is undefined');
+    }
+
+    try {
+        await mailer.sendMail({
+            subject: i18n.__('confirm-email-update.title'),
+            from:    config.get(k.NoReply),
+            to:      req.body[k.Attr.Email],
+            html:    html,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
+        }, null);
+    } catch (e) {
+        return next(e);
+    }
+
+    res.sendStatus(204);
+};
+
 module.exports.confirmEmailUpdate = async (req, res, next) => {
     let vt, emailChangeRequest, userBeforeUpdate, user, jwt, html;
 
@@ -201,169 +366,4 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
     }
 
     return res.status(200).send(user.get({plain: true}));
-};
-
-module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
-    let user, token, html;
-
-    try {
-        if (await db[k.Model.User].existsForEmail(req.body[k.Attr.Email])) {
-            res.status(422);
-            return next(new GetNativeError(k.Error.UserAlreadyExists));
-        }
-    } catch (e) {
-        return next(e);
-    }
-
-    try {
-        user = await User.findByPrimary(req.params[k.Attr.Id]);
-    } catch (e) {
-        return next(e);
-    }
-
-    if (!user) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.UserMissing));
-    }
-
-    let t = await db.sequelize.transaction();
-    try {
-        token = await VerificationToken.create({
-            user_id: user.get(k.Attr.Id),
-            token: Auth.generateRandomHash(),
-            expiration_date: Utility.tomorrow()
-        }, {transaction: t});
-
-        await db[k.Model.EmailChangeRequest].create({
-            verification_token_id: token.get(k.Attr.Id),
-            email: req.body[k.Attr.Email]
-        }, {transaction: t});
-
-        await t.commit();
-    } catch (e) {
-        await t.rollback();
-        return next(e);
-    }
-
-    if (!token) {
-        throw new Error('variable verificationToken is undefined');
-    }
-
-    try {
-        html = await new Promise((resolve, reject) => {
-            res.app.render(k.Templates.ConfirmEmailUpdate, {
-                confirmationURL: Auth.generateConfirmationURLForTokenWithPath(token.get(k.Attr.Token), 'confirm_email_update'),
-                contact: config.get(k.EmailAddress.Contact),
-                __: i18n.__
-            }, (err, html) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(html);
-                }
-            });
-        });
-    } catch (e) {
-        return next(e);
-    }
-
-    if (!html) {
-        throw new Error('variable mailHtml is undefined');
-    }
-
-    try {
-        await mailer.sendMail({
-            subject: i18n.__('confirm-email-update.title'),
-            from:    config.get(k.NoReply),
-            to:      req.body[k.Attr.Email],
-            html:    html,
-            attachments: [
-                {
-                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
-                    cid: 'logo'
-                }
-            ]
-        }, null);
-    } catch (e) {
-        return next(e);
-    }
-
-    res.sendStatus(204);
-};
-
-module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
-    let user, verificationToken, html;
-
-    try {
-        user = await User.find({where: {email: req.body[k.Attr.Email]}});
-    } catch (e) {
-        return next(e);
-    }
-
-    if (!user) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.UserMissing));
-    }
-
-    if (user.get(k.Attr.EmailVerified)) {
-        res.status(422);
-        return next(new GetNativeError(k.Error.UserAlreadyVerified));
-    }
-
-    try {
-        verificationToken = await VerificationToken.create({
-            user_id: user.get(k.Attr.Id),
-            token: Auth.generateRandomHash(),
-            expiration_date: Utility.tomorrow()
-        });
-    } catch (e) {
-        return next(e);
-    }
-
-    if (!verificationToken) {
-        throw new Error('variable verificationToken is undefined');
-    }
-
-    try {
-        const templateVariables = {
-            confirmationURL: Auth.generateConfirmationURLForTokenWithPath(verificationToken.get(k.Attr.Token), 'confirm_email'),
-            contact: config.get(k.EmailAddress.Contact),
-            __: i18n.__
-        };
-
-        html = await new Promise((resolve, reject) => {
-            res.app.render(k.Templates.Welcome, templateVariables, (err, html) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(html);
-                }
-            });
-        });
-    } catch (e) {
-        return next(e);
-    }
-
-    if (!html) {
-        throw new Error('variable mailHtml is undefined');
-    }
-
-    try {
-        await mailer.sendMail({
-            subject: i18n.__('welcome.title'),
-            from:    config.get(k.NoReply),
-            to:      req.body[k.Attr.Email],
-            html:    html,
-            attachments: [
-                {
-                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
-                    cid: 'logo'
-                }
-            ]
-        }, null);
-    } catch (e) {
-        return next(e);
-    }
-
-    res.sendStatus(204);
 };
