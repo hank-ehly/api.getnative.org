@@ -110,8 +110,8 @@ describe('POST /resend_confirmation_email', function() {
     });
 
     describe('success', function() {
-        it(`should respond with 204 No Content if the request succeeds`, function(done) {
-            request(server).post('/resend_confirmation_email').send({email: user.email}).expect(204, done);
+        it(`should respond with 204 No Content if the request succeeds`, function() {
+            return request(server).post('/resend_confirmation_email').send({email: user.email}).expect(204);
         });
 
         it(`should create a new VerificationToken linked to the user`, function() {

@@ -60,7 +60,7 @@
     "welcome": {
         "title": "Welcome to getnative!",
         "instructions": "Thank you for registering for getnative! Please verify your email address by clicking the button below.",
-        "confirmationLinkLabel": "CONFIRM",
+        "confirm-button-text": "CONFIRM",
         "footer": "Didn't expect to receive an email from us?&#160;Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"<%= contact %>\" href=\"mailto:<%= contact %>\">contact us</a> so it doesn't happen again."
     }
 }
