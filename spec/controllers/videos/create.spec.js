@@ -69,7 +69,7 @@ describe('POST /videos', function() {
         await db[k.Model.Transcript].destroy({where: {}});
         await db[k.Model.WritingAnswer].destroy({where: {}});
         await db[k.Model.StudySession].destroy({where: {}});
-        await db[k.Model.Like].destroy({where: {}});
+        await db[k.Model.Like].destroy({where: {}, force: true});
         await db[k.Model.CuedVideo].destroy({where: {}});
         await db[k.Model.VideoLocalized].destroy({where: {}, force: true});
         await db[k.Model.Video].destroy({where: {}, force: true});

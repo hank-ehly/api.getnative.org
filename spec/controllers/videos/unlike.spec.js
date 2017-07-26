@@ -15,11 +15,7 @@ const assert   = require('assert');
 const _        = require('lodash');
 
 describe('POST /videos/:id/unlike', function() {
-    let requestVideoId = null;
-    let authorization  = null;
-    let server         = null;
-    let user           = null;
-    let db             = null;
+    let requestVideoId, authorization, server, user, db;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -87,30 +83,24 @@ describe('POST /videos/:id/unlike', function() {
     });
 
     describe('success', function() {
-        it(`should respond with 204 No Content if the request succeeds`, function(done) {
+        it('should respond with 204 No Content if the request succeeds', function(done) {
             request(server).post(`/videos/${requestVideoId}/unlike`).set('authorization', authorization).expect(204, done);
         });
 
-        it(`should return 404 Not Found if the specified video is not found`, function(done) {
+        it('should return 404 Not Found if the specified video is not found', function(done) {
             request(server).post('/videos/999999999/unlike').set('authorization', authorization).expect(404, done);
         });
 
-        it(`should decrement the video's 'like_count' by 1`, function() {
-            // get current like_count
-            return db.sequelize.query(`SELECT COUNT(*) AS like_count FROM likes WHERE video_id = ${requestVideoId}`).then(function(r) {
-                const beforeLikeCount = parseInt(r[0][0].like_count); // ex. 3
-
-                // perform request
-                return request(server).post(`/videos/${requestVideoId}/unlike`).set('authorization', authorization).then(function() {
-
-                    // get decremented like_count
-                    return db.sequelize.query(`SELECT COUNT(*) AS like_count FROM likes WHERE video_id = ${requestVideoId}`).then(function(r) {
-                        const afterLikeCount = parseInt(r[0][0].like_count); // ex. 2
-
-                        assert.equal(afterLikeCount, beforeLikeCount - 1);
-                    });
-                });
+        it('should decrement the video like count by 1', async function() {
+            await db[k.Model.Like].create({
+                video_id: requestVideoId,
+                user_id: user[k.Attr.Id]
             });
+
+            const beforeLikeCount = await db[k.Model.Like].count({where: {video_id: requestVideoId}});
+            await request(server).post(`/videos/${requestVideoId}/unlike`).set('authorization', authorization);
+            const afterLikeCount = await db[k.Model.Like].count({where: {video_id: requestVideoId}});
+            assert.equal(afterLikeCount, beforeLikeCount - 1);
         });
     });
 });
