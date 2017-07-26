@@ -289,22 +289,16 @@ module.exports.like = async (req, res, next) => {
 };
 
 module.exports.unlike = async (req, res, next) => {
-    let video;
 
     try {
-        video = await Video.findByPrimary(req.params[k.Attr.Id]);
-    } catch (e) {
-        return next(e);
-    }
-
-    if (!video) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.ResourceNotFound));
-    }
-
-    try {
+        const video = await Video.findByPrimary(req.params[k.Attr.Id], {rejectOnEmpty: true});
         await Like.destroy({where: {video_id: video[k.Attr.Id], user_id: req.user[k.Attr.Id]}, limit: 1});
     } catch (e) {
+        if (e instanceof db.sequelize.EmptyResultError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
+
         return next(e);
     }
 
