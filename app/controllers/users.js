@@ -25,7 +25,7 @@ const _                 = require('lodash');
 
 // todo: move all this to passport custom
 module.exports.create = async (req, res, next) => {
-    let user, vt, localAuthAdapterTypeId = await AuthAdapterType.findIdForProvider('local');
+    let user, vt, isFirstTimeSignUp = true, localAuthAdapterTypeId = await AuthAdapterType.findIdForProvider('local');
 
     try {
         user = await db[k.Model.User].find({
@@ -33,8 +33,7 @@ module.exports.create = async (req, res, next) => {
             include: [{
                 model: db[k.Model.Identity],
                 as: 'identities',
-                required: true,
-                where: {auth_adapter_type_id: localAuthAdapterTypeId},
+                required: true
             }]
         });
     } catch (e) {
@@ -42,8 +41,14 @@ module.exports.create = async (req, res, next) => {
     }
 
     if (user) {
-        res.status(422);
-        return next(new GetNativeError(k.Error.UserAlreadyExists));
+        user = user.get({plain: true});
+
+        if (_.find(user.identities, {auth_adapter_type_id: localAuthAdapterTypeId})) {
+            res.status(422);
+            return next(new GetNativeError(k.Error.UserAlreadyExists));
+        } else if (user.identities.length) {
+            isFirstTimeSignUp = false;
+        }
     }
 
     const t = await db.sequelize.transaction();
@@ -53,7 +58,7 @@ module.exports.create = async (req, res, next) => {
 
         [user] = await User.findOrCreate({
             where: {email: req.body[k.Attr.Email]},
-            defaults: {default_study_language_id: 'en', interface_language_id: l},
+            defaults: {default_study_language_id: await db[k.Model.Language].findIdForCode('en'), interface_language_id: l},
             transaction: t
         });
 
@@ -79,32 +84,34 @@ module.exports.create = async (req, res, next) => {
         return next(new GetNativeError(k.Error.CreateResourceFailure));
     }
 
-    const html = await new Promise((resolve, reject) => {
-        res.app.render(k.Templates.Welcome, {
-            confirmationURL: Auth.generateConfirmationURLForTokenWithPath(vt.get(k.Attr.Token), 'confirm_email'),
-            contact: config.get(k.EmailAddress.Contact),
-            __: req.__
-        }, (err, html) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(html);
-            }
+    if (isFirstTimeSignUp) {
+        const html = await new Promise((resolve, reject) => {
+            res.app.render(k.Templates.Welcome, {
+                confirmationURL: Auth.generateConfirmationURLForTokenWithPath(vt.get(k.Attr.Token), 'confirm_email'),
+                contact: config.get(k.EmailAddress.Contact),
+                __: req.__
+            }, (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
         });
-    });
 
-    await mailer.sendMail({
-        subject: req.__('welcome.title'),
-        from: config.get(k.NoReply),
-        to: req.body[k.Attr.Email],
-        html: html,
-        attachments: [
-            {
-                path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
-                cid: 'logo'
-            }
-        ]
-    }, null);
+        await mailer.sendMail({
+            subject: req.__('welcome.title'),
+            from: config.get(k.NoReply),
+            to: req.body[k.Attr.Email],
+            html: html,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
+        }, null);
+    }
 
     await user.reload({
         plain: true,

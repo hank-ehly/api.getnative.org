@@ -64,6 +64,16 @@ module.exports.getAllEmail = function() {
     });
 };
 
+module.exports.deleteAllEmail = function() {
+    return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+            maildev.deleteAllEmail(function(error, success) {
+                return error ? reject(error) : resolve(success);
+            });
+        }, 1);
+    });
+};
+
 module.exports.startServer = function() {
     delete require.cache[require.resolve('../index')];
     return require('../index');

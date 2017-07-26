@@ -79,7 +79,7 @@ describe('POST /users', function() {
         });
 
         it(`should send a 422 Unprocessable Entity response if the registration email is already in use`, async function() {
-            const response = await request(server).post('/users').send(credential);
+            await request(server).post('/users').send(credential);
             return request(server).post('/users').send(credential).expect(422);
         });
     });
@@ -263,7 +263,7 @@ describe('POST /users', function() {
             assert(_.find(identities, {auth_adapter_type_id: localProviderId}));
         });
 
-        it(`should create Credential record if a user already has a 'facebook' Identity`, function() {
+        it('should create Credential record if a user already has a facebook Identity', function() {
             const cache = {};
 
             return db[k.Model.Language].find().then(function(language) {
@@ -297,14 +297,14 @@ describe('POST /users', function() {
             });
         });
 
-        it(`should send a confirmation email to the newly registered user after successful registration`, async function() {
+        it('should send a confirmation email to the newly registered user after successful registration', async function() {
             await request(server).post('/users').send(credential);
             const emails = await SpecUtil.getAllEmail();
             const recipientEmailAddress = _.first(_.last(emails).envelope.to).address;
             assert.equal(recipientEmailAddress, credential.email);
         });
 
-        it(`should send a confirmation email from the get-native noreply user after successful registration`, async function() {
+        it('should send a confirmation email from the get-native noreply user after successful registration', async function() {
             await request(server).post('/users').send(credential);
             const emails = await SpecUtil.getAllEmail();
             const senderEmailAddress = _.last(emails).envelope.from.address;
@@ -312,7 +312,27 @@ describe('POST /users', function() {
             assert.equal(senderEmailAddress, noreplyEmailAddress);
         });
 
-        it(`should store the new users' password in an encrypted format that is not equal to the request`, function() {
+        it('should not send a confirmation email if a user already has an account linked by another provider', async function() {
+            await SpecUtil.deleteAllEmail();
+            const language = await db[k.Model.Language].find();
+            const authAdapterTypes = await db[k.Model.AuthAdapterType].findAll();
+            const user = await db[k.Model.User].create({
+                email: credential[k.Attr.Email],
+                default_study_language_id: language.get(k.Attr.Id),
+                interface_language_id: language.get(k.Attr.Id)
+            });
+            const facebookIdentity = await db[k.Model.Identity].create({
+                auth_adapter_type_id: _.find(authAdapterTypes, {name: 'facebook'}).get(k.Attr.Id),
+                user_id: user.get(k.Attr.Id)
+            });
+
+            await request(server).post('/users').send(credential);
+            const emails = await SpecUtil.getAllEmail();
+            console.log(emails);
+            assert.equal(emails.length, 0);
+        });
+
+        it('should store the new users password in an encrypted format that is not equal to the request', function() {
             return request(server).post('/users').send(credential).then(function(response) {
                 return db[k.Model.User].find({
                     where: {
@@ -330,7 +350,7 @@ describe('POST /users', function() {
             });
         });
 
-        it(`should create a new VerificationToken record pointing to the newly registered user`, function() {
+        it('should create a new VerificationToken record pointing to the newly registered user', function() {
             return request(server).post('/users').send(credential).then(function(response) {
                 return db[k.Model.VerificationToken].findAll({
                     where: {
@@ -342,7 +362,7 @@ describe('POST /users', function() {
             });
         });
 
-        it(`should send an email containing the confirmation URL (with the correct VerificationToken token)`, function() {
+        it('should send an email containing the confirmation URL (with the correct VerificationToken token)', function() {
             return request(server).post('/users').send(credential).then(function(response) {
                 return db[k.Model.VerificationToken].find({
                     where: {
@@ -357,7 +377,7 @@ describe('POST /users', function() {
             });
         });
 
-        it(`should send an email from the noreply user`, function() {
+        it('should send an email from the noreply user', function() {
             return request(server).post('/users').send(credential).then(function(response) {
                 return db[k.Model.VerificationToken].find({
                     where: {
@@ -371,7 +391,7 @@ describe('POST /users', function() {
             });
         });
 
-        it(`should send an email to the newly registered user`, function() {
+        it('should send an email to the newly registered user', function() {
             return request(server).post('/users').send(credential).then(function(response) {
                 return db[k.Model.VerificationToken].find({
                     where: {
@@ -385,7 +405,7 @@ describe('POST /users', function() {
             });
         });
 
-        it(`should send an email with the appropriate subject`, function() {
+        it('should send an email with the appropriate subject', function() {
             return request(server).post('/users').send(credential).then(function(response) {
                 return db[k.Model.VerificationToken].find({
                     where: {
