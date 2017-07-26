@@ -83,8 +83,7 @@ module.exports.create = async (req, res, next) => {
         res.app.render(k.Templates.Welcome, {
             confirmationURL: Auth.generateConfirmationURLForTokenWithPath(vt.get(k.Attr.Token), 'confirm_email'),
             contact: config.get(k.EmailAddress.Contact),
-            __: req.__,
-            contactEmail: config.get(k.EmailAddress.Contact)
+            __: req.__
         }, (err, html) => {
             if (err) {
                 reject(err);
