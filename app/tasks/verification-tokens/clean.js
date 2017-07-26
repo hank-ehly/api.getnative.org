@@ -55,7 +55,6 @@ async function clean() {
 
         await t.commit();
     } catch (e) {
-        console.log(e);
         await t.rollback();
         return e;
     }
