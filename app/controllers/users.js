@@ -53,7 +53,7 @@ module.exports.create = async (req, res, next) => {
 
         [user] = await User.findOrCreate({
             where: {email: req.body[k.Attr.Email]},
-            defaults: {default_study_language_id: l, interface_language_id: l},
+            defaults: {default_study_language_id: 'en', interface_language_id: l},
             transaction: t
         });
 
