@@ -6,6 +6,7 @@
  */
 
 const k = require('../../config/keys.json');
+const _ = require('lodash');
 
 module.exports = function(sequelize, DataTypes) {
     const Video = sequelize.define('Video', {
@@ -76,26 +77,23 @@ module.exports = function(sequelize, DataTypes) {
                 order: [[k.Attr.LoopCount, 'DESC']]
             },
             relatedToVideo: function(videoId) {
-                // todo: could this be more clean and/or efficient? => Yes, use LEFT JOIN
+                const queryString = ` 
+                    SELECT id
+                    FROM subcategories
+                    WHERE category_id = (
+                        SELECT category_id
+                        FROM subcategories
+                        WHERE id = (
+                            SELECT subcategory_id
+                            FROM videos
+                            WHERE id = ${videoId}
+                        )
+                    )
+                `;
+
                 return {
                     where: {
-                        subcategory_id: {
-                            $in: [
-                                sequelize.literal(`
-                                    SELECT id
-                                    FROM subcategories
-                                    WHERE category_id = (
-                                        SELECT category_id
-                                        FROM subcategories
-                                        WHERE id = (
-                                            SELECT subcategory_id
-                                            FROM videos
-                                            WHERE id = ${videoId}
-                                        )
-                                    )
-                                `)
-                            ]
-                        }
+                        subcategory_id: {$in: [sequelize.literal(queryString)]}
                     }
                 };
             },
@@ -111,13 +109,13 @@ module.exports = function(sequelize, DataTypes) {
     };
 
     Video.isLikedByUser = function(db, videoId, userId) {
-        // todo: use EXISTS
-        return db[k.Model.Like].count({where: {video_id: videoId, user_id: userId}}).then(c => c === 1);
+        const query = `SELECT EXISTS(SELECT id FROM likes WHERE video_id = ${videoId} AND user_id = ${userId}) AS isLiked`;
+        return sequelize.query(query).then(r => _(r).flatten().first()['isLiked'] === 1);
     };
 
     Video.isCuedByUser = function(db, videoId, userId) {
-        // todo: use EXISTS
-        return db[k.Model.CuedVideo].count({where: {video_id: videoId, user_id: userId}}).then(c => c === 1);
+        const query = `SELECT EXISTS(SELECT video_id, user_id FROM cued_videos WHERE video_id = ${videoId} AND user_id = ${userId}) AS isCued`;
+        return sequelize.query(query).then(r => _(r).flatten().first()['isCued'] === 1);
     };
 
     Video.getLikeCount = function(db, videoId) {

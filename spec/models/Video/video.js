@@ -5,9 +5,9 @@
  * Created by henryehly on 2017/04/16.
  */
 
-const SpecUtil = require('../spec-util');
-const db       = require('../../app/models');
-const k        = require('../../config/keys.json');
+const SpecUtil = require('../../spec-util');
+const db       = require('../../../app/models');
+const k        = require('../../../config/keys.json');
 const Video    = db[k.Model.Video];
 
 const m = require('mocha');
