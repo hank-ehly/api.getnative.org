@@ -20,7 +20,6 @@ const Language          = db[k.Model.Language];
 const VerificationToken = db[k.Model.VerificationToken];
 
 const mailer            = require('../../config/initializers/mailer');
-const i18n              = require('i18n');
 const path              = require('path');
 const _                 = require('lodash');
 
@@ -50,8 +49,7 @@ module.exports.create = async (req, res, next) => {
     const t = await db.sequelize.transaction();
 
     try {
-        // todo: what if viewing other language?
-        const l = await db[k.Model.Language].findIdForCode('en');
+        const l = await db[k.Model.Language].findIdForCode(req.locale);
 
         [user] = await User.findOrCreate({
             where: {email: req.body[k.Attr.Email]},
@@ -85,7 +83,7 @@ module.exports.create = async (req, res, next) => {
         res.app.render(k.Templates.Welcome, {
             confirmationURL: Auth.generateConfirmationURLForTokenWithPath(vt.get(k.Attr.Token), 'confirm_email'),
             contact: config.get(k.EmailAddress.Contact),
-            __: i18n.__,
+            __: req.__,
             contactEmail: config.get(k.EmailAddress.Contact)
         }, (err, html) => {
             if (err) {
@@ -97,7 +95,7 @@ module.exports.create = async (req, res, next) => {
     });
 
     await mailer.sendMail({
-        subject: i18n.__('welcome.title'),
+        subject: req.__('welcome.title'),
         from: config.get(k.NoReply),
         to: req.body[k.Attr.Email],
         html: html,
@@ -182,7 +180,7 @@ module.exports.updatePassword = async (req, res, next) => {
         const html = await new Promise((resolve, reject) => {
             res.app.render(k.Templates.PasswordUpdated, {
                 contact: config.get(k.EmailAddress.Contact),
-                __: i18n.__
+                __: req.__
             }, (err, html) => {
                 if (err) {
                     reject(err);
@@ -193,7 +191,7 @@ module.exports.updatePassword = async (req, res, next) => {
         });
 
         await mailer.sendMail({
-            subject: i18n.__('password-updated.title'),
+            subject: req.__('password-updated.title'),
             from: config.get(k.NoReply),
             to: req.user.get(k.Attr.Email),
             html: html,
@@ -309,7 +307,7 @@ module.exports.delete = async (req, res, next) => {
     try {
         const html = await new Promise((resolve, reject) => {
             const variables = {
-                __: i18n.__,
+                __: req.__,
                 email: req.user.get(k.Attr.Email),
                 contact: config.get(k.EmailAddress.Contact),
                 reason: req.body['reason']
@@ -325,7 +323,7 @@ module.exports.delete = async (req, res, next) => {
         });
 
         await mailer.sendMail({
-            subject: i18n.__('delete-account-reason.title'),
+            subject: req.__('delete-account-reason.title'),
             from: config.get(k.NoReply),
             to: config.get(k.EmailAddress.Contact),
             html: html,
