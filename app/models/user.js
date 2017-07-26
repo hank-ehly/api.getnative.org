@@ -9,6 +9,7 @@ const Utility = require('../services')['Utility'];
 const k       = require('../../config/keys.json');
 
 const moment  = require('moment');
+const i18n    = require('i18n');
 const _       = require('lodash');
 
 module.exports = function(sequelize, DataTypes) {
@@ -120,8 +121,7 @@ module.exports = function(sequelize, DataTypes) {
             throw new ReferenceError(`Required 'lang' argument is missing`);
         }
 
-        // todo: make globally available list of valid lang codes
-        if (!_.includes(['en', 'ja'], lang)) {
+        if (!i18n.getLocales().includes(lang)) {
             throw new TypeError(`Invalid lang '${lang}'`);
         }
 
@@ -147,8 +147,7 @@ module.exports = function(sequelize, DataTypes) {
             throw new ReferenceError(`Required 'lang' argument is missing`);
         }
 
-        // todo: make globally available list of valid lang codes
-        if (!_.includes(['en', 'ja'], lang)) {
+        if (!i18n.getLocales().includes(lang)) {
             throw new TypeError(`Invalid lang '${lang}'`);
         }
 
@@ -175,8 +174,7 @@ module.exports = function(sequelize, DataTypes) {
             throw new ReferenceError(`Required 'lang' argument is missing`);
         }
 
-        // todo: make globally available list of valid lang codes
-        if (!_.includes(['en', 'ja'], lang)) {
+        if (!i18n.getLocales().includes(lang)) {
             throw new TypeError(`Invalid lang '${lang}'`);
         }
 

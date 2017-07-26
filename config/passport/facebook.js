@@ -11,8 +11,7 @@ const config   = require('../application').config;
 
 const Strategy = require('passport-facebook').Strategy;
 
-// todo: (*) Make sure time-out isn't an issue
-// todo: Update user each authentication to make sure data is correct // web-hook
+// todo: Update user info on facebook profile change web hook
 const strategy = new Strategy({
     clientID: config.get(k.OAuth.Facebook.ClientID),
     clientSecret: config.get(k.OAuth.Facebook.ClientSecret),

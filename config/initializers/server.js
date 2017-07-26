@@ -42,7 +42,7 @@ module.exports = () => {
     app.set('view engine', 'ejs');
 
     app.use(bodyParser.json());
-    app.use(require('express-session')({secret: 'keyboard cat', resave: true, saveUninitialized: true})); // todo
+    app.use(require('express-session')({secret: 'x-gn-s', resave: true, saveUninitialized: true}));
     app.use(cookieParser());
     app.use(i18n.init);
     app.use(cors);

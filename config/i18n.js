@@ -13,8 +13,8 @@ const path   = require('path');
 i18n.configure({
     locales: ['en', 'ja'],
     fallbacks: {'ja': 'en'},
+    defaultLocale: 'en',
     directory: path.resolve(__dirname, 'locales'),
-    cookie: 'XX-locale-test', // todo
     objectNotation: true,
     logDebugFn: logger.info,
     logWarnFn: logger.warn,

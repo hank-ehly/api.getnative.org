@@ -193,6 +193,19 @@ describe('POST /users', function() {
     });
 
     describe('other', function() {
+        it('should set the user interface_language to the browser locale', async function() {
+            const response = await request(server).post('/users').set('accept-language', 'ja-JP,ja;q=0.8,en;q=0.6').send(credential);
+            const user = await db[k.Model.User].findByPrimary(response.body[k.Attr.Id], {
+                include: [
+                    {
+                        model: db[k.Model.Language],
+                        as: 'interface_language'
+                    }
+                ]
+            });
+            assert.equal(user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code), 'ja');
+        });
+
         it(`should create an Identity record containing the new user ID and an auth type of 'local'`, function() {
             return request(server).post('/users').send(credential).then(function() {
                 return db[k.Model.User].find({
