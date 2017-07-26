@@ -92,6 +92,7 @@ module.exports.show = async (req, res, next) => {
 
     try {
         category = await Category.findByPrimary(req.params[k.Attr.Id], {
+            rejectOnEmpty: true,
             attributes: [k.Attr.Id, categoryCreatedAt, categoryUpdatedAt],
             include: {
                 model: CategoryLocalized,
@@ -106,12 +107,11 @@ module.exports.show = async (req, res, next) => {
             }
         });
     } catch (e) {
+        if (e instanceof db.sequelize.EmptyResultError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
         return next(e);
-    }
-
-    if (!category) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.ResourceNotFound));
     }
 
     category = category.get({
@@ -162,14 +162,15 @@ module.exports.create = async (req, res, next) => {
 
     try {
         languages = await Language.findAll({
+            rejectOnEmpty: true,
             attributes: [k.Attr.Id, k.Attr.Code]
         });
     } catch (e) {
+        if (e instanceof db.sequelize.EmptyResultError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
         return next(e);
-    }
-
-    if (_.size(languages) === 0) {
-        throw new ReferenceError('language variable is undefined');
     }
 
     languages = _.invokeMap(languages, 'get', {
@@ -198,10 +199,6 @@ module.exports.create = async (req, res, next) => {
         return next(e);
     }
 
-    if (!category) {
-        throw new ReferenceError('category variable is undefined');
-    }
-
     if (categoriesLocalized.length !== languageCodes.length) {
         await transaction.rollback();
         throw new Error('length of categoriesLocalized does not equal length of languageCodes');
@@ -212,6 +209,7 @@ module.exports.create = async (req, res, next) => {
 
     try {
         retCategory = await Category.findByPrimary(category.get(k.Attr.Id), {
+            rejectOnEmpty: true,
             attributes: [k.Attr.Id, retCategoryCreatedAt, retCategoryUpdatedAt],
             include: {
                 model: CategoryLocalized,
@@ -226,12 +224,11 @@ module.exports.create = async (req, res, next) => {
             }
         });
     } catch (e) {
+        if (e instanceof db.sequelize.EmptyResultError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
         return next(e);
-    }
-
-    if (!retCategory) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.ResourceNotFound));
     }
 
     retCategory = retCategory.get({
@@ -251,6 +248,7 @@ module.exports.delete = async (req, res, next) => {
 
     try {
         category = await Category.findByPrimary(req.params[k.Attr.Id], {
+            rejectOnEmpty: true,
             attributes: [k.Attr.Id],
             include: {
                 model: CategoryLocalized,
@@ -259,12 +257,11 @@ module.exports.delete = async (req, res, next) => {
             }
         });
     } catch (e) {
+        if (e instanceof db.sequelize.EmptyResultError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
         return next(e);
-    }
-
-    if (!category) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.ResourceNotFound));
     }
 
     const t = await db.sequelize.transaction();
