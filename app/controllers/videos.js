@@ -215,16 +215,16 @@ module.exports.show = async (req, res, next) => {
         }
 
         video = await Video.findByPrimary(+req.params[k.Attr.Id], {
+            rejectOnEmpty: true,
             attributes: videoAttributes,
             include: videoInclude
         });
     } catch (e) {
+        if (e instanceof db.sequelize.EmptyResultError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
         return next(e);
-    }
-
-    if (!video) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.ResourceNotFound));
     }
 
     video = video.get({
@@ -434,14 +434,13 @@ module.exports.upload = async (req, res, next) => {
     let video;
 
     try {
-        video = await Video.findByPrimary(req.params[k.Attr.Id]);
+        video = await Video.findByPrimary(req.params[k.Attr.Id], {rejectOnEmpty: true});
     } catch (e) {
+        if (e instanceof db.sequelize.EmptyResultError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
         return next(e);
-    }
-
-    if (!video) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.ResourceNotFound));
     }
 
     const videoIdHash = Utility.getHashForId(_.toNumber(req.params[k.Attr.Id]));
@@ -507,6 +506,7 @@ module.exports.collocationOccurrences.index = async (req, res, next) => {
 
     try {
         video = await db[k.Model.Video].findByPrimary(req.params[k.Attr.Id], {
+            rejectOnEmpty: true,
             include: {
                 model: db[k.Model.Transcript],
                 as: 'transcripts',
@@ -523,12 +523,12 @@ module.exports.collocationOccurrences.index = async (req, res, next) => {
             }
         });
     } catch (e) {
-        return next(new GetNativeError(k.Error.ResourceNotFound));
-    }
+        if (e instanceof db.sequelize.EmptyResultError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
 
-    if (!video) {
-        res.status(404);
-        return next(new GetNativeError(k.Error.ResourceNotFound));
+        return next(e);
     }
 
     let occurrences = _.flatten(_.invokeMap(video.transcripts, 'get', 'collocation_occurrences'));
