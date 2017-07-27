@@ -48,7 +48,7 @@ module.exports.startMailServer = function() {
 
 module.exports.stopMailServer = function() {
     return new Promise(function(resolve) {
-        maildev.end(function() {
+        maildev.close(function() {
             resolve();
         });
     });
