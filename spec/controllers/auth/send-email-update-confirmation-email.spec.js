@@ -133,8 +133,8 @@ describe('POST /users/:id/email', function() {
 
         it('should create a new EmailChangeRequest linked to the verification token', async function() {
             const response = await request(server).post(`/users/${user.get(k.Attr.Id)}/email`).set(k.Header.Authorization, auth).send(body);
-            const token = await db[k.Model.VerificationToken].find({where: {user_id: user.id}});
-            const emailChangeReq = await db[k.Model.EmailChangeRequest].find({where: {verification_token_id: token.get(k.Attr.Id)}});
+            const tokens = await db[k.Model.VerificationToken].findAll({where: {user_id: user.id}, limit: 1, order: [['id', 'DESC']]});
+            const emailChangeReq = await db[k.Model.EmailChangeRequest].find({where: {verification_token_id: _.first(tokens).get(k.Attr.Id)}});
             assert(emailChangeReq);
         });
 
@@ -147,9 +147,9 @@ describe('POST /users/:id/email', function() {
 
         it('should send an email containing the confirmation URL (with the correct VerificationToken token)', async function() {
             await request(server).post(`/users/${user.get(k.Attr.Id)}/email`).set(k.Header.Authorization, auth).send(body);
-            const token = await db[k.Model.VerificationToken].find({where: {user_id: user.id}});
+            const tokens = await db[k.Model.VerificationToken].findAll({where: {user_id: user.id}, limit: 1, order: [['id', 'DESC']]});
             const emails = await SpecUtil.getAllEmail();
-            const expectedURL = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/confirm_email_update?token=${token.token}`;
+            const expectedURL = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/confirm_email_update?token=${_.first(tokens).token}`;
             assert(_.includes(_.last(emails).html, expectedURL));
         });
     });

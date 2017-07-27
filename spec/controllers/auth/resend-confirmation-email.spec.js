@@ -110,11 +110,11 @@ describe('POST /resend_confirmation_email', function() {
     });
 
     describe('success', function() {
-        it(`should respond with 204 No Content if the request succeeds`, function() {
+        it('should respond with 204 No Content if the request succeeds', function() {
             return request(server).post('/resend_confirmation_email').send({email: user.email}).expect(204);
         });
 
-        it(`should create a new VerificationToken linked to the user`, function() {
+        it('should create a new VerificationToken linked to the user', function() {
             return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
                 return db[k.Model.VerificationToken].find({where: {user_id: user.id}});
             }).then(function(token) {
@@ -122,7 +122,7 @@ describe('POST /resend_confirmation_email', function() {
             });
         });
 
-        it(`should send an email to the specified address if it is linked to an user`, function() {
+        it('should send an email to the specified address if it is linked to an user', function() {
             return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function() {
                 return SpecUtil.getAllEmail().then(function(emails) {
                     const recipientEmailAddress = _.first(_.last(emails).envelope.to).address;
@@ -131,19 +131,16 @@ describe('POST /resend_confirmation_email', function() {
             });
         });
 
-        it(`should send an email containing the confirmation URL (with the correct VerificationToken token)`, function() {
-            return request(server).post('/resend_confirmation_email').send({email: user.email}).then(function(response) {
-                return db[k.Model.VerificationToken].find({
-                    where: {
-                        user_id: user.id
-                    }
-                }).then(function(token) {
-                    return SpecUtil.getAllEmail().then(function(emails) {
-                        const expectedURL = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/confirm_email?token=${token.token}`;
-                        assert(_.includes(_.last(emails).html, expectedURL));
-                    });
-                });
+        it('should send an email containing the confirmation URL (with the correct VerificationToken token)', async function() {
+            const response = await request(server).post('/resend_confirmation_email').send({email: user[k.Attr.Email]});
+            const tokens = await db[k.Model.VerificationToken].findAll({
+                where: {user_id: user[k.Attr.Id]},
+                order: [['id', 'DESC']],
+                limit: 1
             });
+            const emails = await SpecUtil.getAllEmail();
+            const expectedURL = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/confirm_email?token=${_.first(tokens).get(k.Attr.Token)}`;
+            assert(_.includes(_.last(emails).html, expectedURL));
         });
     });
 });
