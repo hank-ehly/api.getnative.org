@@ -25,7 +25,7 @@ const _                 = require('lodash');
 
 // todo: move all this to passport custom
 module.exports.create = async (req, res, next) => {
-    let user, vt, isFirstTimeSignUp = true, localAuthAdapterTypeId = await AuthAdapterType.findIdForProvider('local');
+    let user, localAuthAdapterTypeId = await AuthAdapterType.findIdForProvider('local');
 
     try {
         user = await db[k.Model.User].find({
@@ -33,7 +33,8 @@ module.exports.create = async (req, res, next) => {
             include: [{
                 model: db[k.Model.Identity],
                 as: 'identities',
-                required: true
+                required: true,
+                where: {auth_adapter_type_id: localAuthAdapterTypeId}
             }]
         });
     } catch (e) {
@@ -41,76 +42,41 @@ module.exports.create = async (req, res, next) => {
     }
 
     if (user) {
-        user = user.get({plain: true});
-
-        if (_.find(user.identities, {auth_adapter_type_id: localAuthAdapterTypeId})) {
-            res.status(422);
-            return next(new GetNativeError(k.Error.UserAlreadyExists));
-        } else if (user.identities.length) {
-            isFirstTimeSignUp = false;
-        }
+        res.status(422);
+        return next(new GetNativeError(k.Error.UserAlreadyExists));
     }
 
     const t = await db.sequelize.transaction();
 
     try {
-        const l = await db[k.Model.Language].findIdForCode(req.locale);
+        const localeId = await db[k.Model.Language].findIdForCode(req.locale);
+        const englishId = await db[k.Model.Language].findIdForCode('en');
 
-        [user] = await User.findOrCreate({
+        [user] = await db[k.Model.User].findOrCreate({
             where: {email: req.body[k.Attr.Email]},
-            defaults: {default_study_language_id: await db[k.Model.Language].findIdForCode('en'), interface_language_id: l},
-            transaction: t
+            defaults: {default_study_language_id: englishId, interface_language_id: localeId},
+            transaction: t,
+            req: req
         });
 
-        await Identity.findOrCreate({
-            where: {user_id: user.get(k.Attr.Id), auth_adapter_type_id: localAuthAdapterTypeId},
-            transaction: t
-        });
-
-        await Credential.findOrCreate({
-            where: {user_id: user.get(k.Attr.Id), password: Auth.hashPassword(req.body[k.Attr.Password])},
-            transaction: t
-        });
-
-        vt = await VerificationToken.create({
+        await db[k.Model.Identity].create({
             user_id: user.get(k.Attr.Id),
-            token: Auth.generateRandomHash(),
-            expiration_date: Utility.tomorrow()
-        }, {transaction: t});
+            auth_adapter_type_id: localAuthAdapterTypeId,
+        }, {
+            transaction: t
+        });
+
+        await db[k.Model.Credential].create({
+            user_id: user.get(k.Attr.Id),
+            password: Auth.hashPassword(req.body[k.Attr.Password])
+        }, {
+            transaction: t
+        });
 
         await t.commit();
     } catch (e) {
         await t.rollback();
         return next(new GetNativeError(k.Error.CreateResourceFailure));
-    }
-
-    if (isFirstTimeSignUp) {
-        const html = await new Promise((resolve, reject) => {
-            res.app.render(k.Templates.Welcome, {
-                confirmationURL: Auth.generateConfirmationURLForTokenWithPath(vt.get(k.Attr.Token), 'confirm_email'),
-                contact: config.get(k.EmailAddress.Contact),
-                __: req.__
-            }, (err, html) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(html);
-                }
-            });
-        });
-
-        await mailer.sendMail({
-            subject: req.__('welcome.title'),
-            from: config.get(k.NoReply),
-            to: req.body[k.Attr.Email],
-            html: html,
-            attachments: [
-                {
-                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
-                    cid: 'logo'
-                }
-            ]
-        }, null);
     }
 
     await user.reload({

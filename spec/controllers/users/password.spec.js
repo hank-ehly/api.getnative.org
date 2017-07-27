@@ -127,7 +127,7 @@ describe('POST /users/password', function() {
     });
 
     describe('other', function() {
-        it(`should change the users' password`, function() {
+        it('should change the user password', function() {
             return request(server).post('/users/password').set('authorization', authorization).send(validBody).then(function() {
                 return db[k.Model.Credential].find({
                     where: {
@@ -139,7 +139,7 @@ describe('POST /users/password', function() {
             });
         });
 
-        it(`sends an email to the user who changed their password`, function() {
+        it('sends an email to the user who changed their password', function() {
             return request(server).post('/users/password').set('authorization', authorization).send(validBody).then(function(response) {
                 return SpecUtil.getAllEmail().then(function(emails) {
                     assert.equal(_.first(_.last(emails).envelope.to).address, user[k.Attr.Email]);
@@ -147,7 +147,7 @@ describe('POST /users/password', function() {
             });
         });
 
-        it(`sends an email from the noreply address`, function() {
+        it('sends an email from the noreply address', function() {
             return request(server).post('/users/password').set('authorization', authorization).send(validBody).then(function(response) {
                 return SpecUtil.getAllEmail().then(function(emails) {
                     assert.equal(_.last(emails).envelope.from.address, config.get(k.NoReply));
@@ -155,7 +155,7 @@ describe('POST /users/password', function() {
             });
         });
 
-        it(`sends a changed password confirmation email`, function() {
+        it('sends a changed password confirmation email', function() {
             return request(server).post('/users/password').set('authorization', authorization).send(validBody).then(function(response) {
                 return SpecUtil.getAllEmail().then(function(emails) {
                     assert.equal(_.last(emails).subject, i18n.__('password-updated.title'));

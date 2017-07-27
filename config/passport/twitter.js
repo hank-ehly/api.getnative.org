@@ -18,7 +18,7 @@ const strategy = new Strategy({
     includeEmail: true,
     passReqToCallback: true
 }, async (req, token, tokenSecret, profile, callback) => {
-    return callback(null, await User.findOrCreateFromPassportProfile(profile));
+    return callback(null, await User.findOrCreateFromPassportProfile(profile, req));
 });
 
 module.exports = strategy;

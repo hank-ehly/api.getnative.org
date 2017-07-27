@@ -5,12 +5,16 @@
  * Created by henryehly on 2017/02/24.
  */
 
-const Utility = require('../services')['Utility'];
-const k       = require('../../config/keys.json');
+const Utility = require('../services/utility');
+const Auth = require('../services/auth');
+const k = require('../../config/keys.json');
+const config = require('../../config/application').config;
 
-const moment  = require('moment');
-const i18n    = require('i18n');
-const _       = require('lodash');
+const moment = require('moment');
+const i18n = require('i18n');
+const mailer = require('../../config/initializers/mailer');
+const _ = require('lodash');
+const path = require('path');
 
 module.exports = function(sequelize, DataTypes) {
     const User = sequelize.define(k.Model.User, {
@@ -78,12 +82,53 @@ module.exports = function(sequelize, DataTypes) {
         }
     });
 
+    User.hook('afterCreate', async (user, options) => {
+        const vt = await sequelize.models[k.Model.VerificationToken].create({
+            user_id: user.get(k.Attr.Id),
+            token: Auth.generateRandomHash(),
+            expiration_date: Utility.tomorrow()
+        }, {
+            transaction: options.transaction
+        });
+
+        if (!options.req) {
+            return;
+        }
+
+        const html = await new Promise((resolve, reject) => {
+            options.req.app.render(k.Templates.Welcome, {
+                confirmationURL: Auth.generateConfirmationURLForTokenWithPath(vt.get(k.Attr.Token), 'confirm_email'),
+                contact: config.get(k.EmailAddress.Contact),
+                __: options.req.__
+            }, (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
+        });
+
+        return mailer.sendMail({
+            subject: options.req.__('welcome.title'),
+            from: config.get(k.NoReply),
+            to: options.req.body[k.Attr.Email],
+            html: html,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
+        }, null);
+    });
+
     User.existsForEmail = function(email) {
         if (!_.isString(email)) {
             throw new TypeError(`Argument 'email' must be a string`);
         }
 
-        return sequelize.query(`SELECT EXISTS(SELECT id FROM users WHERE email = ?) AS does_exist`, {
+        return sequelize.query('SELECT EXISTS(SELECT id FROM users WHERE email = ?) AS does_exist', {
             replacements: [
                 email
             ]
@@ -93,16 +138,18 @@ module.exports = function(sequelize, DataTypes) {
         });
     };
 
-    User.findOrCreateFromPassportProfile = async function(profile) {
+    User.findOrCreateFromPassportProfile = async function(profile, req) {
         if (!profile.id || !profile.provider || !profile.displayName || !profile.emails) {
             throw new ReferenceError('arguments id, provider, displayName and emails must be present');
         }
 
-        const lang = await sequelize.models[k.Model.Language].findIdForCode('en');
+        const localeId = await db[k.Model.Language].findIdForCode(req.locale);
+        const englishId = await db[k.Model.Language].findIdForCode('en');
 
         const [user] = await this.findOrCreate({
             where: {email: _.first(profile.emails).value},
-            defaults: {default_study_language_id: lang, interface_language_id: lang, name: profile.displayName}
+            defaults: {default_study_language_id: englishId, interface_language_id: localeId, name: profile.displayName},
+            req: req
         });
 
         await user.reload();

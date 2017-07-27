@@ -19,7 +19,7 @@ const strategy = new Strategy({
     callbackURL: config.get(k.OAuth.Facebook.CallbackURL),
     passReqToCallback: true
 }, async (req, accessToken, refreshToken, profile, callback) => {
-    return callback(null, await User.findOrCreateFromPassportProfile(profile));
+    return callback(null, await User.findOrCreateFromPassportProfile(profile, req));
 });
 
 module.exports = strategy;

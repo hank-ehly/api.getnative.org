@@ -236,7 +236,7 @@ describe('POST /users', function() {
             });
         });
 
-        it(`should create a 'local' Identity record even if a user already has a 'facebook' Identity`, async function() {
+        it('should create a local Identity record even if a user already has a facebook Identity', async function() {
             const language = await db[k.Model.Language].find();
             const user = await db[k.Model.User].create({
                 email: credential[k.Attr.Email],
@@ -328,7 +328,6 @@ describe('POST /users', function() {
 
             await request(server).post('/users').send(credential);
             const emails = await SpecUtil.getAllEmail();
-            console.log(emails);
             assert.equal(emails.length, 0);
         });
 
