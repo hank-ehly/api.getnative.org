@@ -2,7 +2,7 @@ machine:
   environment:
     NODE_ENV: circle_ci
   node:
-    version: 8.1.3
+    version: 8.2.1
 
 general:
   branches:
