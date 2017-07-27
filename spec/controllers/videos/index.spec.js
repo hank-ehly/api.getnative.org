@@ -183,18 +183,21 @@ describe('GET /videos', function() {
                 db = adminLoginRes.db;
 
                 // setup private video
-                let videos = await db[k.Model.Video].findAll({
+                const videos = await db[k.Model.Video].findAll({
                     order: [[k.Attr.Id, 'DESC']],
-                    limit: 1
+                    limit: 1,
+                    where: {
+                        language_id: await db[k.Model.Language].findIdForCode('en')
+                    }
                 });
 
-                let cachedId = _.first(videos).get(k.Attr.Id);
+                const cachedId = _.first(videos).get(k.Attr.Id);
 
-                await db[k.Model.Video].update({
-                    is_public: false
-                }, {
-                    where: {id: cachedId}
-                });
+                try {
+                    await db[k.Model.Video].update({is_public: false}, {where: {id: cachedId}});
+                } catch (e) {
+                    done(e);
+                }
 
                 // make request with flag
                 const response = await request(server).get('/videos').query({include_private: true}).set('authorization', authorization);

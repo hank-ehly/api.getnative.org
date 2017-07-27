@@ -35,10 +35,8 @@ module.exports.index = async (req, res, next) => {
     let videos, conditions = {};
 
     _.set(conditions, k.Attr.IsPublic, true);
-    if (req.query.include_private) {
-        if (await req.user.isAdmin()) {
-            _.unset(conditions, k.Attr.IsPublic);
-        }
+    if (req.query.include_private && await req.user.isAdmin()) {
+        _.unset(conditions, k.Attr.IsPublic);
     }
 
     const interfaceLanguageCode = _.defaultTo(req.query.interface_lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code));
