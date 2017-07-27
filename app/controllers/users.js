@@ -265,48 +265,10 @@ module.exports.delete = async (req, res, next) => {
 
         await db[k.Model.StudySession].destroy(options);
 
-        await req.user.destroy({transaction: t});
+        await req.user.destroy({transaction: t, req: req});
         await t.commit();
     } catch (e) {
         await t.rollback();
-        return next(e);
-    }
-
-    if (!req.body['reason']) {
-        return res.sendStatus(204);
-    }
-
-    try {
-        const html = await new Promise((resolve, reject) => {
-            const variables = {
-                __: req.__,
-                email: req.user.get(k.Attr.Email),
-                contact: config.get(k.EmailAddress.Contact),
-                reason: req.body['reason']
-            };
-
-            res.app.render(k.Templates.DeleteAccountReason, variables, (err, html) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(html);
-                }
-            });
-        });
-
-        await mailer.sendMail({
-            subject: req.__('delete-account-reason.title'),
-            from: config.get(k.NoReply),
-            to: config.get(k.EmailAddress.Contact),
-            html: html,
-            attachments: [
-                {
-                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
-                    cid: 'logo'
-                }
-            ]
-        }, null);
-    } catch (e) {
         return next(e);
     }
 

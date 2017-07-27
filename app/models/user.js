@@ -123,6 +123,42 @@ module.exports = function(sequelize, DataTypes) {
         }, null);
     });
 
+    User.hook('afterDestroy', async (user, options) => {
+        if (!options.req || !options.req.body || !options.req.body.reason || !options.req.app || !options.req.__) {
+            return;
+        }
+
+        const html = await new Promise((resolve, reject) => {
+            const variables = {
+                __: options.req.__,
+                email: user.get(k.Attr.Email),
+                contact: config.get(k.EmailAddress.Contact),
+                reason: options.req.body.reason
+            };
+
+            options.req.app.render(k.Templates.DeleteAccountReason, variables, (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
+        });
+
+        return mailer.sendMail({
+            subject: options.req.__('delete-account-reason.title'),
+            from: config.get(k.NoReply),
+            to: config.get(k.EmailAddress.Contact),
+            html: html,
+            attachments: [
+                {
+                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
+                    cid: 'logo'
+                }
+            ]
+        }, null);
+    });
+
     User.existsForEmail = function(email) {
         if (!_.isString(email)) {
             throw new TypeError(`Argument 'email' must be a string`);
