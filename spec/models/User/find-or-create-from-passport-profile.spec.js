@@ -48,6 +48,7 @@ describe('User.findOrCreateFromPassportProfile', function() {
     });
 
     afterEach(async function() {
+        await db[k.Model.VerificationToken].destroy({where: {}});
         await Identity.destroy({where: {}, force: true});
         await User.destroy({where: {}, force: true});
     });
@@ -56,7 +57,7 @@ describe('User.findOrCreateFromPassportProfile', function() {
         let user;
 
         beforeEach(async function() {
-            user = await User.findOrCreateFromPassportProfile(profile);
+            user = await User.findOrCreateFromPassportProfile(profile, {locale: 'en'});
         });
 
         it('should return a User record with an id integer attribute', async function() {
@@ -106,7 +107,7 @@ describe('User.findOrCreateFromPassportProfile', function() {
 
     describe('given a completely new User', function() {
         beforeEach(async function() {
-            await User.findOrCreateFromPassportProfile(profile);
+            await User.findOrCreateFromPassportProfile(profile, {locale: 'en'});
         });
 
         it('should create a new User record', async function() {
@@ -151,7 +152,7 @@ describe('User.findOrCreateFromPassportProfile', function() {
                 name: profile.displayName
             });
 
-            await User.findOrCreateFromPassportProfile(profile);
+            await User.findOrCreateFromPassportProfile(profile, {locale: 'en'});
         });
 
         it('should create a new identity with the correct AuthAdapterType', async function() {
@@ -206,7 +207,7 @@ describe('User.findOrCreateFromPassportProfile', function() {
         });
 
         it('should return the existing user data from the database', async function() {
-            const user = await User.findOrCreateFromPassportProfile(profile);
+            const user = await User.findOrCreateFromPassportProfile(profile, {locale: 'en'});
             assert(user.get(k.Attr.Id));
         });
 
@@ -221,22 +222,22 @@ describe('User.findOrCreateFromPassportProfile', function() {
 
     describe('given a profile object', function() {
         it('should throw a ReferenceError if profile.id is missing', async function() {
-            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, k.Attr.Id));
+            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, k.Attr.Id), {locale: 'en'});
             assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
         });
 
         it('should throw a ReferenceError if profile.provider is missing', async function() {
-            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, 'provider'));
+            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, 'provider'), {locale: 'en'});
             assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
         });
 
         it('should throw a ReferenceError if profile.displayName is missing', async function() {
-            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, 'displayName'));
+            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, 'displayName'), {locale: 'en'});
             assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
         });
 
         it('should throw a ReferenceError if profile.emails is missing', async function() {
-            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, 'emails'));
+            const asyncTest = User.findOrCreateFromPassportProfile.bind(null, _.omit(profile, 'emails'), {locale: 'en'});
             assert(await SpecUtil.throwsAsync(asyncTest, ReferenceError));
         });
     });

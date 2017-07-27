@@ -91,7 +91,7 @@ module.exports = function(sequelize, DataTypes) {
             transaction: options.transaction
         });
 
-        if (!options.req) {
+        if (!options.req || !options.req.app || !options.req.__) {
             return;
         }
 
@@ -112,7 +112,7 @@ module.exports = function(sequelize, DataTypes) {
         return mailer.sendMail({
             subject: options.req.__('welcome.title'),
             from: config.get(k.NoReply),
-            to: options.req.body[k.Attr.Email],
+            to: user.get(k.Attr.Email),
             html: html,
             attachments: [
                 {
@@ -143,8 +143,8 @@ module.exports = function(sequelize, DataTypes) {
             throw new ReferenceError('arguments id, provider, displayName and emails must be present');
         }
 
-        const localeId = await db[k.Model.Language].findIdForCode(req.locale);
-        const englishId = await db[k.Model.Language].findIdForCode('en');
+        const localeId = await sequelize.models[k.Model.Language].findIdForCode(req.locale);
+        const englishId = await sequelize.models[k.Model.Language].findIdForCode('en');
 
         const [user] = await this.findOrCreate({
             where: {email: _.first(profile.emails).value},
