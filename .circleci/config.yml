@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/api.get-native.com
     docker:
-      - image: circleci/node:8.2.1
+      - image: node:8.2.1
       - image: mysql
     steps:
       - checkout
@@ -23,7 +23,7 @@ jobs:
             - .node_modules
   test:
     docker:
-      - image: circleci/node:8.2.1
+      - image: node:8.2.1
         environment:
           - NODE_ENV: circle_ci
       - image: mysql:5.7
