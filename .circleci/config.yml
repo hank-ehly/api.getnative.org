@@ -8,10 +8,10 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Install dependencies
-        command: |
-          sudo apt-get update
-          sudo apt-get install -y libav-tools
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libav-tools
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
