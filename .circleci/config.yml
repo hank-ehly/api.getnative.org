@@ -26,14 +26,14 @@ jobs:
             sudo apt-get install -y build-essential libav-tools
 
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
 
       - run:
           name: Install node modules
           command: npm install
 
       - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
           paths:
             - ./node_modules
 
