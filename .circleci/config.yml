@@ -10,7 +10,7 @@ jobs:
           - MYSQL_ALLOW_EMPTY_PASSWORD: yes
           - MYSQL_USER: get_native
           - MYSQL_PASSWORD: get_native
-          - MYSQL_ROOT_HOST: %
+          - MYSQL_ROOT_HOST: "%"
           - MYSQL_DATABASE: get_native_test
     branches:
       only:
