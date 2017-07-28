@@ -3,10 +3,10 @@ jobs:
   build:
     working_directory: ~/api.get-native.com
     docker:
-      - image: node:8.2.1
+      - image: circleci/node:latest
         environment:
           - NODE_ENV: test
-      - image: mysql:5.7
+      - image: circleci/mysql:5.7
         environment:
           - MYSQL_ALLOW_EMPTY_PASSWORD: yes
           - MYSQL_USER: get_native
@@ -17,7 +17,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update -y
-            apt-get install -y libav-tools
+            apt-get install -y build-essential libav-tools
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
@@ -26,7 +26,7 @@ jobs:
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
-            - .node_modules
+            - node_modules
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
