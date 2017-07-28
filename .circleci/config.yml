@@ -25,9 +25,9 @@ jobs:
             sudo apt-get update -y
             sudo apt-get install -y build-essential libav-tools
 
-#      - run:
-#          name: Update NPM
-#          command: npm install -g npm
+      - run:
+          name: Update NPM
+          command: 'sudo npm install -g npm@latest'
 
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
