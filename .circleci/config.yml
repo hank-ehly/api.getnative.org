@@ -4,7 +4,6 @@ jobs:
     working_directory: ~/api.get-native.com
     docker:
       - image: node:8.2.1
-      - image: mysql
     steps:
       - checkout
       - run:
@@ -27,6 +26,9 @@ jobs:
         environment:
           - NODE_ENV: circle_ci
       - image: mysql:5.7
+        environment:
+          - MYSQL_ALLOW_EMPTY_PASSWORD: yes
+
     steps:
       - checkout
       - run:
