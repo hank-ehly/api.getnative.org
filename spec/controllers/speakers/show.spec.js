@@ -23,7 +23,7 @@ describe('GET /speakers/:id', function() {
 
     before(function(done) {
         this.timeout(SpecUtil.defaultTimeout);
-        Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]).then(function() {
+        SpecUtil.seedAll().then(function() {
             Speaker.find().then(function(speaker) {
                 testSpeaker = speaker.toJSON();
                 done();
@@ -40,11 +40,6 @@ describe('GET /speakers/:id', function() {
 
     afterEach(function(done) {
         server.close(done);
-    });
-
-    after(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('failure', function() {

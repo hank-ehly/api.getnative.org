@@ -23,7 +23,7 @@ describe('POST /videos/:id/queue', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return SpecUtil.seedAll();
     });
 
     beforeEach(function() {
@@ -47,11 +47,6 @@ describe('POST /videos/:id/queue', function() {
 
     afterEach(function(done) {
         server.close(done);
-    });
-
-    after(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('response.headers', function() {

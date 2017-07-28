@@ -22,7 +22,7 @@ describe('GET /categories/:id', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return SpecUtil.seedAll();
     });
 
     beforeEach(async function() {
@@ -36,11 +36,6 @@ describe('GET /categories/:id', function() {
 
     afterEach(function(done) {
         server.close(done);
-    });
-
-    after(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('failure', function() {

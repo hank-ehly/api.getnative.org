@@ -20,7 +20,7 @@ describe('Video.isCuedByUser', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return SpecUtil.seedAll();
     });
 
     beforeEach(function() {
@@ -33,11 +33,6 @@ describe('Video.isCuedByUser', function() {
 
     afterEach(function(done) {
         server.close(done);
-    });
-
-    after(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     it('should return true if the video is cued by the user', async function() {

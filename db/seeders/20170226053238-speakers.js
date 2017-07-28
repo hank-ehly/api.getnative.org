@@ -7,29 +7,20 @@
 
 const k = require('../../config/keys.json');
 const db = require('../../app/models');
-const Gender = db[k.Model.Gender];
 
-const chance = require('chance').Chance();
 const _ = require('lodash');
 
 module.exports = {
-    up: function(queryInterface, Sequelize) {
+    up: async function(queryInterface) {
         const speakers = [];
-
-        return Gender.findAll().then(genders => {
-            for (let i = 0; i < 50; i++) {
-                let gender = _.sample(genders);
-
-                speakers.push({
-                    gender_id: gender.get(k.Attr.Id)
-                });
-            }
-
-            return queryInterface.bulkInsert('speakers', speakers);
-        });
+        const genders = await db[k.Model.Gender].findAll({attributes: [k.Attr.Id]});
+        for (let i = 0; i < 10; i++) {
+            speakers.push({gender_id: _.sample(genders).get(k.Attr.Id)});
+        }
+        return queryInterface.bulkInsert('speakers', speakers);
     },
 
-    down: function(queryInterface, Sequelize) {
+    down: function(queryInterface) {
         return queryInterface.bulkDelete('speakers');
     }
 };

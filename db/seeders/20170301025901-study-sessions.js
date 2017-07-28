@@ -31,7 +31,7 @@ module.exports = {
             for (let i = minUserId; i <= maxUserId; i++) {
                 let numStudySessions = chance.integer({
                     min: 5,
-                    max: 365
+                    max: process.env['NODE_ENV'] === k.Env.Test ? 10 : 365
                 });
 
                 for (let j = 0; j < numStudySessions; j++) {

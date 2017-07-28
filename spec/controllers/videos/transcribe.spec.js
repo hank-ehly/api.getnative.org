@@ -24,7 +24,7 @@ describe('POST /videos/transcribe', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return SpecUtil.seedAll();
     });
 
     beforeEach(async function() {
@@ -33,11 +33,6 @@ describe('POST /videos/transcribe', function() {
         authorization = results.authorization;
         server        = results.server;
         db            = results.db;
-    });
-
-    after(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     afterEach(function(done) {

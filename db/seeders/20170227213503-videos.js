@@ -33,7 +33,7 @@ module.exports = {
         return Promise.all(promises).then(values => {
             const [minSpeakerId, maxSpeakerId, minSubcategoryId, maxSubcategoryId, languages] = values;
             const videos    = [];
-            const numVideos = 500;
+            const numVideos = 50;
             const minDate   = moment().subtract(numVideos + 10, 'days');
 
             for (let i = 0; i < numVideos; i++) {

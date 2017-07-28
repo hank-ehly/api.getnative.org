@@ -23,7 +23,7 @@ describe('DELETE /categories/:category_id/subcategories/:subcategory_id', functi
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return SpecUtil.seedAll();
     });
 
     beforeEach(async function() {
@@ -40,11 +40,6 @@ describe('DELETE /categories/:category_id/subcategories/:subcategory_id', functi
 
     afterEach(function(done) {
         server.close(done);
-    });
-
-    after(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('failure', function() {

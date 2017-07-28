@@ -25,7 +25,7 @@ describe('PATCH /categories/:category_id/categories_localized/:categories_locali
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return SpecUtil.seedAll();
     });
 
     beforeEach(async function() {
@@ -43,11 +43,6 @@ describe('PATCH /categories/:category_id/categories_localized/:categories_locali
 
     afterEach(function(done) {
         server.close(done);
-    });
-
-    after(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('failure', function() {

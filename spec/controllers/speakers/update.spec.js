@@ -22,7 +22,7 @@ describe('PATCH /speakers/:id', function() {
 
     before(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return SpecUtil.seedAll();
     });
 
     beforeEach(async function() {
@@ -66,11 +66,6 @@ describe('PATCH /speakers/:id', function() {
 
     afterEach(function(done) {
         server.close(done);
-    });
-
-    after(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('failure', function() {

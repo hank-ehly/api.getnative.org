@@ -22,7 +22,7 @@ describe('User.existsForEmail', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]);
+        return SpecUtil.seedAll();
     });
 
     beforeEach(function() {
@@ -37,11 +37,6 @@ describe('User.existsForEmail', function() {
             user = _user;
             return Credential.create({user_id: user.get(k.Attr.Id)});
         });
-    });
-
-    after(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     describe('existsForEmail', function() {

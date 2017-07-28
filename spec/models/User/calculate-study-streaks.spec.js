@@ -27,7 +27,7 @@ describe('User.calculateStudyStreaks', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAll(), SpecUtil.startMailServer()]).then(function() {
+        return SpecUtil.seedAll().then(function() {
             return Language.findAll({attributes: [k.Attr.Code, k.Attr.Id]});
         }).then(function(languages) {
             languages = _.invokeMap(languages, 'get', {plain: true});
@@ -48,11 +48,6 @@ describe('User.calculateStudyStreaks', function() {
             user = _user;
             return Credential.create({user_id: user.get(k.Attr.Id)});
         });
-    });
-
-    after(function() {
-        this.timeout(SpecUtil.defaultTimeout);
-        return Promise.all([SpecUtil.seedAllUndo(), SpecUtil.stopMailServer()]);
     });
 
     it(`should throw a ReferenceError if no 'lang' is provided`, function() {

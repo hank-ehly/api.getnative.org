@@ -9,24 +9,19 @@ const k = require('../../config/keys.json');
 const db = require('../../app/models');
 const jaCorpus = require('../fixtures/ja-corpus.json');
 const enWords = require('../fixtures/en-words.json');
+const _ = require('lodash');
 
 const chance = require('chance').Chance();
 
 function getJACollocation() {
-    let phrase = chance.pickone(jaCorpus);
-    let to = chance.natural({
-        min: 2,
-        max: Math.floor(phrase.length / 4)
-    });
+    let phrase = _.sample(jaCorpus);
+    let to = chance.natural({min: 2, max: Math.floor(phrase.length / 4)});
     return phrase.substring(0, to);
 }
 
 function getENCollocation() {
-    const count = chance.natural({
-        min: 1,
-        max: 4
-    });
-    return chance.pickset(enWords, count).join(' ');
+    const count = chance.natural({min: 1, max: 4});
+    return _.sampleSize(enWords, count).join(' ');
 }
 
 module.exports = {
@@ -44,7 +39,7 @@ module.exports = {
         });
 
         for (let transcript of transcripts) {
-            const numberOfOccurrences = chance.natural({min: 5, max: 10});
+            const numberOfOccurrences = chance.natural({min: 1, max: 5});
             for (let i = 0; i < numberOfOccurrences; i++) {
                 let text = transcript.get('language').get(k.Attr.Code) === 'ja' ? getJACollocation() : getENCollocation();
                 occurrences.push({
