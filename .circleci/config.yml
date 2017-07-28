@@ -4,12 +4,17 @@ jobs:
     working_directory: ~/api.get-native.com
     docker:
       - image: node:8.2.1
+        environment:
+          - NODE_ENV: circle_ci
+      - image: mysql:5.7
+        environment:
+          - MYSQL_ALLOW_EMPTY_PASSWORD: yes
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
-            apt-get update
+            apt-get update -y
             apt-get install -y libav-tools
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
@@ -20,17 +25,6 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - .node_modules
-  test:
-    docker:
-      - image: node:8.2.1
-        environment:
-          - NODE_ENV: circle_ci
-      - image: mysql:5.7
-        environment:
-          - MYSQL_ALLOW_EMPTY_PASSWORD: yes
-
-    steps:
-      - checkout
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
@@ -43,13 +37,20 @@ jobs:
           name: Generate JWT keypair
           command: ./bin/generate-jwt-keypair.bash
       - run:
-          name: Test
-          command: npm test
-      - run:
           name: Setup DB
           command: |
             cp config/database.json.template config/database.json
             npm run sequelize db:migrate
+  test:
+    docker:
+      - image: node:8.2.1
+        environment:
+          - NODE_ENV: circle_ci
+    steps:
+      - checkout
+      - run:
+          name: Test
+          command: npm test
 
    #   - deploy:
    #       name: Deploy to staging environment
