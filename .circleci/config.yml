@@ -35,4 +35,6 @@ jobs:
             cp config/database.json.template config/database.json
             npm run sequelize db:migrate
       - run: npm test
-      - deploy: ./bin/deploy.sh
+      - deploy:
+          name: Deploy
+          command: ./bin/deploy.sh
