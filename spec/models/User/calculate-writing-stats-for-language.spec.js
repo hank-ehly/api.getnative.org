@@ -17,15 +17,13 @@ const StudySession    = db[k.Model.StudySession];
 const Language        = db[k.Model.Language];
 
 const m = require('mocha');
-const [describe, it, before, beforeEach, after] = [m.describe, m.it, m.before, m.beforeEach, m.after];
+const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
 const assert          = require('assert');
 const chance          = require('chance').Chance();
 const _               = require('lodash');
 
 describe('User.calculateWritingStatsForLanguage', function() {
-    let user = null;
-    let englishLanguageId = null;
-    let japaneseLanguageId = null;
+    let user, loginResults, englishLanguageId, japaneseLanguageId;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -38,18 +36,20 @@ describe('User.calculateWritingStatsForLanguage', function() {
         });
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return Language.find().then(function(language) {
-            return User.create({
-                default_study_language_id: language.get(k.Attr.Id),
-                interface_language_id: language.get(k.Attr.Id),
-                email: chance.email()
-            });
-        }).then(function(_user) {
-            user = _user;
-            return Credential.create({user_id: user.get(k.Attr.Id)});
+        loginResults = await SpecUtil.login();
+        const language = await Language.find();
+        user = await User.create({
+            default_study_language_id: language.get(k.Attr.Id),
+            interface_language_id: language.get(k.Attr.Id),
+            email: chance.email()
         });
+        return Credential.create({user_id: user.get(k.Attr.Id)});
+    });
+
+    afterEach(function(done) {
+        loginResults.server.close(done);
     });
 
     it(`should throw a ReferenceError if no 'lang' is provided`, function() {
