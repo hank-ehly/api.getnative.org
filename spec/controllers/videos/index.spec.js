@@ -151,21 +151,27 @@ describe('GET /videos', function() {
         });
 
         it('should ignore the "include_private" flag if the user does not have admin privileges', async function() {
-            const videos = await db[k.Model.Video].findAll({
-                order: [[k.Attr.Id, 'DESC']],
-                limit: 1
-            });
+            let videoIds, cachedId;
 
-            const cachedId = _.first(videos).get(k.Attr.Id);
+            try {
+                const videos = await db[k.Model.Video].findAll({
+                    order: [[k.Attr.Id, 'DESC']],
+                    limit: 1
+                });
 
-            await db[k.Model.Video].update({
-                is_public: false
-            }, {
-                where: {id: cachedId}
-            });
+                cachedId = _.first(videos).get(k.Attr.Id);
 
-            const response = await request(server).get('/videos').query({include_private: true}).set('authorization', authorization);
-            const videoIds = _.map(response.body.records, k.Attr.Id);
+                await db[k.Model.Video].update({
+                    is_public: false
+                }, {
+                    where: {id: cachedId}
+                });
+
+                const response = await request(server).get('/videos').query({include_private: true}).set('authorization', authorization);
+                videoIds = _.map(response.body.records, k.Attr.Id);
+            } catch (e) {
+                assert.fail(e, null, 'Error occurred during assertion setup');
+            }
 
             assert(!_.includes(videoIds, cachedId));
         });

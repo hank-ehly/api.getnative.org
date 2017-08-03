@@ -7,24 +7,24 @@
 
 const SpecUtil = require('../../spec-util');
 const k = require('../../../config/keys.json');
-const User = require('../../../app/models')[k.Model.User];
 
 const assert = require('assert');
 const m = require('mocha');
-const [describe, it, before] = [m.describe, m.it, m.before];
+const [describe, it, before, after] = [m.describe, m.it, m.before, m.after];
 
 describe('User.prototype.isAdmin', function() {
-    let adminUser, normalUser;
+    let adminUser, normalUser, result;
 
     before(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-
         await SpecUtil.seedAll();
+        result = await SpecUtil.login();
+        adminUser = await result.db[k.Model.User].find({where: {email: SpecUtil.adminCredentials.email}});
+        normalUser = await result.db[k.Model.User].find({where: {email: SpecUtil.credentials.email}});
+    });
 
-        [adminUser, normalUser] = [
-            await User.find({where: {email: SpecUtil.adminCredentials.email}}),
-            await User.find({where: {email: SpecUtil.credentials.email}})
-        ];
+    after(function(done) {
+        result.server.close(done);
     });
 
     it('should return true if the user belongs to the admin role', async function() {

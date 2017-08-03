@@ -15,26 +15,21 @@ const assert = require('assert');
 const _ = require('lodash');
 
 describe('', function() {
-    let authorization = null;
-    let server = null;
-    let video = null;
-    let user = null;
-    let db = null;
+    let authorization, server, video, user, db;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login(true).then(async function(result) {
-            authorization = result.authorization;
-            server = result.server;
-            user = result.response.body;
-            db = result.db;
-            video = await db[k.Model.Video].find();
-        });
+        const result = await SpecUtil.login(true);
+        authorization = result.authorization;
+        server = result.server;
+        user = result.response.body;
+        db = result.db;
+        video = await db[k.Model.Video].find();
     });
 
     afterEach(function(done) {
