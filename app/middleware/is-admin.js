@@ -10,9 +10,8 @@ const k = require('../../config/keys.json');
 
 module.exports = async (req, res, next) => {
     if (await req.user.isAdmin()) {
-        next();
-    } else {
-        res.status(404);
-        next(new GetNativeError(k.Error.ResourceNotFound));
+        return next();
     }
+    res.status(404);
+    return next(new GetNativeError(k.Error.ResourceNotFound));
 };

@@ -26,13 +26,13 @@ CustomStrategy.prototype.authenticate = async function(req) {
         const refreshedToken = await Auth.refreshToken(decodedToken);
         Auth.setAuthHeadersOnResponseWithToken(req.res, refreshedToken);
     } catch (e) {
-        return this.error(e);
+        return this.pass();
     }
 
     if (user) {
         this.success(user);
     } else {
-        this.fail();
+        this.pass();
     }
 };
 

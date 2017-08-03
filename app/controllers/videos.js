@@ -32,15 +32,15 @@ const Like = db[k.Model.Like];
 const _ = require('lodash');
 
 module.exports.index = async (req, res, next) => {
-    let videos, conditions = {};
+    let videos, conditions = {}, isAuthenticated = req.isAuthenticated();
 
     _.set(conditions, k.Attr.IsPublic, true);
-    if (req.query.include_private && await req.user.isAdmin()) {
+    if (req.query.include_private && isAuthenticated && await req.user.isAdmin()) {
         _.unset(conditions, k.Attr.IsPublic);
     }
 
-    const interfaceLanguageCode = _.defaultTo(req.query.interface_lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code));
-    const interfaceLanguageId = await Language.findIdForCode(interfaceLanguageCode);
+    const fallbackCode = isAuthenticated ? req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code) : req.locale;
+    const interfaceLanguageId = await Language.findIdForCode(_.defaultTo(req.query.interface_lang, fallbackCode));
 
     conditions.language_id = await Language.findIdForCode(_.defaultTo(req.body.lang, 'en'));
 
@@ -51,14 +51,22 @@ module.exports.index = async (req, res, next) => {
     }
 
     const createdAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
-    const cued = Video.getCuedAttributeForUserId(req.user[k.Attr.Id]);
-    const attributes = [createdAt, k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length, cued];
+    const attributes = [createdAt, k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length];
+
+    if (isAuthenticated) {
+        attributes.push(Video.getCuedAttributeForUserId(req.user[k.Attr.Id]));
+    }
 
     const scopes = [
         'newestFirst',
-        {method: ['cuedAndMaxId', req.query.cued_only, req.user[k.Attr.Id], req.query.max_id]},
         {method: ['count', req.query.count]}
     ];
+
+    if (isAuthenticated) {
+        scopes.push({method: ['cuedAndMaxId', req.query.cued_only, req.user[k.Attr.Id], req.query.max_id]})
+    } else {
+        scopes.push({method: ['cuedAndMaxId', null, null, req.query.max_id]});
+    }
 
     const include = [
         {
@@ -99,7 +107,9 @@ module.exports.index = async (req, res, next) => {
     });
 
     videos = ResponseWrapper.wrap(videos.map(video => {
-        video.cued = video.cued === 1;
+        if (isAuthenticated) {
+            video.cued = video.cued === 1;
+        }
 
         video.speaker[k.Attr.Name] = _.first(video.speaker.speakers_localized)[k.Attr.Name];
         delete video.speaker.speakers_localized;
@@ -114,11 +124,10 @@ module.exports.index = async (req, res, next) => {
 };
 
 module.exports.show = async (req, res, next) => {
-    let video, relatedVideos;
+    let video, relatedVideos, isAuthenticated = req.isAuthenticated();
 
-    const interfaceLanguageId = await Language.findIdForCode(
-        _.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code))
-    );
+    const fallbackCode = isAuthenticated ? req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code) : req.locale;
+    const interfaceLanguageId = await Language.findIdForCode(_.defaultTo(req.query.lang, fallbackCode));
 
     const relatedInclude = [
         {
@@ -198,17 +207,20 @@ module.exports.show = async (req, res, next) => {
     ];
 
     const relatedCreatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
-    const relatedCued = Video.getCuedAttributeForUserId(req.user[k.Attr.Id]);
+    const relatedVideosAttributes = [k.Attr.Id, relatedCreatedAt, k.Attr.Length, k.Attr.PictureUrl, k.Attr.LoopCount];
+    if (isAuthenticated) {
+        relatedVideosAttributes.push(Video.getCuedAttributeForUserId(req.user[k.Attr.Id]));
+    }
 
     try {
         relatedVideos = await Video.scope([{method: ['relatedToVideo', +req.params[k.Attr.Id]]}, 'orderByRandom']).findAll({
-            attributes: [k.Attr.Id, relatedCreatedAt, k.Attr.Length, k.Attr.PictureUrl, k.Attr.LoopCount, relatedCued],
+            attributes: relatedVideosAttributes,
             include: relatedInclude,
             limit: 3
         });
 
         const videoAttributes = [k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length];
-        if (await req.user.isAdmin()) {
+        if (isAuthenticated && await req.user.isAdmin()) {
             videoAttributes.push(k.Attr.IsPublic);
         }
 
@@ -231,8 +243,10 @@ module.exports.show = async (req, res, next) => {
 
     try {
         video.like_count = await Video.getLikeCount(db, req.params.id);
-        video.liked = await Video.isLikedByUser(db, req.params.id, req.user[k.Attr.Id]);
-        video.cued = await Video.isCuedByUser(db, req.params.id, req.user[k.Attr.Id]);
+        if (isAuthenticated) {
+            video.liked = await Video.isLikedByUser(db, req.params.id, req.user[k.Attr.Id]); // todo
+            video.cued = await Video.isCuedByUser(db, req.params.id, req.user[k.Attr.Id]);
+        }
     } catch (e) {
         return next(e);
     }
@@ -252,7 +266,9 @@ module.exports.show = async (req, res, next) => {
     });
 
     video.related_videos = ResponseWrapper.wrap(video.related_videos.map(relatedVideo => {
-        relatedVideo.cued = relatedVideo.cued === 1;
+        if (isAuthenticated) {
+            relatedVideo.cued = relatedVideo.cued === 1;
+        }
 
         relatedVideo.speaker[k.Attr.Name] = _.first(relatedVideo.speaker.speakers_localized)[k.Attr.Name];
         _.unset(relatedVideo, 'speaker.speakers_localized');

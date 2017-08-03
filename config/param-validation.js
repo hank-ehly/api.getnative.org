@@ -107,7 +107,7 @@ const schema = {
         },
         index: {
             headers: {
-                authorization: Joi.string().required()
+                authorization: Joi.string()
             },
             query: {
                 lang: Joi.string().lowercase().valid(validLangCodes),
@@ -457,7 +457,7 @@ const schema = {
         },
         index: {
             headers: {
-                authorization: Joi.string().required()
+                authorization: Joi.string()
             },
             query: {
                 max_id: Joi.number().integer().min(1),
@@ -474,7 +474,7 @@ const schema = {
         },
         show: {
             headers: {
-                authorization: Joi.string().required()
+                authorization: Joi.string()
             },
             params: {
                 id: Joi.number().integer().min(1).required()

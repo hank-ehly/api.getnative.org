@@ -16,10 +16,7 @@ const assert = require('assert');
 const _ = require('lodash');
 
 describe('GET /videos', function() {
-    let server = null;
-    let authorization = null;
-    let user = null;
-    let db = null;
+    let server, authorization, user, db;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -41,10 +38,6 @@ describe('GET /videos', function() {
     });
 
     describe('failure', function() {
-        it(`should respond with 401 Unauthorized if the request does not contain an 'authorization' header`, function(done) {
-            request(server).get('/videos').expect(401, done);
-        });
-
         it('should return 400 Bad Request if "include_private" is not a boolean', function(done) {
             request(server).get('/videos?include_private=notABoolean').set('authorization', authorization).expect(400, done);
         });
@@ -110,9 +103,15 @@ describe('GET /videos', function() {
     });
 
     describe('success', function() {
-        it('should respond with an X-GN-Auth-Token header', function() {
+        it('should respond with an X-GN-Auth-Token header if authorized', function() {
             return request(server).get('/videos').set('authorization', authorization).then(function(response) {
                 assert(_.gt(response.header[k.Header.AuthToken].length, 0));
+            });
+        });
+
+        it('should not respond with an X-GN-Auth-Token header if not authorized', function() {
+            return request(server).get('/videos').then(function(response) {
+                assert(!response.header[k.Header.AuthToken]);
             });
         });
 
@@ -122,18 +121,22 @@ describe('GET /videos', function() {
             });
         });
 
-        it('should receive a 200 OK response for a valid request', function(done) {
+        it('should receive a 200 OK response for a valid request if authorized', function(done) {
             request(server).get('/videos').set('authorization', authorization).expect(200, done);
+        });
+
+        it('should receive a 200 OK response for a valid request even if not authorized', function(done) {
+            request(server).get('/videos').expect(200, done);
         });
 
         it('should return only public videos by default', async function() {
             // update latest video to make it private & cache ID
-            let videos = await db[k.Model.Video].findAll({
+            const videos = await db[k.Model.Video].findAll({
                 order: [[k.Attr.Id, 'DESC']],
                 limit: 1
             });
 
-            let cachedId = _.first(videos).get(k.Attr.Id);
+            const cachedId = _.first(videos).get(k.Attr.Id);
 
             await db[k.Model.Video].update({
                 is_public: false
@@ -149,12 +152,12 @@ describe('GET /videos', function() {
         });
 
         it('should ignore the "include_private" flag if the user does not have admin privileges', async function() {
-            let videos = await db[k.Model.Video].findAll({
+            const videos = await db[k.Model.Video].findAll({
                 order: [[k.Attr.Id, 'DESC']],
                 limit: 1
             });
 
-            let cachedId = _.first(videos).get(k.Attr.Id);
+            const cachedId = _.first(videos).get(k.Attr.Id);
 
             await db[k.Model.Video].update({
                 is_public: false
@@ -232,9 +235,15 @@ describe('GET /videos', function() {
             });
         });
 
-        it(`should contain a non-null 'cued' boolean`, function() {
+        it(`should contain a non-null 'cued' boolean if authenticated`, function() {
             return request(server).get(`/videos`).set('authorization', authorization).then(function(response) {
                 assert(_.isBoolean(_.first(response.body.records).cued));
+            });
+        });
+
+        it(`should not contain a 'cued' boolean if unauthenticated`, function() {
+            return request(server).get(`/videos`).then(function(response) {
+                assert(!_.has(_.first(response.body.records), 'cued'));
             });
         });
 
@@ -418,14 +427,19 @@ describe('GET /videos', function() {
             });
         });
 
-        it('should localize the subcategory name based on the interface_lang query parameter if present', async function() {
-            const response = await request(server).get(`/videos`).query({interface_lang: 'ja'}).set('authorization', authorization);
+        it('should localize the subcategory name based on the interface_lang query parameter', async function() {
+            const response = await request(server).get(`/videos`).query({interface_lang: 'ja'}).set('Accept-Language', 'en-US,en;q=0.8,ja;q=0.6');
             assert(/[^a-z]/i.test(_.first(response.body.records).subcategory[k.Attr.Name]));
         });
 
-        it('should localize the subcategory name based on the user preferred interface language if the interface_lang query parameter is missing', async function() {
-            const response = await request(server).get(`/videos`).set('authorization', authorization);
+        it('should localize the subcategory name based on the user.interface_language if authenticated and "interface_lang" is absent, even if "Accept-Language" is different than user.interface_language', async function() {
+            const response = await request(server).get(`/videos`).set('authorization', authorization).set('Accept-Language', 'ja-JP,ja;q=0.8,en;q=0.6');
             assert(/[a-z]/i.test(_.first(response.body.records).subcategory[k.Attr.Name]));
+        });
+
+        it('should localize the subcategory name based on the "Accept-Language" header if the unauthenticated and "interface_lang" is absent', async function() {
+            const response = await request(server).get(`/videos`).set('Accept-Language', 'ja-JP,ja;q=0.8,en;q=0.6');
+            assert(/[^a-z]/i.test(_.first(response.body.records).subcategory[k.Attr.Name]));
         });
 
         it('should localize the speaker name based on the interface_lang query parameter if present', async function() {

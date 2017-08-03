@@ -23,8 +23,8 @@ const _ = require('lodash');
 module.exports.index = async (req, res, next) => {
     let categories;
 
-    const interfaceLanguageId = await Language.findIdForCode(_.defaultTo(req.query.lang, req.user.get(k.Attr.InterfaceLanguage)
-        .get(k.Attr.Code)));
+    const fallbackCode = req.isAuthenticated() ? req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code) : req.locale;
+    const interfaceLanguageId = await Language.findIdForCode(_.defaultTo(req.query.lang, fallbackCode));
 
     const requireSubcategories = [null, undefined, true, 'true'].includes(req.query.require_subcategories);
 
