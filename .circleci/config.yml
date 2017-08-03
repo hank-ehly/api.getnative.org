@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/api.get-native.com
     docker:
-      - image: circleci/node:latest
+      - image: circleci/ruby:2.3-node
         environment:
           - NODE_ENV: test
       - image: circleci/mysql:5.7
