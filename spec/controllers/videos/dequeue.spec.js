@@ -26,32 +26,29 @@ describe('POST /videos/:id/dequeue', function() {
         return SpecUtil.seedAll();
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(result) {
-            authorization = result.authorization;
-            user          = result.response.body;
-            server        = result.server;
-            db            = result.db;
+        const result = await SpecUtil.login();
+        authorization = result.authorization;
+        user = result.response.body;
+        server = result.server;
+        db = result.db;
 
-            return db.sequelize.query(`
-                SELECT * FROM videos WHERE id NOT IN (
-                    SELECT video_id FROM cued_videos WHERE user_id = ?
-                ) LIMIT 1;
-            `, {replacements: [user[k.Attr.Id]]}).then(function(values) {
-                const [video] = values;
-                return _.first(video);
-            }).then(function(nonQueuedVideo) {
-                return db[k.Model.CuedVideo].create({
-                    user_id: user[k.Attr.Id],
-                    video_id: nonQueuedVideo[k.Attr.Id]
-                });
-            }).then(function(queuedVideo) {
-                return db[k.Model.Video].findByPrimary(queuedVideo[k.Attr.VideoId]);
-            }).then(function(video) {
-                sampleVideo = video;
-            });
+        const values = await db.sequelize.query(`
+            SELECT * FROM videos WHERE id NOT IN (
+                SELECT video_id FROM cued_videos WHERE user_id = ?
+            ) LIMIT 1;
+        `, {replacements: [user[k.Attr.Id]]});
+
+        const [video] = values;
+        const nonQueuedVideo = _.first(video);
+
+        const queuedVideo = await db[k.Model.CuedVideo].create({
+            user_id: user[k.Attr.Id],
+            video_id: nonQueuedVideo[k.Attr.Id]
         });
+
+        sampleVideo = await db[k.Model.Video].findByPrimary(queuedVideo[k.Attr.VideoId]);
     });
 
     afterEach(function(done) {

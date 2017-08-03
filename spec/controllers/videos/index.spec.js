@@ -23,14 +23,13 @@ describe('GET /videos', function() {
         return SpecUtil.seedAll();
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(result) {
-            authorization = result.authorization;
-            server = result.server;
-            user = result.response.body;
-            db = result.db;
-        });
+        const result = await SpecUtil.login();
+        authorization = result.authorization;
+        server = result.server;
+        user = result.response.body;
+        db = result.db;
     });
 
     afterEach(function(done) {

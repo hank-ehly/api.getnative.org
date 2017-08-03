@@ -23,19 +23,16 @@ describe('GET /videos/:id', function() {
         return SpecUtil.seedAll();
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(result) {
-            authorization = result.authorization;
-            server        = result.server;
-            user          = result.response.body;
-            db            = result.db;
-
-            return db.sequelize.query('SELECT id FROM videos LIMIT 1').then(function(values) {
-                const [rows] = values;
-                videoId = _.first(rows)[k.Attr.Id];
-            });
-        });
+        const result = await SpecUtil.login();
+        authorization = result.authorization;
+        server = result.server;
+        user = result.response.body;
+        db = result.db;
+        const values = await db.sequelize.query('SELECT id FROM videos LIMIT 1');
+        const [rows] = values;
+        videoId = _.first(rows)[k.Attr.Id];
     });
 
     afterEach(function(done) {

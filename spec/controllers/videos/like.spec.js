@@ -25,26 +25,19 @@ describe('POST /videos/:id/like', function() {
         return SpecUtil.seedAll();
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(result) {
-            authorization = result.authorization;
-            server        = result.server;
-            db            = result.db;
-
-            return db.sequelize.query(`
-                SELECT id
-                FROM videos
-                WHERE id NOT IN (
-                    SELECT video_id
-                    FROM likes
-                    WHERE user_id = ?
-                ) LIMIT 1
-            `, {replacements: [result.response.body[k.Attr.Id]]}).then(function(values) {
-                const [r] = values;
-                requestVideoId = _.first(r)[k.Attr.Id]
-            });
-        });
+        const result = await SpecUtil.login();
+        authorization = result.authorization;
+        server = result.server;
+        db = result.db;
+        const values = await db.sequelize.query(`
+            SELECT id FROM videos WHERE id NOT IN (
+                SELECT video_id FROM likes WHERE user_id = ?
+            ) LIMIT 1
+        `, {replacements: [result.response.body[k.Attr.Id]]});
+        const [r] = values;
+        requestVideoId = _.first(r)[k.Attr.Id]
     });
 
     afterEach(function(done) {

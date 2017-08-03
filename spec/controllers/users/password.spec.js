@@ -33,14 +33,13 @@ describe('POST /users/password', function() {
         return SpecUtil.seedAll();
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(results) {
-            authorization = results.authorization;
-            server        = results.server;
-            user          = results.response.body;
-            db            = results.db;
-        });
+        const results = await SpecUtil.login();
+        authorization = results.authorization;
+        server = results.server;
+        user = results.response.body;
+        db = results.db;
     });
 
     afterEach(function(done) {

@@ -22,27 +22,26 @@ describe('POST /videos/:id/unlike', function() {
         return SpecUtil.seedAll();
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(result) {
-            authorization = result.authorization;
-            server        = result.server;
-            user          = result.response.body;
-            db            = result.db;
+        const result = await SpecUtil.login();
 
-            const query = `
-                SELECT video_id 
-                FROM likes
-                LEFT JOIN users ON likes.user_id = users.id
-                WHERE users.email = ?
-                LIMIT 1
-            `;
+        authorization = result.authorization;
+        server = result.server;
+        user = result.response.body;
+        db = result.db;
 
-            return db.sequelize.query(query, {replacements: [SpecUtil.credentials.email]}).then(function(values) {
-                const [rows] = values;
-                requestVideoId = _.first(rows)[k.Attr.VideoId];
-            });
-        });
+        const query = `
+            SELECT video_id 
+            FROM likes
+            LEFT JOIN users ON likes.user_id = users.id
+            WHERE users.email = ?
+            LIMIT 1
+        `;
+
+        const values = await db.sequelize.query(query, {replacements: [SpecUtil.credentials.email]});
+        const [rows] = values;
+        requestVideoId = _.first(rows)[k.Attr.VideoId];
     });
 
     afterEach(function(done) {

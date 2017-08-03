@@ -26,23 +26,19 @@ describe('POST /videos/:id/queue', function() {
         return SpecUtil.seedAll();
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(initGroup) {
-            authorization = initGroup.authorization;
-            server        = initGroup.server;
-            user          = initGroup.response.body;
-            db            = initGroup.db;
-
-            return db.sequelize.query(`
-                SELECT * FROM videos WHERE id NOT IN (
-                    SELECT video_id FROM cued_videos WHERE user_id = ?
-                ) LIMIT 1;
-            `, {replacements: [user[k.Attr.Id]]}).then(function(values) {
-                const [video] = values;
-                sampleVideo = _.first(video);
-            });
-        });
+        const initGroup = await SpecUtil.login();
+        authorization = initGroup.authorization;
+        server = initGroup.server;
+        user = initGroup.response.body;
+        db = initGroup.db;
+        const values = await db.sequelize.query(`
+            SELECT * FROM videos 
+            WHERE id NOT IN (SELECT video_id FROM cued_videos WHERE user_id = ?) 
+            LIMIT 1;`, {replacements: [user[k.Attr.Id]]});
+        const [video] = values;
+        sampleVideo = _.first(video);
     });
 
     afterEach(function(done) {
