@@ -42,7 +42,7 @@ module.exports.index = async (req, res, next) => {
     const fallbackCode = isAuthenticated ? req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code) : req.locale;
     const interfaceLanguageId = await Language.findIdForCode(_.defaultTo(req.query.interface_lang, fallbackCode));
 
-    conditions.language_id = await Language.findIdForCode(_.defaultTo(req.body.lang, 'en'));
+    conditions.language_id = await Language.findIdForCode(_.defaultTo(req.query.lang, 'en'));
 
     const subcategoryIds = await Subcategory.findIdsForCategoryIdOrSubcategoryId(req.query);
 
