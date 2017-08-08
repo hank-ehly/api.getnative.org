@@ -1,6 +1,6 @@
 /**
  * 20170224002017-add-auth-adapter-type-id-to-identities
- * api.get-native.com
+ * api.getnativelearning.com
  *
  * Created by henryehly on 2017/05/13.
  */

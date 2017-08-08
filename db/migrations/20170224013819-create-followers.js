@@ -1,6 +1,6 @@
 /**
  * 20170224013819-create-followers
- * api.get-native.com
+ * api.getnativelearning.com
  *
  * Created by henryehly on 2017/02/24.
  */

@@ -1,6 +1,6 @@
 /**
  * register.spec
- * get-native.com
+ * api.getnativelearning.com
  *
  * Created by henryehly on 2017/03/24.
  */
@@ -299,7 +299,7 @@ describe('POST /users', function() {
             assert.equal(recipientEmailAddress, credential.email);
         });
 
-        it('should send a confirmation email from the get-native noreply user after successful registration', async function() {
+        it('should send a confirmation email from the getnative noreply user after successful registration', async function() {
             await request(server).post('/users').send(credential);
             const emails = await SpecUtil.getAllEmail();
             const senderEmailAddress = _.last(emails).envelope.from.address;

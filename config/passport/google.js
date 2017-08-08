@@ -1,6 +1,6 @@
 /**
  * google
- * api.get-native.com
+ * api.getnativelearning.com
  *
  * Created by henryehly on 2017/05/26.
  */

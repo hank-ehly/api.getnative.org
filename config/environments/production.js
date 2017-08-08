@@ -1,6 +1,6 @@
 /**
  * production
- * get-native.com
+ * api.getnativelearning.com
  *
  * Created by henryehly on 2017/01/18.
  */
@@ -9,13 +9,13 @@ const k = require('../keys.json');
 
 const config = {};
 
-config[k.Header.AccessControlAllowOrigin] = 'https://get-native.com';
-config[k.API.Hostname] = 'api.get-native.com';
+config[k.Header.AccessControlAllowOrigin] = 'https://getnativelearning.com';
+config[k.API.Hostname] = 'api.getnativelearning.com';
 config[k.SMTP.Port] = 25;
-config[k.Client.Host] = 'get-native.com';
+config[k.Client.Host] = 'getnativelearning.com';
 config[k.Client.Protocol] = 'https';
-config[k.NoReply] = 'noreply@get-native.com';
-config[k.GoogleCloud.StorageBucketName] = 'get-native.com';
-config[k.EmailAddress.Contact] = 'contact@get-native.com';
+config[k.NoReply] = 'noreply@getnativelearning.com';
+config[k.GoogleCloud.StorageBucketName] = 'getnativelearning.com';
+config[k.EmailAddress.Contact] = 'contact@getnativelearning.com';
 
 module.exports = config;

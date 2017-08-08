@@ -1,6 +1,6 @@
 /**
  * 20170723050810-email-update-requests
- * api.get-native.com
+ * api.getnativelearning.com
  *
  * Created by henryehly on 2017/07/23.
  */

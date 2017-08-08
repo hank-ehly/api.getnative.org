@@ -1,6 +1,6 @@
 /**
  * application
- * api.get-native.com
+ * api.getnativelearning.com
  *
  * Created by henryehly on 2017/05/22.
  */
@@ -46,7 +46,7 @@ function Config() {
     nconf.set(k.PublicKey, jwtKeyPair.publicKey);
 
     nconf.set(k.VideoLanguageCodes, ['en', 'ja']);
-    nconf.set(k.TempDir, fs.mkdtempSync('/tmp/com.get-native.'));
+    nconf.set(k.TempDir, fs.mkdtempSync('/tmp/com.getnativelearning.'));
 }
 
 Config.prototype.get = function(key) {

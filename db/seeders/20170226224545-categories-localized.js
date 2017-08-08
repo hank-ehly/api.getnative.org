@@ -1,6 +1,6 @@
 /**
  * 20170226224545-categories-localized
- * api.get-native.com
+ * api.getnativelearning.com
  *
  * Created by henryehly on 2017/06/06.
  */
