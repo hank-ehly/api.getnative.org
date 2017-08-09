@@ -7,9 +7,9 @@
         "dialect": "mysql"
     },
     "staging": {
-        "username": "get_native",
+        "username": "getnative",
         "password": "",
-        "database": "get_native_staging",
+        "database": "getnative_staging",
         "host": "127.0.0.1",
         "dialect": "mysql"
     },
