@@ -29,25 +29,29 @@ describe('DELETE /users', function() {
     beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
         const retObj = await SpecUtil.startServer();
+        db = retObj.db;
 
-        const credentials = SpecUtil.credentials;
-        if (users) {
-            credentials.email = _.sample(users).get(k.Attr.Email);
-            credentials.password = 'password';
+        if (!users) {
+            users = await db[k.Model.User].findAll({
+                attributes: [k.Attr.Email],
+                where: {
+                    email: {
+                        $notIn: [SpecUtil.credentials.email, SpecUtil.adminCredentials.email]
+                    }
+                }
+            });
         }
+
+        const credentials = {
+            email: _.sample(users).get(k.Attr.Email),
+            password: _.clone(SpecUtil.credentials.password)
+        };
 
         const response = await request(retObj.server).post('/sessions').send(credentials);
 
         authorization = ['Bearer:', response.headers[k.Header.AuthToken]].join(' ');
         server = retObj.server;
         user = response.body;
-        db = retObj.db;
-
-        if (!users) {
-            users = await db[k.Model.User].findAll({
-                attributes: [k.Attr.Email]
-            });
-        }
     });
 
     afterEach(function(done) {
