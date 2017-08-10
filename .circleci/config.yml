@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/api.getnativelearning.com
     docker:
-      - image: circleci/ruby:2.3-node
+      - image: circleci/node:8.3.0
         environment:
           - NODE_ENV: test
       - image: circleci/mysql:5.7
