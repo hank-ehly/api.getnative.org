@@ -20,18 +20,7 @@ jobs:
     steps:
       - checkout
       - run: sudo apt-get update -y
-      - run: sudo apt-get install -y build-essential libav-tools
-      - run: 
-          name: Install ruby
-          command: |
-              git clone https://github.com/sstephenson/rbenv.git /root/.rbenv
-              git clone https://github.com/sstephenson/ruby-build.git /root/.rbenv/plugins/ruby-build
-              /root/.rbenv/plugins/ruby-build/install.sh
-              PATH /root/.rbenv/bin:$PATH
-              echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh # or /etc/profile
-              echo 'eval "$(rbenv init -)"' >> .bashrc
-              rbenv install 2.3.1
-              gem install bundler --no-rdoc --no-ri
+      - run: sudo apt-get install -y build-essential libav-tools ruby2.3
       - restore_cache:
           key: api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
       - run: npm install
