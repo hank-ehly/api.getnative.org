@@ -37,4 +37,4 @@ jobs:
       - run: npm test
       - deploy:
           name: Deploy
-          command: ./bin/deploy.sh
+          command: ./bin/deploy.sh ${CIRCLE_BRANCH}
