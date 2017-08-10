@@ -12,23 +12,12 @@ const request = require('supertest');
 const exec    = require('child_process').exec;
 const MailDev = require('maildev');
 const jwt     = require('jsonwebtoken');
-const util    = require('util');
 
 let maildev = null;
 
-const credentials = {
-    email: 'test@email.com',
-    password: 'password'
-};
-
-const adminCredentials = {
-    email: 'admin@email.com',
-    password: 'password'
-};
-
-module.exports.defaultTimeout = 30000;
-module.exports.credentials = credentials;
-module.exports.adminCredentials = adminCredentials;
+module.exports.defaultTimeout   = 30000;
+module.exports.credentials      = {email: 'test@email.com', password: 'password'};
+module.exports.adminCredentials = {email: 'admin@email.com', password: 'password'};
 
 module.exports.seedAll = function() {
     return new Promise(function(resolve, reject) {
@@ -92,12 +81,11 @@ module.exports.startServer = function() {
 
 module.exports.login = async function(admin = false) {
     let retObj   = await module.exports.startServer();
-    let body = admin ? adminCredentials : credentials;
-    let response = await request(retObj.server).post('/sessions').send(body);
+    let response = await request(retObj.server).post('/sessions').send(admin ? module.exports.adminCredentials : module.exports.credentials);
     // a lot of test are failing because some of the time 'response.headers' does not include the auth token when it should.
     // this causes the subsequent request to correctly fail with 401 Unauthorized.
     if (!response.headers[k.Header.AuthToken]) {
-        throw new Error(`Missing AuthToken header in response: ${util.inspect(response, null)}`);
+        throw new Error(response);
     }
     retObj.authorization = ['Bearer:', response.headers[k.Header.AuthToken]].join(' ');
     retObj.response = response;
