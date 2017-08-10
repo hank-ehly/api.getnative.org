@@ -39,16 +39,13 @@ describe('POST /users/password', function() {
         db = results.db;
     });
 
-    afterEach(function(done) {
+    afterEach(async function() {
         const hashPassword = Auth.hashPassword(validBody.current_password);
-        db[k.Model.Credential].update({
-            password: hashPassword
-        }, {
-            where: {
-                user_id: user[k.Attr.Id]
-            }
-        }).then(() => {
-            server.close(done);
+        await db[k.Model.Credential].update({password: hashPassword}, {where: {user_id: user[k.Attr.Id]}});
+        return new Promise((resolve) => {
+            server.close(() => {
+                resolve();
+            });
         });
     });
 
