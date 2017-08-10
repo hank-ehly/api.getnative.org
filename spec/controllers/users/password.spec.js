@@ -18,10 +18,7 @@ const i18n     = require('i18n');
 const _        = require('lodash');
 
 describe('POST /users/password', function() {
-    let authorization = null;
-    let server        = null;
-    let user          = null;
-    let db            = null;
+    let authorization, server, user, db;
 
     const validBody = {
         new_password: '87654321',
@@ -70,8 +67,8 @@ describe('POST /users/password', function() {
     });
 
     describe('success', function() {
-        it(`should return 204 No Content for a valid request`, function(done) {
-            request(server).post('/users/password').set('authorization', authorization).send(validBody).expect(204, done);
+        it(`should return 204 No Content for a valid request`, async function() {
+            return request(server).post('/users/password').set('authorization', authorization).send(validBody).expect(204);
         });
 
         it(`should not contain a response body`, function() {

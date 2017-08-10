@@ -15,10 +15,7 @@ const assert = require('assert');
 const _ = require('lodash');
 
 describe('GET /videos/:id/writing_questions', function() {
-    let authorization = null;
-    let server = null;
-    let db = null;
-    let englishVideoId = null;
+    let authorization, server, db, englishVideoId;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
