@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: /var/www
+    working_directory: ~/api.getnativelearning.com
 
     environment:
       BASH_ENV: ~/.bashrc
