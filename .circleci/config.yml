@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/api.getnativelearning.com
     docker:
-      - image: circleci/node:latest
+      - image: circleci/ruby:2.3.4
         environment:
           - NODE_ENV: test
       - image: circleci/mysql:5.7
@@ -21,32 +21,25 @@ jobs:
       - checkout
       - run: sudo apt-get update -y
       - run: sudo apt-get install -y build-essential libav-tools
+      - run:
+          name: Install Node.js
+          command: |
+              curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
+              echo 'export NVM_DIR="$HOME/.nvm"' >> ${HOME}/.profile
+              echo '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"' >> ${HOME}/.profile
+              source ${HOME}/.profile
+              command -v nvm
+              nvm install 8.3.0
+              nvm alias default 8.3.0
+              node -v
       - restore_cache:
           keys:
               - api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
-              - ruby-cache
-      - run:
-          name: Install ruby
-          command: |
-              if [ ! -d /home/circleci/.rbenv ]; then
-                  git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
-                  git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
-                  echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ${HOME}/.profile
-                  echo 'eval "$(rbenv init -)"' >> ${HOME}/.profile
-                  source ${HOME}/.profile
-                  rbenv install --verbose 2.3.1
-                  rbenv global 2.3.1 && ruby -v
-                  gem install bundler
-              fi
       - run: npm install
       - save_cache:
           key: api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
           paths:
             - "node_modules"
-      - save_cache:
-          key: ruby-cache
-          paths:
-            - "/home/circleci/.rbenv/"
       - run: ./bin/generate-jwt-keypair.bash
       - run:
           name: Setup DB
