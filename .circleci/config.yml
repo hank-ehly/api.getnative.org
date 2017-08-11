@@ -29,6 +29,8 @@ jobs:
               echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ${HOME}/.profile
               echo 'eval "$(rbenv init -)"' >> ${HOME}/.profile
               source ${HOME}/.profile
+              git clone git@github.com:hank-ehly/devops.getnativelearning.com.git
+              cd devops.getnativelearning.com/deploy && rbenv install --verbose && gem install bundler
       - restore_cache:
           key: api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
       - run: npm install
