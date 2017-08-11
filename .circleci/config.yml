@@ -30,6 +30,7 @@ jobs:
               echo 'eval "$(rbenv init -)"' >> ${HOME}/.profile
               source ${HOME}/.profile
               rbenv install --verbose 2.3.1
+              rbenv global 2.3.1 && ruby -v
               gem install bundler
       - restore_cache:
           key: api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
