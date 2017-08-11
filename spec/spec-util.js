@@ -13,7 +13,7 @@ const exec    = require('child_process').exec;
 const MailDev = require('maildev');
 const jwt     = require('jsonwebtoken');
 
-let maildev = null;
+let maildev;
 
 module.exports.defaultTimeout   = 30000;
 module.exports.credentials      = {email: 'test@email.com', password: 'password'};
@@ -95,12 +95,12 @@ module.exports.isParsableTimestamp = function(value) {
 };
 
 module.exports.isValidURL = function(value) {
-    let parsedURL = url.parse(value);
+    const parsedURL = url.parse(value);
     return parsedURL.protocol && parsedURL.hostname;
 };
 
 module.exports.isValidEmail = function(value) {
-    let regex = new RegExp('[a-z0-9!#$%&\'*+/=?^_`{|}~.-]+@[a-z0-9-]+(\.[a-z0-9-]+)*');
+    const regex = new RegExp('[a-z0-9!#$%&\'*+/=?^_`{|}~.-]+@[a-z0-9-]+(\.[a-z0-9-]+)*');
     return regex.test(value);
 };
 
