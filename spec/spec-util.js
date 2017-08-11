@@ -80,10 +80,8 @@ module.exports.startServer = function() {
 };
 
 module.exports.login = async function(admin = false) {
-    let retObj   = await module.exports.startServer();
-    let response = await request(retObj.server).post('/sessions').send(admin ? module.exports.adminCredentials : module.exports.credentials);
-    // a lot of test are failing because some of the time 'response.headers' does not include the auth token when it should.
-    // this causes the subsequent request to correctly fail with 401 Unauthorized.
+    const retObj   = await module.exports.startServer();
+    const response = await request(retObj.server).post('/sessions').send(admin ? module.exports.adminCredentials : module.exports.credentials);
     if (!response.headers[k.Header.AuthToken]) {
         throw new Error(response);
     }
