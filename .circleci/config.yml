@@ -21,6 +21,10 @@ jobs:
       - checkout
       - run: sudo apt-get update -y
       - run: sudo apt-get install -y build-essential libav-tools
+      - restore_cache:
+          keys:
+              - api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
+              - ruby-cache
       - run:
           name: Install ruby
           command: |
@@ -34,10 +38,6 @@ jobs:
                   rbenv global 2.3.1 && ruby -v
                   gem install bundler
               fi
-      - restore_cache:
-          keys:
-              - api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
-              - ruby-cache
       - run: npm install
       - save_cache:
           key: api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
