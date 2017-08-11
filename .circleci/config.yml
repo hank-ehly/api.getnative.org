@@ -3,9 +3,6 @@ jobs:
   build:
     working_directory: ~/api.getnativelearning.com
 
-    environment:
-      BASH_ENV: ~/.bashrc
-
     docker:
       - image: circleci/ruby:2.3.4
         environment:
