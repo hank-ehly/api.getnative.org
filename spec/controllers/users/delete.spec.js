@@ -83,6 +83,9 @@ describe('DELETE /users', function() {
         });
 
         it('should send an email to the getnative owner', async function() {
+            before(function() {
+                return SpecUtil.deleteAllEmail();
+            });
             const testReason = 'this is the test reason';
             await request(server).delete('/users').set(k.Header.Authorization, authorization).send({reason: testReason});
             const emails = await SpecUtil.getAllEmail();
