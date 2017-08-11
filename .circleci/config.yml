@@ -26,7 +26,7 @@ jobs:
           command: |
               curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
               export NVM_DIR="$HOME/.nvm"
-              [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+              [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
               nvm install 8.3.0 && nvm alias default 8.3.0
               node -v
       - restore_cache:
