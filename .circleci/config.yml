@@ -34,7 +34,7 @@ jobs:
 
       - run:
           name: Install NVM
-          command: bash .circleci/nvm.sh
+          command: ./.circleci/nvm.sh
 
       - restore_cache:
           keys:
