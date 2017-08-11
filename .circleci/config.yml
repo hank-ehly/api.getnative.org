@@ -22,7 +22,7 @@ jobs:
       - run: sudo apt-get update -y
       - run: sudo apt-get install -y build-essential libav-tools
       - run:
-          name: Install ruby
+          name: Install rbenv
           command: |
               git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
               git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
