@@ -30,8 +30,11 @@ jobs:
               sudo apt-get install -y build-essential libav-tools
 
       - run:
-          name: Install NVM
-          command: ./.circleci/nvm.sh
+          name: Install nvm
+          command: .circleci/nvm.sh
+
+      - run: echo $PATH
+      - run: echo $$
 
       - restore_cache:
           keys:
@@ -49,7 +52,7 @@ jobs:
           paths:
             - "node_modules"
 
-      - run: ./.circleci/generate-jwt-keypair.sh
+      - run: .circleci/generate-jwt-keypair.sh
 
       - run:
           name: Setup DB
