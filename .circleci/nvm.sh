@@ -9,4 +9,3 @@ mv .nvmrc .nvmrc.bak \
     && nvm install 8.3.0 \
     && npm install -g npm
 echo $PATH
-echo $$
