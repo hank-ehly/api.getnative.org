@@ -1,9 +1,9 @@
 {
     "development": {
-        "username": "get_native",
-        "password": "get_native",
-        "database": "get_native_development",
-        "host": "127.0.0.1",
+        "username": "getnative",
+        "password": "getnative",
+        "database": "getnative_development",
+        "host": "db",
         "dialect": "mysql"
     },
     "staging": {
