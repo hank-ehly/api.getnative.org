@@ -53,6 +53,10 @@ Config.prototype.get = function(key) {
     return nconf.get(key);
 };
 
+Config.prototype.isDev = function() {
+    return [k.Env.Development, k.Env.Test, k.Env.CircleCI].includes(this.get(k.ENVIRONMENT));
+};
+
 const config = new Config();
 
 module.exports.config = config;
