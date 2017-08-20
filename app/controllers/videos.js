@@ -245,7 +245,7 @@ module.exports.show = async (req, res, next) => {
         video.like_count = await Video.getLikeCount(db, req.params.id);
         if (isAuthenticated) {
             video.liked = await Video.isLikedByUser(db, req.params.id, req.user[k.Attr.Id]); // todo
-            video.cued = await Video.isCuedByUser(db, req.params.id, req.user[k.Attr.Id]);
+            video.cued = await Video.isCuedByUser(req.params.id, req.user[k.Attr.Id]);
         }
     } catch (e) {
         return next(e);

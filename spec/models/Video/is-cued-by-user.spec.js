@@ -38,7 +38,7 @@ describe('Video.isCuedByUser', function() {
     it('should return true if the video is cued by the user', async function() {
         const video = await db[k.Model.Video].find();
         await db[k.Model.CuedVideo].create({video_id: video.get(k.Attr.Id), user_id: user[k.Attr.Id]});
-        const isQueued = await db[k.Model.Video].isCuedByUser(db, video.get(k.Attr.Id), user[k.Attr.Id]);
+        const isQueued = await db[k.Model.Video].isCuedByUser(video.get(k.Attr.Id), user[k.Attr.Id]);
         assert(isQueued);
     });
 
@@ -51,7 +51,7 @@ describe('Video.isCuedByUser', function() {
             },
             force: true
         });
-        const isQueued = await db[k.Model.Video].isCuedByUser(db, video.get(k.Attr.Id), user[k.Attr.Id]);
+        const isQueued = await db[k.Model.Video].isCuedByUser(video.get(k.Attr.Id), user[k.Attr.Id]);
         assert(!isQueued);
     });
 });

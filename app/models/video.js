@@ -113,7 +113,7 @@ module.exports = function(sequelize, DataTypes) {
         return sequelize.query(query).then(r => _(r).flatten().first()['isLiked'] === 1);
     };
 
-    Video.isCuedByUser = function(db, videoId, userId) {
+    Video.isCuedByUser = function(videoId, userId) {
         const query = `SELECT EXISTS(SELECT video_id, user_id FROM cued_videos WHERE video_id = ${videoId} AND user_id = ${userId}) AS isCued`;
         return sequelize.query(query).then(r => _(r).flatten().first()['isCued'] === 1);
     };
