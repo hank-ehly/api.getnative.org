@@ -12,6 +12,10 @@ const router = express.Router();
 const k = require('../../config/keys.json');
 
 router.use((req, res, next) => {
+    if (/^\/healthcheck$/.test(req.url)) {
+        return next();
+    }
+
     const corsHeaders = {
         'Access-Control-Allow-Origin': 'null',
         'Access-Control-Expose-Headers': 'X-GN-Auth-Token, X-GN-Auth-Expire, Location',
