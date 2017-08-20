@@ -6,22 +6,28 @@
  */
 
 const express = require('express');
-const config  = require('../../config/application').config;
-const logger  = require('../../config/logger');
-const router  = express.Router();
+const config = require('../../config/application').config;
+const logger = require('../../config/logger');
+const router = express.Router();
 const k = require('../../config/keys.json');
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': config.get(k.Header.AccessControlAllowOrigin),
-    'Access-Control-Expose-Headers': 'X-GN-Auth-Token, X-GN-Auth-Expire, Location',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'PATCH, DELETE'
-};
-
-logger.info(`Set response header: 'Access-Control-Allow-Origin': '${config.get(k.Header.AccessControlAllowOrigin)}'`);
-
 router.use((req, res, next) => {
+    const corsHeaders = {
+        'Access-Control-Allow-Origin': 'null',
+        'Access-Control-Expose-Headers': 'X-GN-Auth-Token, X-GN-Auth-Expire, Location',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Methods': 'PATCH, DELETE'
+    };
+
+    if (config.isDev()) {
+        corsHeaders['Access-Control-Allow-Origin'] = '*';
+    } else if (/^(https:\/\/.+\.getnativelearning\.com(?::\d{1,5})?)$/.test(req.headers.origin)) {
+        corsHeaders['Access-Control-Allow-Origin'] = req.headers.origin;
+    }
+
     res.set(corsHeaders);
+    res.append('Vary', 'Origin');
+
     next();
 });
 
