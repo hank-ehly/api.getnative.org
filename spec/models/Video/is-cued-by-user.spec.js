@@ -6,7 +6,6 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const db = require('../../../app/models');
 const k = require('../../../config/keys.json');
 
 const m = require('mocha');
@@ -15,19 +14,26 @@ const assert = require('assert');
 const _ = require('lodash');
 
 describe('Video.isCuedByUser', function() {
-    let user = null;
-    let server = null;
+    let user, server, video, db;
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.login().then(function(initGroup) {
-            server = initGroup.server;
-            user = initGroup.response.body;
+        const results = await SpecUtil.login();
+        server = results.server;
+        user = results.response.body;
+        db = results.db;
+        video = await db[k.Model.Video].find();
+        await db[k.Model.CuedVideo].destroy({
+            where: {
+                video_id: video.get(k.Attr.Id),
+                user_id: user[k.Attr.Id]
+            },
+            force: true
         });
     });
 
@@ -36,21 +42,15 @@ describe('Video.isCuedByUser', function() {
     });
 
     it('should return true if the video is cued by the user', async function() {
-        const video = await db[k.Model.Video].find();
-        await db[k.Model.CuedVideo].create({video_id: video.get(k.Attr.Id), user_id: user[k.Attr.Id]});
+        await db[k.Model.CuedVideo].create({
+            video_id: video.get(k.Attr.Id),
+            user_id: user[k.Attr.Id]
+        });
         const isQueued = await db[k.Model.Video].isCuedByUser(video.get(k.Attr.Id), user[k.Attr.Id]);
         assert(isQueued);
     });
 
     it('should return false if the video is not cued by the user', async function() {
-        const video = await db[k.Model.Video].find();
-        await db[k.Model.CuedVideo].destroy({
-            where: {
-                video_id: video.get(k.Attr.Id),
-                user_id: user[k.Attr.Id]
-            },
-            force: true
-        });
         const isQueued = await db[k.Model.Video].isCuedByUser(video.get(k.Attr.Id), user[k.Attr.Id]);
         assert(!isQueued);
     });

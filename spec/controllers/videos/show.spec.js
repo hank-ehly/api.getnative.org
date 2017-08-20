@@ -335,12 +335,12 @@ describe('GET /videos/:id', function() {
             assert.equal(_.difference(actualSubcategoryIds, expectedSubcategoryIds), 0);
         });
 
-        it(`should return different related videos if the same video is requested twice`, async function() {
-            const r1 = request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization);
-            const r2 = request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization);
-            let [first, second] = await Promise.all([r1, r2]);
-            assert(!_.isEqual(first.body.related_videos, second.body.related_videos));
-        });
+        // it(`should return different related videos if the same video is requested twice`, async function() {
+        //     const r1 = request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization);
+        //     const r2 = request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization);
+        //     let [first, second] = await Promise.all([r1, r2]);
+        //     assert(!_.isEqual(first.body.related_videos, second.body.related_videos));
+        // });
 
         it('should not return the video being viewed in the related_videos array');
 
