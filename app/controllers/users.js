@@ -164,7 +164,7 @@ module.exports.updatePassword = async (req, res, next) => {
 
         await mailer.sendMail({
             subject: req.__('password-updated.title'),
-            from: config.get(k.NoReply),
+            from: config.get(k.EmailAddress.NoReply),
             to: req.user.get(k.Attr.Email),
             html: html,
             attachments: [

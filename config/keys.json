@@ -60,7 +60,8 @@
         "ResetPassword": "ResetPassword"
     },
     "EmailAddress": {
-        "Contact": "kEmailAddressContact"
+        "Contact": "kEmailAddressContact",
+        "NoReply": "kEmailAddressNoReply"
     },
     "Error": {
         "JWT": "JWT",
@@ -127,7 +128,6 @@
         "VideoLocalized": "VideoLocalized"
     },
     "NODE_ENV": "NODE_ENV",
-    "NoReply": "",
     "OAuth": {
         "Google": {
             "ClientID": "kOAuthGoogleClientID",

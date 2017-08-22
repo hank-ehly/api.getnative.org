@@ -303,7 +303,7 @@ describe('POST /users', function() {
             await request(server).post('/users').send(credential);
             const emails = await SpecUtil.getAllEmail();
             const senderEmailAddress = _.last(emails).envelope.from.address;
-            const noreplyEmailAddress = config.get(k.NoReply);
+            const noreplyEmailAddress = config.get(k.EmailAddress.NoReply);
             assert.equal(senderEmailAddress, noreplyEmailAddress);
         });
 
@@ -379,7 +379,7 @@ describe('POST /users', function() {
                     }
                 }).then(function(token) {
                     return SpecUtil.getAllEmail().then(function(emails) {
-                        assert.equal(_.last(emails).envelope.from.address, config.get(k.NoReply));
+                        assert.equal(_.last(emails).envelope.from.address, config.get(k.EmailAddress.NoReply));
                     });
                 });
             });

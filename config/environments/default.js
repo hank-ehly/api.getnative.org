@@ -10,15 +10,21 @@ const k = require('../keys.json');
 const defaults = {};
 
 defaults[k.API.Port] = 3000;
-defaults[k.Header.AccessControlAllowOrigin] = '*';
-defaults[k.SMTP.Port] = 1025;
-defaults[k.SMTP.Host] = 'localhost';
 defaults[k.API.Hostname] = 'localhost';
-defaults[k.Client.Host] = 'localhost:5555';
-defaults[k.NoReply] = 'noreply@localhost';
-defaults[k.DefaultLocale] = 'en';
-defaults[k.Client.Protocol] = 'http';
+
 defaults[k.Client.BaseURI] = 'http://localhost:5555';
+defaults[k.Client.Host] = 'localhost:5555';
+defaults[k.Client.Protocol] = 'http';
+
+defaults[k.DefaultLocale] = 'en';
+
+defaults[k.EmailAddress.NoReply] = 'noreply@localhost';
+defaults[k.EmailAddress.Contact] = 'contact@foobar.com';
+
+defaults[k.GoogleCloud.ProjectId] = 'get-native';
+defaults[k.GoogleCloud.StorageBucketName] = 'mock-bucket-name';
+
+defaults[k.ImageFileExtension] = 'jpg';
 
 defaults[k.OAuth.Facebook.ClientID] = 'xxx';
 defaults[k.OAuth.Facebook.ClientSecret] = 'xxx';
@@ -30,10 +36,9 @@ defaults[k.OAuth.Google.ClientID] = 'xxx';
 defaults[k.OAuth.Google.ClientSecret] = 'xxx';
 defaults[k.OAuth.Google.CallbackURL] = 'http://localhost:3000/oauth/google/callback';
 
-defaults[k.GoogleCloud.ProjectId] = 'get-native';
-defaults[k.GoogleCloud.StorageBucketName] = 'mock-bucket-name';
+defaults[k.SMTP.Port] = 1025;
+defaults[k.SMTP.Host] = 'localhost';
+
 defaults[k.VideoFileExtension] = 'mp4';
-defaults[k.ImageFileExtension] = 'jpg';
-defaults[k.EmailAddress.Contact] = 'contact@foobar.com';
 
 module.exports = defaults;

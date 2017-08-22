@@ -111,7 +111,7 @@ module.exports = function(sequelize, DataTypes) {
 
         return mailer.sendMail({
             subject: options.req.__('welcome.title'),
-            from: config.get(k.NoReply),
+            from: config.get(k.EmailAddress.NoReply),
             to: user.get(k.Attr.Email),
             html: html,
             attachments: [
@@ -147,7 +147,7 @@ module.exports = function(sequelize, DataTypes) {
 
         return mailer.sendMail({
             subject: options.req.__('delete-account-reason.title'),
-            from: config.get(k.NoReply),
+            from: config.get(k.EmailAddress.NoReply),
             to: config.get(k.EmailAddress.Contact),
             html: html,
             attachments: [

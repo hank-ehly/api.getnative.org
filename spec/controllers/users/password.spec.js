@@ -138,7 +138,7 @@ describe('POST /users/password', function() {
         it('sends an email from the noreply address', function() {
             return request(server).post('/users/password').set('authorization', authorization).send(validBody).then(function(response) {
                 return SpecUtil.getAllEmail().then(function(emails) {
-                    assert.equal(_.last(emails).envelope.from.address, config.get(k.NoReply));
+                    assert.equal(_.last(emails).envelope.from.address, config.get(k.EmailAddress.NoReply));
                 });
             });
         });

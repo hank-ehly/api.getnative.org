@@ -75,7 +75,7 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
 
         await mailer.sendMail({
             subject: i18n.__('registration-email-confirmed.title'),
-            from:    config.get(k.NoReply),
+            from:    config.get(k.EmailAddress.NoReply),
             to:      user.get(k.Attr.Email),
             html:    emailTemplateVariables,
             attachments: [
@@ -156,7 +156,7 @@ module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
     try {
         await mailer.sendMail({
             subject: i18n.__('welcome.title'),
-            from:    config.get(k.NoReply),
+            from:    config.get(k.EmailAddress.NoReply),
             to:      req.body[k.Attr.Email],
             html:    html,
             attachments: [
@@ -244,7 +244,7 @@ module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
     try {
         await mailer.sendMail({
             subject: i18n.__('confirm-email-update.title'),
-            from:    config.get(k.NoReply),
+            from:    config.get(k.EmailAddress.NoReply),
             to:      req.body[k.Attr.Email],
             html:    html,
             attachments: [
@@ -325,7 +325,7 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
 
         await mailer.sendMail({
             subject: i18n.__('notify-email-update.title'),
-            from:    config.get(k.NoReply),
+            from:    config.get(k.EmailAddress.NoReply),
             to:      userBeforeUpdate[k.Attr.Email],
             html:    priorAddressNotificationHtml,
             attachments: [
@@ -351,7 +351,7 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
 
         await mailer.sendMail({
             subject: i18n.__('notify-email-update-success.title'),
-            from:    config.get(k.NoReply),
+            from:    config.get(k.EmailAddress.NoReply),
             to:      user.get(k.Attr.Email),
             html:    newAddressSuccessNotificationHtml,
             attachments: [
