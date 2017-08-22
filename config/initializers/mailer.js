@@ -16,9 +16,8 @@ const smtpConfig = {
     port: config.get(k.SMTP.Port)
 };
 
-if (_.includes([k.Env.Development, k.Env.Test, k.Env.CircleCI], config.get(k.NODE_ENV))) {
+if (_.includes([k.Env.Development, k.Env.Test, k.Env.CircleCI], config.get(k.ENVIRONMENT))) {
     _.assign(smtpConfig, {
-        secure: false, // defaults to false
         tls: {
             rejectUnauthorized: false
         }
