@@ -1,6 +1,6 @@
 {
     "name": "api.getnativelearning.com",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "description": "Source code for api.getnativelearning.com",
     "main": "index.js",
     "scripts": {

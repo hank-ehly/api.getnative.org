@@ -144,7 +144,7 @@ describe('POST /users/:id/email', function() {
             await request(server).post(`/users/${user.get(k.Attr.Id)}/email`).set(k.Header.Authorization, auth).send(body);
             const tokens = await db[k.Model.VerificationToken].findAll({where: {user_id: user.id}, limit: 1, order: [['id', 'DESC']]});
             const emails = await SpecUtil.getAllEmail();
-            const expectedURL = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/confirm_email_update?token=${_.first(tokens).token}`;
+            const expectedURL = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/${i18n.getLocale()}/confirm_email_update?token=${_.first(tokens).token}`;
             assert(_.includes(_.last(emails).html, expectedURL));
         });
     });

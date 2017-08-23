@@ -134,7 +134,7 @@ describe('POST /resend_confirmation_email', function() {
                 limit: 1
             });
             const emails = await SpecUtil.getAllEmail();
-            const expectedURL = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/confirm_email?token=${_.first(tokens).get(k.Attr.Token)}`;
+            const expectedURL = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/${i18n.getLocale()}/confirm_email?token=${_.first(tokens).get(k.Attr.Token)}`;
             assert(_.includes(_.last(emails).html, expectedURL));
         });
     });

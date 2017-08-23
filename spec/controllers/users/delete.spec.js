@@ -93,7 +93,7 @@ describe('DELETE /users', function() {
             assert.equal(recipientEmailAddress, config.get(k.EmailAddress.Contact));
         });
 
-        it('should send an email containing the confirmation URL (with the correct VerificationToken token)', async function() {
+        it('should send an email containing the reason for account deletion', async function() {
             const testReason = 'this is the test reason';
             await request(server).delete('/users').set(k.Header.Authorization, authorization).send({reason: testReason});
             const emails = await SpecUtil.getAllEmail();
