@@ -152,7 +152,8 @@ module.exports.updatePassword = async (req, res, next) => {
         const html = await new Promise((resolve, reject) => {
             res.app.render(k.Templates.PasswordUpdated, {
                 contact: config.get(k.EmailAddress.Contact),
-                __: req.__
+                __: req.__,
+                __mf: req.__mf
             }, (err, html) => {
                 if (err) {
                     reject(err);

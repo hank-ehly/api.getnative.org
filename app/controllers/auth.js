@@ -63,7 +63,8 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
         const emailTemplateVariables = await new Promise((resolve, reject) => {
             res.app.render(k.Templates.RegistrationEmailConfirmed, {
                 contact: config.get(k.EmailAddress.Contact),
-                __: i18n.__
+                __: i18n.__,
+                __mf: i18n.__mf,
             }, (err, html) => {
                 if (err) {
                     reject(err);
@@ -133,7 +134,8 @@ module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
         const templateVariables = {
             confirmationURL: Auth.generateConfirmationURLForTokenWithPath(verificationToken.get(k.Attr.Token), 'confirm_email'),
             contact: config.get(k.EmailAddress.Contact),
-            __: i18n.__
+            __: i18n.__,
+            __mf: i18n.__mf
         };
 
         html = await new Promise((resolve, reject) => {
@@ -224,7 +226,8 @@ module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
             res.app.render(k.Templates.ConfirmEmailUpdate, {
                 confirmationURL: Auth.generateConfirmationURLForTokenWithPath(token.get(k.Attr.Token), 'confirm_email_update'),
                 contact: config.get(k.EmailAddress.Contact),
-                __: i18n.__
+                __: i18n.__,
+                __mf: i18n.__mf
             }, (err, html) => {
                 if (err) {
                     reject(err);
@@ -313,7 +316,8 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
             res.app.render(k.Templates.NotifyEmailUpdate, {
                 updatedEmail: user.get(k.Attr.Email),
                 contact: config.get(k.EmailAddress.Contact),
-                __: i18n.__
+                __: i18n.__,
+                __mf: i18n.__mf
             }, (err, html) => {
                 if (err) {
                     reject(err);
@@ -339,7 +343,8 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
         const newAddressSuccessNotificationHtml = await new Promise((resolve, reject) => {
             res.app.render(k.Templates.EmailUpdateSuccess, {
                 contact: config.get(k.EmailAddress.Contact),
-                __: i18n.__
+                __: i18n.__,
+                __mf: i18n.__mf
             }, (err, html) => {
                 if (err) {
                     reject(err);
