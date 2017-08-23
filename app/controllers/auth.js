@@ -131,8 +131,10 @@ module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
     }
 
     try {
+        const pathname = [req.getLocale(), 'confirm_email'].join('/');
+        const confirmationURL = Auth.generateConfirmationURLForTokenWithPath(verificationToken.get(k.Attr.Token), pathname);
         const templateVariables = {
-            confirmationURL: Auth.generateConfirmationURLForTokenWithPath(verificationToken.get(k.Attr.Token), 'confirm_email'),
+            confirmationURL: confirmationURL,
             contact: config.get(k.EmailAddress.Contact),
             __: i18n.__,
             __mf: i18n.__mf
@@ -223,8 +225,10 @@ module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
 
     try {
         html = await new Promise((resolve, reject) => {
+            const pathname = [req.getLocale(), 'confirm_email_update'].join('/');
+            const confirmationURL = Auth.generateConfirmationURLForTokenWithPath(token.get(k.Attr.Token), pathname);
             res.app.render(k.Templates.ConfirmEmailUpdate, {
-                confirmationURL: Auth.generateConfirmationURLForTokenWithPath(token.get(k.Attr.Token), 'confirm_email_update'),
+                confirmationURL: confirmationURL,
                 contact: config.get(k.EmailAddress.Contact),
                 __: i18n.__,
                 __mf: i18n.__mf
