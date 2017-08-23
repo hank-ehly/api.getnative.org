@@ -96,7 +96,10 @@ module.exports = function(sequelize, DataTypes) {
         }
 
         const html = await new Promise((resolve, reject) => {
-            const pathname = [options.req.getLocale(), 'confirm_email'].join('/');
+            let pathname = 'confirm_email';
+            if (!config.isDev()) {
+                pathname = [options.req.getLocale(), 'confirm_email'].join('/');
+            }
             const confirmationURL = Auth.generateConfirmationURLForTokenWithPath(vt.get(k.Attr.Token), pathname);
             options.req.app.render(k.Templates.Welcome, {
                 confirmationURL: confirmationURL,

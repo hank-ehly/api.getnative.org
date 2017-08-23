@@ -364,7 +364,7 @@ describe('POST /users', function() {
                     }
                 }).then(function(token) {
                     return SpecUtil.getAllEmail().then(function(emails) {
-                        const expectedURL = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/${i18n.getLocale()}/confirm_email?token=${token.token}`;
+                        const expectedURL = `${config.get(k.Client.Protocol)}://${config.get(k.Client.Host)}/confirm_email?token=${token.token}`;
                         assert(_.includes(_.last(emails).html, expectedURL));
                     });
                 });
