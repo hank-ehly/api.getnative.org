@@ -74,7 +74,7 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
         });
 
         await mailer.sendMail({
-            subject: i18n.__('registration-email-confirmed.title'),
+            subject: i18n.__('registrationEmailConfirmed.subject'),
             from:    config.get(k.EmailAddress.NoReply),
             to:      user.get(k.Attr.Email),
             html:    emailTemplateVariables,
@@ -155,7 +155,7 @@ module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
 
     try {
         await mailer.sendMail({
-            subject: i18n.__('welcome.title'),
+            subject: i18n.__('welcome.subject'),
             from:    config.get(k.EmailAddress.NoReply),
             to:      req.body[k.Attr.Email],
             html:    html,
@@ -243,7 +243,7 @@ module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
 
     try {
         await mailer.sendMail({
-            subject: i18n.__('confirm-email-update.title'),
+            subject: i18n.__('confirmEmailUpdate.subject'),
             from:    config.get(k.EmailAddress.NoReply),
             to:      req.body[k.Attr.Email],
             html:    html,
@@ -324,7 +324,7 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
         });
 
         await mailer.sendMail({
-            subject: i18n.__('notify-email-update.title'),
+            subject: i18n.__('notifyEmailUpdate.subject'),
             from:    config.get(k.EmailAddress.NoReply),
             to:      userBeforeUpdate[k.Attr.Email],
             html:    priorAddressNotificationHtml,
@@ -350,7 +350,7 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
         });
 
         await mailer.sendMail({
-            subject: i18n.__('notify-email-update-success.title'),
+            subject: i18n.__('emailUpdateSuccess.subject'),
             from:    config.get(k.EmailAddress.NoReply),
             to:      user.get(k.Attr.Email),
             html:    newAddressSuccessNotificationHtml,

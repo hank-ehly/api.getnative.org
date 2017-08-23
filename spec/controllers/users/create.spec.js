@@ -407,7 +407,7 @@ describe('POST /users', function() {
                     }
                 }).then(function(token) {
                     return SpecUtil.getAllEmail().then(function(emails) {
-                        assert.equal(_.last(emails).subject, i18n.__('welcome.title'));
+                        assert.equal(_.last(emails).subject, i18n.__('welcome.subject'));
                     });
                 });
             });

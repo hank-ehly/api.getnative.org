@@ -110,7 +110,7 @@ module.exports = function(sequelize, DataTypes) {
         });
 
         return mailer.sendMail({
-            subject: options.req.__('welcome.title'),
+            subject: options.req.__('welcome.subject'),
             from: config.get(k.EmailAddress.NoReply),
             to: user.get(k.Attr.Email),
             html: html,
@@ -146,7 +146,7 @@ module.exports = function(sequelize, DataTypes) {
         });
 
         return mailer.sendMail({
-            subject: options.req.__('delete-account-reason.title'),
+            subject: options.req.__('deleteAccountReason.subject'),
             from: config.get(k.EmailAddress.NoReply),
             to: config.get(k.EmailAddress.Contact),
             html: html,

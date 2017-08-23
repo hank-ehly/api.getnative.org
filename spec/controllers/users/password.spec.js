@@ -146,7 +146,7 @@ describe('POST /users/password', function() {
         it('sends a changed password confirmation email', function() {
             return request(server).post('/users/password').set('authorization', authorization).send(validBody).then(function(response) {
                 return SpecUtil.getAllEmail().then(function(emails) {
-                    assert.equal(_.last(emails).subject, i18n.__('password-updated.title'));
+                    assert.equal(_.last(emails).subject, i18n.__('passwordUpdated.subject'));
                 });
             });
         });
