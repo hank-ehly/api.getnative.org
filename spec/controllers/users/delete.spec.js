@@ -22,6 +22,14 @@ describe('DELETE /users', function() {
     let authorization, server, user, db, users;
 
     before(function() {
+        return SpecUtil.startMailServer();
+    });
+
+    after(function() {
+        return SpecUtil.stopMailServer();
+    });
+
+    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
@@ -83,9 +91,7 @@ describe('DELETE /users', function() {
         });
 
         it('should send an email to the getnative owner', async function() {
-            before(function() {
-                return SpecUtil.deleteAllEmail();
-            });
+            await SpecUtil.deleteAllEmail();
             const testReason = 'this is the test reason';
             await request(server).delete('/users').set(k.Header.Authorization, authorization).send({reason: testReason});
             const emails = await SpecUtil.getAllEmail();
@@ -94,6 +100,7 @@ describe('DELETE /users', function() {
         });
 
         it('should send an email containing the reason for account deletion', async function() {
+            await SpecUtil.deleteAllEmail();
             const testReason = 'this is the test reason';
             await request(server).delete('/users').set(k.Header.Authorization, authorization).send({reason: testReason});
             const emails = await SpecUtil.getAllEmail();

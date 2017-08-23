@@ -169,6 +169,8 @@ describe('POST /confirm_email_update', function() {
         });
 
         it('should send a confirmation email to the new email address', async function() {
+            await SpecUtil.deleteAllEmail();
+
             await request(server).post('/confirm_email_update').send(body);
             const emails = await SpecUtil.getAllEmail();
 

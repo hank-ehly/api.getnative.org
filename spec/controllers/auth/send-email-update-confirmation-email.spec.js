@@ -134,6 +134,7 @@ describe('POST /users/:id/email', function() {
         });
 
         it('should send an email to the specified address', async function() {
+            await SpecUtil.deleteAllEmail();
             await request(server).post(`/users/${user.get(k.Attr.Id)}/email`).set(k.Header.Authorization, auth).send(body);
             const emails = await SpecUtil.getAllEmail();
             const recipientEmailAddress = _.first(_.last(emails).envelope.to).address;
