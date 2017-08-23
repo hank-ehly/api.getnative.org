@@ -137,6 +137,7 @@ module.exports = function(sequelize, DataTypes) {
         const html = await new Promise((resolve, reject) => {
             const variables = {
                 __: options.req.__,
+                __mf: options.req.__mf,
                 email: user.get(k.Attr.Email),
                 contact: config.get(k.EmailAddress.Contact),
                 reason: options.req.body.reason
