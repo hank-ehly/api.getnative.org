@@ -143,7 +143,8 @@ module.exports = function(sequelize, DataTypes) {
                 reason: options.req.body.reason,
                 facebookPageURL: config.get(k.SNS.FacebookPageURL),
                 twitterPageURL: config.get(k.SNS.TwitterPageURL),
-                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL)
+                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL),
+                websiteURL: config.get(k.Client.BaseURI)
             };
 
             options.req.app.render(k.Templates.DeleteAccountReason, variables, (err, html) => {
