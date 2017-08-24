@@ -155,13 +155,7 @@ module.exports = function(sequelize, DataTypes) {
             subject: options.req.__('deleteAccountReason.subject'),
             from: config.get(k.EmailAddress.NoReply),
             to: config.get(k.EmailAddress.Contact),
-            html: html,
-            attachments: [
-                {
-                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
-                    cid: 'logo'
-                }
-            ]
+            html: html
         }, null);
     });
 

@@ -167,13 +167,7 @@ module.exports.updatePassword = async (req, res, next) => {
             subject: req.__('passwordUpdated.subject'),
             from: config.get(k.EmailAddress.NoReply),
             to: req.user.get(k.Attr.Email),
-            html: html,
-            attachments: [
-                {
-                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
-                    cid: 'logo'
-                }
-            ]
+            html: html
         }, null);
     } catch (e) {
         res.status(404);
