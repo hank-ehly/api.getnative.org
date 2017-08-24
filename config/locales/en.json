@@ -14,7 +14,7 @@
     "emailUpdateSuccess": {
         "subject": "Email Updated Successfully",
         "title": "Your email address has been updated!",
-        "messageLineOne": "Your email address for <strong>getnative</strong> has been successfully updated.",
+        "messageLineOne": "Your email address has been successfully updated.",
         "messageLineTwo": "If you didn't intend for this to happen,",
         "messageLineThree": "please <a style=\"color:#33CC99;text-decoration:underline;\" title=\"{contact}\" href=\"mailto:{contact}\">notify us</a> as soon as possible."
     },
