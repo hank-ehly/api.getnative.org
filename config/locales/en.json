@@ -59,9 +59,12 @@
     },
     "welcome": {
         "subject": "Welcome to getnative!",
-        "title": "Welcome to getnative!",
-        "instructions": "Thank you for registering for getnative! Please verify your email address by clicking the button below.",
-        "confirm-button-text": "CONFIRM",
-        "footer": "Didn't expect to receive an email from us? Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"{contact}\" href=\"mailto:{contact}\">let us know</a> so we can fix the problem."
+        "title": "You're almost done!",
+        "instructionsLineOne": "Please click the below button to verify your email address.",
+        "instructionsLineTwo": "Thank you for signing up with getnative.",
+        "instructionsLineThree": "Happy learning!",
+        "confirmButtonText": "VERIFY YOUR EMAIL",
+        "copyright": "Copyright © 2017 getnative. All rights reserved.",
+        "footer": "Didn't expect to receive an email from us? Please <a style=\"color:#33cc99;text-decoration:underline;\" title=\"{contact}\" href=\"mailto:{contact}\" target=\"_blank\" rel=\"noopener noreferrer\">let us know</a>."
     }
 }

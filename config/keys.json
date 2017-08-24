@@ -157,6 +157,11 @@
         "Port": "smtp:port",
         "Host": "smtp:host"
     },
+    "SNS": {
+        "TwitterPageURL": "kSNSTwitterPageURL",
+        "FacebookPageURL": "kFacebookPageURL",
+        "YouTubeChannelURL": "kYouTubeChannelURL"
+    },
     "Templates": {
         "ConfirmEmailUpdate": "01",
         "DeleteAccountReason": "02",

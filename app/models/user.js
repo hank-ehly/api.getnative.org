@@ -101,12 +101,17 @@ module.exports = function(sequelize, DataTypes) {
                 pathname = [options.req.getLocale(), 'confirm_email'].join('/');
             }
             const confirmationURL = Auth.generateConfirmationURLForTokenWithPath(vt.get(k.Attr.Token), pathname);
-            options.req.app.render(k.Templates.Welcome, {
+            const locals = {
+                __: options.req.__,
+                __mf: options.req.__mf,
                 confirmationURL: confirmationURL,
                 contact: config.get(k.EmailAddress.Contact),
-                __: options.req.__,
-                __mf: options.req.__mf
-            }, (err, html) => {
+                twitterPageURL: config.get(k.SNS.TwitterPageURL),
+                facebookPageURL: config.get(k.SNS.FacebookPageURL),
+                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL)
+            };
+
+            options.req.app.render(k.Templates.Welcome, locals, (err, html) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -119,13 +124,7 @@ module.exports = function(sequelize, DataTypes) {
             subject: options.req.__('welcome.subject'),
             from: config.get(k.EmailAddress.NoReply),
             to: user.get(k.Attr.Email),
-            html: html,
-            attachments: [
-                {
-                    path: path.resolve(__dirname, '..', 'assets', 'logo.png'),
-                    cid: 'logo'
-                }
-            ]
+            html: html
         }, null);
     });
 
