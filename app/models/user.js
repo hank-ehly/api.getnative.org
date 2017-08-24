@@ -108,7 +108,8 @@ module.exports = function(sequelize, DataTypes) {
                 contact: config.get(k.EmailAddress.Contact),
                 twitterPageURL: config.get(k.SNS.TwitterPageURL),
                 facebookPageURL: config.get(k.SNS.FacebookPageURL),
-                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL)
+                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL),
+                websiteURL: config.get(k.Client.BaseURI)
             };
 
             options.req.app.render(k.Templates.Welcome, locals, (err, html) => {
