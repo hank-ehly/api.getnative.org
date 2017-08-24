@@ -8,9 +8,9 @@
     },
     "deleteAccountReason": {
         "subject": "Deleted Account",
-        "header": "A user account was deleted.",
-        "description": "{email} has left <strong>getnative</strong>. Here's what they had to say:",
-        "footer": "Didn't expect to receive an email from us? Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"{contact}\" href=\"mailto:{contact}\">let us know</a> so we can fix the problem."
+        "description": "{email} has left getnative.",
+        "copyright": "Copyright © 2017 getnative. All rights reserved.",
+        "footer": "Didn't expect to receive an email from us? Please <a style=\"color:#33cc99;text-decoration:underline;\" title=\"{contact}\" href=\"mailto:{contact}\" target=\"_blank\" rel=\"noopener noreferrer\">let us know</a>."
     },
     "emailUpdateSuccess": {
         "subject": "Email Updated Successfully",
