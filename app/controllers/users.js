@@ -151,9 +151,13 @@ module.exports.updatePassword = async (req, res, next) => {
 
         const html = await new Promise((resolve, reject) => {
             res.app.render(k.Templates.PasswordUpdated, {
-                contact: config.get(k.EmailAddress.Contact),
                 __: req.__,
-                __mf: req.__mf
+                __mf: req.__mf,
+                contact: config.get(k.EmailAddress.Contact),
+                facebookPageURL: config.get(k.SNS.FacebookPageURL),
+                twitterPageURL: config.get(k.SNS.TwitterPageURL),
+                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL),
+                websiteURL: config.get(k.Client.BaseURI)
             }, (err, html) => {
                 if (err) {
                     reject(err);

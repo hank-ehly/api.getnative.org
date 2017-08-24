@@ -1,22 +1,22 @@
 {
     "confirmEmailUpdate": {
         "subject": "Confirm Email Update",
-        "subtitle": "Please confirm your email address.",
-        "instructions": "To confirm your new email address for <strong>getnative</strong>, please click the button below.",
-        "confirm-button-title": "CONFIRM",
-        "footer": "Didn't expect to receive an email from us? Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"{contact}\" href=\"mailto:{contact}\">let us know</a> so we can fix the problem."
+        "title": "Please confirm your email address.",
+        "instructionsLineOne": "Please click the below button to verify your email address.",
+        "instructionsLineTwo": "Your previous email address will continue to be used",
+        "instructionsLineThree": "until confirmation is complete.",
+        "confirmButtonTitle": "VERIFY YOUR EMAIL"
     },
     "deleteAccountReason": {
         "subject": "Deleted Account",
-        "description": "{email} has left getnative.",
-        "copyright": "Copyright © 2017 getnative. All rights reserved.",
-        "footer": "Didn't expect to receive an email from us? Please <a style=\"color:#33cc99;text-decoration:underline;\" title=\"{contact}\" href=\"mailto:{contact}\" target=\"_blank\" rel=\"noopener noreferrer\">let us know</a>."
+        "description": "{email} has left getnative."
     },
     "emailUpdateSuccess": {
         "subject": "Email Updated Successfully",
-        "header": "Your email address was updated!",
-        "message": "Your email address for <strong>getnative</strong> has been successfully updated.",
-        "footer": "Didn't expect to receive an email from us? Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"{contact}\" href=\"mailto:{contact}\">let us know</a> so we can fix the problem."
+        "title": "Your email address has been updated!",
+        "messageLineOne": "Your email address for <strong>getnative</strong> has been successfully updated.",
+        "messageLineTwo": "If you didn't intend for this to happen,",
+        "messageLineThree": "please <a style=\"color:#33CC99;text-decoration:underline;\" title=\"{contact}\" href=\"mailto:{contact}\">notify us</a> as soon as possible."
     },
     "errors": {
         "JWT": "An error occurred while processing JWT",
@@ -38,32 +38,31 @@
     "lang": "en",
     "notifyEmailUpdate": {
         "subject": "Notification Of Email Update",
-        "header": "Your email address was changed!",
-        "message": "Your email address for <strong>getnative</strong> has been updated to <strong>{updatedEmail}</strong>. This email address will no longer receive messages from getnative. If you think this is a mistake, please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"{contact}\" href=\"mailto:{contact}\">contact us</a> immediately.",
-        "footer": "Didn't expect to receive an email from us? Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"{contact}\" href=\"mailto:{contact}\">let us know</a> so we can fix the problem."
+        "title": "Your email address was changed!",
+        "message": "Your email address for <strong>getnative</strong> has been updated to <strong>{updatedEmail}</strong>. This email address will no longer receive messages from getnative. If you think this is a mistake, please <a style=\"color:#33cc99;text-decoration:underline;\" title=\"{contact}\" href=\"mailto:{contact}\">contact us</a> immediately."
     },
     "passwordUpdated": {
         "subject": "Password Updated",
-        "title": "Password Updated",
-        "message-1": "Your password for signing in to <strong>getnative</strong> was recently changed. If you did this yourself, then there's nothing to worry about.",
-        "message-2": "If you did not make this change, please <a style=\"color:#33CC99;text-decoration: underline;\" title=\"{contact}\" href=\"mailto:{contact}\">notify us</a>.",
-        "message-3": "Either way, feel free to reach out with any questions you might have. We're here to help.",
-        "thankYouMessage": "Thanks,<br>getnative team",
-        "footer": "Didn't expect to receive an email from us? Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"{contact}\" href=\"mailto:{contact}\">let us know</a> so we can fix the problem."
+        "title": "Your password has been updated.",
+        "messageOne": "Your password for signing in to <strong>getnative</strong> was recently changed. If you did this yourself, then there's nothing to worry about. If you did not make this change, please <a style=\"color:#33CC99;text-decoration:underline;\" title=\"{contact}\" href=\"mailto:{contact}\">notify us</a>.",
+        "messageTwo": "Either way, feel free to reach out with any questions you might have. We're here to help!",
+        "messageThree": "getnative"
     },
     "registrationEmailConfirmed": {
         "subject": "Email Address Confirmed",
-        "title": "Email Address Confirmed",
-        "message": "Thank you for signing up with <strong>getnative</strong>! Your email address has successfully been confirmed.",
-        "footer": "Didn't expect to receive an email from us? Please <a style=\"color:#33cc99;text-decoration: underline;\" title=\"{contact}\" href=\"mailto:{contact}\">let us know</a> so we can fix the problem."
+        "title": "Your email address has been verified!",
+        "messageOne": "Thank you for signing up with <strong>getnative</strong>!",
+        "messageTwo": "Your email address has successfully been confirmed."
     },
     "welcome": {
         "subject": "Welcome to getnative!",
-        "title": "You're almost done!",
+        "title": "You're almost there!",
         "instructionsLineOne": "Please click the below button to verify your email address.",
         "instructionsLineTwo": "Thank you for signing up with getnative.",
         "instructionsLineThree": "Happy learning!",
-        "confirmButtonText": "VERIFY YOUR EMAIL",
+        "confirmButtonTitle": "VERIFY YOUR EMAIL"
+    },
+    "emailDefault": {
         "copyright": "Copyright © 2017 getnative. All rights reserved.",
         "footer": "Didn't expect to receive an email from us? Please <a style=\"color:#33cc99;text-decoration:underline;\" title=\"{contact}\" href=\"mailto:{contact}\" target=\"_blank\" rel=\"noopener noreferrer\">let us know</a>."
     }

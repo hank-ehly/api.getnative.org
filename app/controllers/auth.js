@@ -62,9 +62,13 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
 
         const emailTemplateVariables = await new Promise((resolve, reject) => {
             res.app.render(k.Templates.RegistrationEmailConfirmed, {
-                contact: config.get(k.EmailAddress.Contact),
                 __: i18n.__,
                 __mf: i18n.__mf,
+                contact: config.get(k.EmailAddress.Contact),
+                facebookPageURL: config.get(k.SNS.FacebookPageURL),
+                twitterPageURL: config.get(k.SNS.TwitterPageURL),
+                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL),
+                websiteURL: config.get(k.Client.BaseURI)
             }, (err, html) => {
                 if (err) {
                     reject(err);
@@ -211,7 +215,7 @@ module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
     }
 
     if (!token) {
-        throw new Error('variable verificationToken is undefined');
+        throw new Error('variable token is undefined');
     }
 
     try {
@@ -221,12 +225,17 @@ module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
                 pathname = [req.getLocale(), 'confirm_email_update'].join('/');
             }
             const confirmationURL = Auth.generateConfirmationURLForTokenWithPath(token.get(k.Attr.Token), pathname);
-            res.app.render(k.Templates.ConfirmEmailUpdate, {
+            const locals = {
+                __: i18n.__,
+                __mf: i18n.__mf,
                 confirmationURL: confirmationURL,
                 contact: config.get(k.EmailAddress.Contact),
-                __: i18n.__,
-                __mf: i18n.__mf
-            }, (err, html) => {
+                facebookPageURL: config.get(k.SNS.FacebookPageURL),
+                twitterPageURL: config.get(k.SNS.TwitterPageURL),
+                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL),
+                websiteURL: config.get(k.Client.BaseURI)
+            };
+            res.app.render(k.Templates.ConfirmEmailUpdate, locals, (err, html) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -239,7 +248,7 @@ module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
     }
 
     if (!html) {
-        throw new Error('variable mailHtml is undefined');
+        throw new Error('variable html is undefined');
     }
 
     try {
@@ -305,12 +314,17 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
 
     try {
         const priorAddressNotificationHtml = await new Promise((resolve, reject) => {
-            res.app.render(k.Templates.NotifyEmailUpdate, {
-                updatedEmail: user.get(k.Attr.Email),
-                contact: config.get(k.EmailAddress.Contact),
+            const locals = {
                 __: i18n.__,
-                __mf: i18n.__mf
-            }, (err, html) => {
+                __mf: i18n.__mf,
+                contact: config.get(k.EmailAddress.Contact),
+                facebookPageURL: config.get(k.SNS.FacebookPageURL),
+                twitterPageURL: config.get(k.SNS.TwitterPageURL),
+                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL),
+                websiteURL: config.get(k.Client.BaseURI),
+                updatedEmail: user.get(k.Attr.Email)
+            };
+            res.app.render(k.Templates.NotifyEmailUpdate, locals, (err, html) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -327,11 +341,16 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
         }, null);
 
         const newAddressSuccessNotificationHtml = await new Promise((resolve, reject) => {
-            res.app.render(k.Templates.EmailUpdateSuccess, {
-                contact: config.get(k.EmailAddress.Contact),
+            const locals = {
                 __: i18n.__,
-                __mf: i18n.__mf
-            }, (err, html) => {
+                __mf: i18n.__mf,
+                contact: config.get(k.EmailAddress.Contact),
+                facebookPageURL: config.get(k.SNS.FacebookPageURL),
+                twitterPageURL: config.get(k.SNS.TwitterPageURL),
+                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL),
+                websiteURL: config.get(k.Client.BaseURI)
+            };
+            res.app.render(k.Templates.EmailUpdateSuccess, locals, (err, html) => {
                 if (err) {
                     reject(err);
                 } else {
