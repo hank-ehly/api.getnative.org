@@ -144,35 +144,10 @@ module.exports.update = async (req, res, next) => {
 };
 
 module.exports.updatePassword = async (req, res, next) => {
-    const hashPassword = Auth.hashPassword(req.body[k.Attr.NewPassword]);
-
     try {
-        await Credential.update({password: hashPassword}, {where: {user_id: req.user[k.Attr.Id]}});
-
-        const html = await new Promise((resolve, reject) => {
-            res.app.render(k.Templates.PasswordUpdated, {
-                __: req.__,
-                __mf: req.__mf,
-                contact: config.get(k.EmailAddress.Contact),
-                facebookPageURL: config.get(k.SNS.FacebookPageURL),
-                twitterPageURL: config.get(k.SNS.TwitterPageURL),
-                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL),
-                websiteURL: config.get(k.Client.BaseURI)
-            }, (err, html) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(html);
-                }
-            });
-        });
-
-        await mailer.sendMail({
-            subject: req.__('passwordUpdated.subject'),
-            from: config.get(k.EmailAddress.NoReply),
-            to: req.user.get(k.Attr.Email),
-            html: html
-        }, null);
+        const hashPassword = Auth.hashPassword(req.body[k.Attr.NewPassword]);
+        const credential = await Credential.findOne({rejectOnEmpty: true, where: {user_id: req.user.get(k.Attr.Id)}});
+        await credential.update({password: hashPassword}, {where: {user_id: req.user.get(k.Attr.Id)}, req: req});
     } catch (e) {
         res.status(404);
         return next(new GetNativeError(k.Error.ResourceNotFound));
