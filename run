@@ -1,0 +1,6 @@
+.circleci/generate-jwt-keypair.sh
+cp config/database.json.template config/database.json
+npm install
+npm run sequelize db:migrate
+npm run sequelize db:seed:all
+npm start
