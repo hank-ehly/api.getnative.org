@@ -12,8 +12,8 @@ const Joi = require('joi');
 const _ = require('lodash');
 
 const options = {
-    "abortEarly": false,
-    "allowUnknown": true
+    'abortEarly': false,
+    'allowUnknown': true
 };
 
 module.exports = function(schema) {
