@@ -172,7 +172,8 @@
         "NotifyEmailUpdate": "04",
         "EmailUpdateSuccess": "05",
         "PasswordUpdated": "06",
-        "Welcome": "07"
+        "Welcome": "07",
+        "PasswordResetLink": "08"
     },
     "TempDir": "kTempDir",
     "VideoFileExtension": "kVideoFileExtension",

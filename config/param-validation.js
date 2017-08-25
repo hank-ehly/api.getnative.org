@@ -82,6 +82,12 @@ const schema = {
                 email: Joi.string().regex(regex.email).required()
             }
         },
+        resetPassword: {},
+        sendPasswordResetLink: {
+            body: {
+                email: Joi.string().regex(regex.email).required()
+            }
+        },
         sendEmailUpdateConfirmationEmail: {
             body: {
                 email: Joi.string().regex(regex.email).required()

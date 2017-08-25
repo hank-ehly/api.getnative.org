@@ -17,7 +17,7 @@ const [describe, it, before, beforeEach, afterEach] = [m.describe, m.it, m.befor
 const _ = require('lodash');
 
 describe('POST /send_password_reset_link', function() {
-    let user, server, url = '/send_password_reset_link';
+    let user, server, db, url = '/send_password_reset_link';
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -28,7 +28,8 @@ describe('POST /send_password_reset_link', function() {
         this.timeout(SpecUtil.defaultTimeout);
         const results = await SpecUtil.startServer();
         server = results.server;
-        user = await results.db[k.Model.User].find();
+        db = results.db;
+        user = await db[k.Model.User].find();
     });
 
     afterEach(function(done) {

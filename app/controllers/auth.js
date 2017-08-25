@@ -95,6 +95,62 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
     return res.status(200).send(user.get({plain: true}));
 };
 
+module.exports.sendPasswordResetLink = async (req, res, next) => {
+    const email = req.body[k.Attr.Email];
+
+    if (!await db[k.Model.User].existsForEmail(email)) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.UserDoesNotExist));
+    }
+
+    try {
+        const user = await db[k.Model.User].find({where: {email: email}});
+
+        const tokenObj = await db[k.Model.VerificationToken].create({
+            user_id: user.get(k.Attr.Id),
+            token: Auth.generateRandomHash(),
+            expiration_date: Utility.tomorrow()
+        });
+
+        let pathname = 'reset_password';
+        if (!config.isDev()) {
+            pathname = [i18n.getLocale(), pathname].join('/');
+        }
+
+        const passwordResetLink = Auth.generateConfirmationURLForTokenWithPath(tokenObj.get(k.Attr.Token), pathname);
+
+        const template = await new Promise((resolve, reject) => {
+            req.app.render(k.Templates.PasswordResetLink, {
+                __: i18n.__,
+                __mf: i18n.__mf,
+                contact: config.get(k.EmailAddress.Contact),
+                passwordResetLink: passwordResetLink,
+                facebookPageURL: config.get(k.SNS.FacebookPageURL),
+                twitterPageURL: config.get(k.SNS.TwitterPageURL),
+                youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL),
+                websiteURL: config.get(k.Client.BaseURI)
+            }, (err, html) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(html);
+                }
+            });
+        });
+
+        await mailer.sendMail({
+            subject: i18n.__('passwordResetLink.subject'),
+            from:    config.get(k.EmailAddress.NoReply),
+            to:      user.get(k.Attr.Email),
+            html:    template
+        }, null);
+    } catch (e) {
+        return next(e);
+    }
+
+    return res.sendStatus(204);
+};
+
 module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
     let user, verificationToken, html;
 
@@ -170,6 +226,10 @@ module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
     }
 
     res.sendStatus(204);
+};
+
+module.exports.resetPassword = async (req, res, next) => {
+    return res.sendStatus(204);
 };
 
 module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
