@@ -10,7 +10,7 @@ const config = require('../../../config/application').config;
 const k = require('../../../config/keys.json');
 
 const m = require('mocha');
-const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
+const [describe, it, before, beforeEach, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.afterEach];
 const request = require('supertest');
 const assert = require('assert');
 const chance = require('chance').Chance();
