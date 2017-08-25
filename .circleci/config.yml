@@ -10,10 +10,10 @@ jobs:
       - image: circleci/mysql:5.7
         environment:
           - MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          - MYSQL_USER: get_native
-          - MYSQL_PASSWORD: get_native
+          - MYSQL_USER: getnative
+          - MYSQL_PASSWORD: getnative
           - MYSQL_ROOT_HOST: "%"
-          - MYSQL_DATABASE: get_native_test
+          - MYSQL_DATABASE: getnative_test
 
     branches:
       only:
@@ -54,10 +54,8 @@ jobs:
       - run: .circleci/generate-jwt-keypair.sh
 
       - run:
-          name: Setup DB
-          command: |
-            cp config/database.json.template config/database.json
-            npm run sequelize db:migrate
+          name: Migrate Database
+          command: cp config/database.json.template config/database.json && npm run sequelize db:migrate
 
       - run: npm test
 
