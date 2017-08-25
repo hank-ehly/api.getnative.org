@@ -73,12 +73,15 @@
         "TokenExpired": "TokenExpired",
         "UserMissing": "UserMissing",
         "UserAlreadyVerified": "UserAlreadyVerified",
+        "UserDoesNotExist": "UserDoesNotExist",
         "ResourceNotFound": "ResourceNotFound",
         "FileMissing": "FileMissing",
         "CreateResourceFailure": "CreateResourceFailure",
         "ForeignKeyConstraintError": "ForeignKeyConstraintError",
         "MetadataMissing": "MetadataMissing",
-        "MetadataFormat": "MetadataFormat"
+        "MetadataFormat": "MetadataFormat",
+        "VerificationTokenExpired": "VerificationTokenExpired",
+        "VerificationTokenDoesNotExist": "VerificationTokenDoesNotExist"
     },
     "ENVIRONMENT": "kENVIRONMENT",
     "Env": {
