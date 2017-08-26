@@ -229,6 +229,34 @@ module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
 };
 
 module.exports.resetPassword = async (req, res, next) => {
+    let verificationToken;
+
+    try {
+        verificationToken = await VerificationToken.find({
+            rejectOnEmpty: true,
+            where: {
+                token: req.body[k.Attr.Token]
+            }
+        });
+    } catch (e) {
+        res.status(404);
+        return next(new GetNativeError(k.Error.VerificationTokenDoesNotExist));
+    }
+
+    if (verificationToken.isExpired()) {
+        res.status(420);
+        return next(new GetNativeError(k.Error.VerificationTokenExpired));
+    }
+
+    try {
+        req.user = await db[k.Model.User].findByPrimary(verificationToken.get(k.Attr.UserId));
+        const credential = _.first(await db[k.Model.Credential].findOrCreate({where: {user_id: req.user.get(k.Attr.Id)}}));
+        await credential.update({password: Auth.hashPassword(req.body[k.Attr.Password])}, {req: req});
+    } catch (e) {
+        console.log(e);
+        return next(e);
+    }
+
     return res.sendStatus(204);
 };
 

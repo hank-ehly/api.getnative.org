@@ -147,7 +147,7 @@ module.exports.updatePassword = async (req, res, next) => {
     try {
         const hashPassword = Auth.hashPassword(req.body[k.Attr.NewPassword]);
         const credential = await Credential.findOne({rejectOnEmpty: true, where: {user_id: req.user.get(k.Attr.Id)}});
-        await credential.update({password: hashPassword}, {where: {user_id: req.user.get(k.Attr.Id)}, req: req});
+        await credential.update({password: hashPassword}, {req: req});
     } catch (e) {
         res.status(404);
         return next(new GetNativeError(k.Error.ResourceNotFound));

@@ -82,7 +82,12 @@ const schema = {
                 email: Joi.string().regex(regex.email).required()
             }
         },
-        resetPassword: {},
+        resetPassword: {
+            body: {
+                password: Joi.string().min(8).required(),
+                token: Joi.string().length(32).required()
+            }
+        },
         sendPasswordResetLink: {
             body: {
                 email: Joi.string().regex(regex.email).required()

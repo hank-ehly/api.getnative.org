@@ -18,7 +18,7 @@ const assert = require('assert');
 const _ = require('lodash');
 
 describe('POST /reset_password', function() {
-    let server, url, db = '/reset_password';
+    let server, db, user, url = '/reset_password';
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -30,6 +30,7 @@ describe('POST /reset_password', function() {
         const results = await SpecUtil.startServer();
         server = results.server;
         db = results.db;
+        user = await db[k.Model.User].find();
     });
 
     afterEach(function(done) {
@@ -93,18 +94,18 @@ describe('POST /reset_password', function() {
 
                 before(async function() {
                     token = await db[k.Model.VerificationToken].create({
-                        user_id: user[k.Attr.Id],
+                        user_id: user.get(k.Attr.Id),
                         token: Auth.generateRandomHash(),
                         expiration_date: moment().subtract(1, 'days').toDate()
                     });
                 });
 
                 it('should respond with a 420 Unprocessable Entity status code', function() {
-                    return request(server).post(url).send({password: password, token: token}).expect(420);
+                    return request(server).post(url).send({password: password, token: token.get(k.Attr.Token)}).expect(420);
                 });
 
                 it('should return an error object with the VerificationTokenExpired code', async function() {
-                    const response = await request(server).post(url).send({password: password, token: token});
+                    const response = await request(server).post(url).send({password: password, token: token.get(k.Attr.Token)});
                     assert.equal(_.first(response.body).code, k.Error.VerificationTokenExpired);
                 });
             });
@@ -115,7 +116,7 @@ describe('POST /reset_password', function() {
 
             before(async function() {
                 token = await db[k.Model.VerificationToken].create({
-                    user_id: user[k.Attr.Id],
+                    user_id: user.get(k.Attr.Id),
                     token: Auth.generateRandomHash(),
                     expiration_date: moment().add(1, 'days').toDate()
                 });
@@ -123,22 +124,22 @@ describe('POST /reset_password', function() {
 
             describe('is missing', function() {
                 it('should respond with a 400 Bad Request status code', function() {
-                    return request(server).post(url).send({token: token}).expect(400);
+                    return request(server).post(url).send({token: token.get(k.Attr.Token)}).expect(400);
                 });
 
                 it('should return an error object with the RequestParam code', async function() {
-                    const response = await request(server).post(url).send({token: token});
+                    const response = await request(server).post(url).send({token: token.get(k.Attr.Token)});
                     assert.equal(_.first(response.body).code, k.Error.RequestParam);
                 });
             });
 
             describe('is less than 8 characters', function() {
                 it('should respond with a 400 Bad Request status code', function() {
-                    return request(server).post(url).send({password: '1234567', token: token}).expect(400);
+                    return request(server).post(url).send({password: '1234567', token: token.get(k.Attr.Token)}).expect(400);
                 });
 
                 it('should return an error object with the RequestParam code', async function() {
-                    const response = await request(server).post(url).send({password: '1234567', token: token});
+                    const response = await request(server).post(url).send({password: '1234567', token: token.get(k.Attr.Token)});
                     assert.equal(_.first(response.body).code, k.Error.RequestParam);
                 });
             });
@@ -146,6 +147,36 @@ describe('POST /reset_password', function() {
     });
 
     describe('success', function() {
+        it('should send a confirmation email to the user', async function() {
+            let token, user, credential, password = '12345678';
+
+            const englishId = await db[k.Model.Language].findIdForCode('en');
+
+            user = await db[k.Model.User].create({
+                email: Auth.generateRandomHash() + '@test.com',
+                default_study_language_id: englishId,
+                interface_language_id: englishId
+            });
+
+            credential = await db[k.Model.Credential].create({
+                user_id: user.get(k.Attr.Id),
+                password: password
+            });
+
+            token = await db[k.Model.VerificationToken].create({
+                user_id: user.get(k.Attr.Id),
+                token: Auth.generateRandomHash(),
+                expiration_date: moment().add(1, 'days').toDate()
+            });
+
+            await SpecUtil.deleteAllEmail();
+            await request(server).post(url).send({password: password, token: token.get(k.Attr.Token)});
+            const allEmails = await SpecUtil.getAllEmail();
+            const mostRecentEmail = _.last(allEmails);
+            const recipient = _.first(mostRecentEmail.envelope.to).address;
+            assert.equal(recipient, user.get(k.Attr.Email));
+        });
+
         describe('the user has no password yet', function() {
             let token, user, password = '12345678';
 
@@ -166,7 +197,7 @@ describe('POST /reset_password', function() {
             });
 
             it('should create a Credential record with the new password value for the user', async function() {
-                await request(server).post(url).send({password: password, token: token});
+                await request(server).post(url).send({password: password, token: token.get(k.Attr.Token)});
                 const credential = await db[k.Model.Credential].find({where: {user_id: user.get(k.Attr.Id)}});
                 assert(Auth.verifyPassword(credential.get(k.Attr.Password), password));
             });
@@ -198,40 +229,10 @@ describe('POST /reset_password', function() {
 
             it('should update the users password to the hashed new password value', async function() {
                 const drowssap = _.reverse(password.split('')).join('');
-                await request(server).post(url).send({password: drowssap, token: token});
+                await request(server).post(url).send({password: drowssap, token: token.get(k.Attr.Token)});
                 await credential.reload();
                 assert(Auth.verifyPassword(credential.get(k.Attr.Password), drowssap));
             });
-        });
-
-        it('should send a confirmation email to the user', async function() {
-            let token, user, credential, password = '12345678';
-
-            const englishId = await db[k.Model.Language].findIdForCode('en');
-
-            user = await db[k.Model.User].create({
-                email: Auth.generateRandomHash() + '@test.com',
-                default_study_language_id: englishId,
-                interface_language_id: englishId
-            });
-
-            credential = await db[k.Model.Credential].create({
-                user_id: user.get(k.Attr.Id),
-                password: password
-            });
-
-            token = await db[k.Model.VerificationToken].create({
-                user_id: user.get(k.Attr.Id),
-                token: Auth.generateRandomHash(),
-                expiration_date: moment().add(1, 'days').toDate()
-            });
-
-            await SpecUtil.deleteAllEmail();
-            await request(server).post(url).send({password: password, token: token});
-            const allEmails = await SpecUtil.getAllEmail();
-            const mostRecentEmail = _.last(allEmails);
-            const recipient = _.first(mostRecentEmail.envelope.to).address;
-            assert.equal(recipient, user.get(k.Attr.Email));
         });
     });
 });
