@@ -191,10 +191,14 @@ module.exports.resendRegistrationConfirmationEmail = async (req, res, next) => {
         }
         const confirmationURL = Auth.generateConfirmationURLForTokenWithPath(verificationToken.get(k.Attr.Token), pathname);
         const templateVariables = {
+            __: i18n.__,
+            __mf: i18n.__mf,
             confirmationURL: confirmationURL,
             contact: config.get(k.EmailAddress.Contact),
-            __: i18n.__,
-            __mf: i18n.__mf
+            facebookPageURL: config.get(k.SNS.FacebookPageURL),
+            twitterPageURL: config.get(k.SNS.TwitterPageURL),
+            youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL),
+            websiteURL: config.get(k.Client.BaseURI)
         };
 
         html = await new Promise((resolve, reject) => {
