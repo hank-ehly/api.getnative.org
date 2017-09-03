@@ -22,8 +22,8 @@ CustomStrategy.prototype.authenticate = async function(req) {
     try {
         token = Utility.extractAuthTokenFromRequest(req);
         const decodedToken = await Auth.verifyToken(token);
-        user = await db[k.Model.User].findByPrimary(decodedToken.sub);
-        const refreshedToken = await Auth.refreshToken(decodedToken);
+        user = await db[k.Model.User].findByPrimary(decodedToken.sub, {rejectOnEmpty: true});
+        const refreshedToken = await Auth.refreshDecodedToken(decodedToken);
         Auth.setAuthHeadersOnResponseWithToken(req.res, refreshedToken);
     } catch (e) {
         return this.pass();

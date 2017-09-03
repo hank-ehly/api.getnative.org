@@ -5,24 +5,25 @@
  * Created by henryehly on 2017/03/27.
  */
 
-const services = require('../../app/services');
-const Auth = services['Auth'];
-const Utility = services['Utility'];
+const Auth = require('../../app/services/auth');
+const Utility = require('../../app/services/utility');
 const SpecUtil = require('../spec-util');
 const config = require('../../config/application').config;
 const k = require('../../config/keys.json');
+const db = require('../../app/models');
 
 const m = require('mocha');
 const [describe, it] = [m.describe, m.it];
 const assert = require('assert');
 const _ = require('lodash');
 const url = require('url');
+const jwt = require('jsonwebtoken');
 
 describe('Auth', function() {
-    describe('refreshToken', function() {
+    describe('refreshDecodedToken', function() {
         it(`should throw a ReferenceError if the 'token' parameter is missing`, function() {
             function test() {
-                Auth.refreshToken();
+                Auth.refreshDecodedToken();
             }
 
             assert.throws(test, ReferenceError);
@@ -30,11 +31,19 @@ describe('Auth', function() {
 
         it(`should throw a TypeError if the 'token' parameter is not a plain object`, function() {
             function test() {
-                Auth.refreshToken(['not', 'a', 'plain', 'object']);
+                Auth.refreshDecodedToken(2);
             }
 
             assert.throws(test, TypeError);
         });
+
+        it ('should refresh the decoded token', async function() {
+            const user = await db[k.Model.User].find();
+            const token = await Auth.generateTokenForUserId(user.get(k.Attr.Id));
+            const decodedToken = await Auth.verifyToken(token);
+            const refreshedToken = await Auth.refreshDecodedToken(decodedToken);
+            assert.equal(jwt.decode(token).issuer, jwt.decode(refreshedToken).issuer);
+        })
     });
 
     describe('hashPassword', function() {

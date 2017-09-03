@@ -16,6 +16,11 @@ const jwt     = require('jsonwebtoken');
 const url     = require('url');
 const _       = require('lodash');
 
+const _tokenSignOptions = {
+    algorithm: 'RS256',
+    expiresIn: '1h'
+};
+
 module.exports.verifyToken = function(token) {
     const args = {
         issuer: config.get(k.API.Hostname),
@@ -34,26 +39,20 @@ module.exports.verifyToken = function(token) {
     });
 };
 
-module.exports.refreshToken = token => {
+module.exports.refreshDecodedToken = token => {
     if (!token) {
         throw new ReferenceError(`Missing required 'token'`);
-    }
-
-    else if (!_.isPlainObject(token)) {
+    } else if (!_.isPlainObject(token)) {
         throw new TypeError(`'token' must be a plain object`);
     }
 
-    const cloneToken = Object.assign({}, token);
-
-    delete cloneToken.exp;
-
-    const args = {
-        algorithm: 'RS256',
-        expiresIn: '1h'
-    };
+    delete token.exp;
+    delete token.iat;
+    delete token.exp;
+    delete token.nbf;
 
     return new Promise((resolve, reject) => {
-        jwt.sign(cloneToken, config.get(k.PrivateKey), args, (err, data) => {
+        jwt.sign(token, config.get(k.PrivateKey), _tokenSignOptions, (err, data) => {
             if (err) {
                 reject(err);
             } else {
@@ -70,13 +69,8 @@ module.exports.generateTokenForUserId = userId => {
         aud: ''
     };
 
-    const args = {
-        algorithm: 'RS256',
-        expiresIn: '1h'
-    };
-
     return new Promise((resolve, reject) => {
-        jwt.sign(token, config.get(k.PrivateKey), args, (err, data) => {
+        jwt.sign(token, config.get(k.PrivateKey), _tokenSignOptions, (err, data) => {
             if (err) {
                 reject(err);
             } else {
