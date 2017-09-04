@@ -37,7 +37,7 @@ jobs:
 
       - restore_cache:
           keys:
-              - api.getnativelearning.com-{{ .Branch }}-{{ checksum "package-lock.json" }}
+              - api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
 
       - run:
           name: Install Node Dependencies
@@ -47,7 +47,7 @@ jobs:
               npm install
 
       - save_cache:
-          key: api.getnativelearning.com-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          key: api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
           paths:
             - "node_modules"
 
