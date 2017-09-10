@@ -250,8 +250,6 @@ module.exports.delete = async (req, res, next) => {
 };
 
 module.exports.profileImage = async function(req, res, next) {
-    let updateCount;
-
     try {
         const userIdHash = Utility.getHashForId(_.toNumber(req.user[k.Attr.Id]));
 
