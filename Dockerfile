@@ -7,7 +7,7 @@ CMD \
     .circleci/generate-jwt-keypair.sh && \
     cp -fp config/database.json.template config/database.json && \
     npm install && \
-    npm run sequelize db:migrate:undo:all && \
-    npm run sequelize db:migrate && \
-    npm run sequelize db:seed:all && \
+    ([ ! -z $RESET_DB ] && npm run sequelize db:migrate:undo:all || echo 'skipping npm run sequelize db:migrate:undo:all') && \
+    ([ ! -z $RESET_DB ] && npm run sequelize db:migrate || echo 'skipping npm run sequelize db:migrate') && \
+    ([ ! -z $RESET_DB ] && npm run sequelize db:seed:all || echo 'skipping npm run sequelize db:seed:all') && \
     npm start
