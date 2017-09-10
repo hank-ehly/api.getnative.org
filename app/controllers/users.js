@@ -5,11 +5,11 @@
  * Created by henryehly on 2017/02/03.
  */
 
-const services          = require('../services');
-const GetNativeError    = services['GetNativeError'];
-const Utility           = services['Utility'];
+const Storage           = require('../services/storage');
+const GetNativeError    = require('../services/get-native-error');
+const Utility           = require('../services/utility');
 const config            = require('../../config/application').config;
-const Auth              = services['Auth'];
+const Auth              = require('../services/auth');
 const k                 = require('../../config/keys.json');
 const db                = require('../models');
 const User              = db[k.Model.User];
@@ -247,4 +247,27 @@ module.exports.delete = async (req, res, next) => {
     }
 
     return res.sendStatus(204);
+};
+
+module.exports.profileImage = async function(req, res, next) {
+    let updateCount;
+
+    try {
+        const userIdHash = Utility.getHashForId(_.toNumber(req.user[k.Attr.Id]));
+
+        await Storage.upload(req.files.image.path, ['users/', userIdHash, '.', config.get(k.ImageFileExtension)].join(''));
+        const bucket = config.get(k.GoogleCloud.StorageBucketName);
+        const googleStorageBaseURI = 'https://storage.googleapis.com';
+
+        const changes = [];
+        changes[k.Attr.PictureUrl] = `${googleStorageBaseURI}/${bucket}/users/${userIdHash}.${config.get(k.ImageFileExtension)}`;
+        changes[k.Attr.IsSilhouettePicture] = false;
+
+        await req.user.update(changes);
+        await req.user.reload({attributes: [k.Attr.PictureUrl]});
+    } catch (e) {
+        return next(e);
+    }
+
+    return res.status(200).send(_.pick(req.user.get({plain: true}), [k.Attr.PictureUrl]));
 };

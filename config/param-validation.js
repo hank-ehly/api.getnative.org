@@ -64,6 +64,14 @@ const schema = {
             headers: {
                 authorization: Joi.string().required()
             }
+        },
+        profileImage: {
+            headers: {
+                authorization: Joi.string().required()
+            },
+            files: {
+                image: Joi.object().required()
+            }
         }
     },
     auth: {
