@@ -21,14 +21,6 @@ const fs = require('fs');
 describe('POST /users/profile_image', function() {
     let user, server, authorization, imagePath = path.resolve(__dirname, '..', '..', 'fixtures', 'speaker.jpg');
 
-    before(function() {
-        return SpecUtil.startMailServer();
-    });
-
-    after(function() {
-        return SpecUtil.stopMailServer();
-    });
-
     before(async function() {
         this.timeout(SpecUtil.defaultTimeout);
         await SpecUtil.seedAll();
