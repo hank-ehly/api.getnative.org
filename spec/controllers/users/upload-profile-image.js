@@ -60,6 +60,20 @@ describe('POST /users/profile_image', function() {
             fs.rmdirSync(path.resolve(config.get(k.TempDir), 'users'));
         });
 
+        it('should respond with an X-GN-Auth-Token header', async function() {
+            const response = await request(server).post('/users/profile_image').set(k.Header.Authorization, authorization).attach('image', imagePath);
+            assert(_.gt(response.header[k.Header.AuthToken].length, 0));
+        });
+
+        it('should respond with an X-GN-Auth-Expire header containing a valid timestamp value', async function() {
+            const response = await request(server).post('/users/profile_image').set(k.Header.Authorization, authorization).attach('image', imagePath);
+            assert(SpecUtil.isParsableTimestamp(+response.header[k.Header.AuthExpire]));
+        });
+
+        it(`should return 200 OK for a valid request`, function() {
+            return request(server).post('/users/profile_image').set(k.Header.Authorization, authorization).attach('image', imagePath).expect(200);
+        });
+
         it('should save a new image asset with the appropriate hash title to Google Cloud Storage', async function() {
             this.timeout(SpecUtil.defaultTimeout);
             await request(server).post('/users/profile_image').set(k.Header.Authorization, authorization).attach('image', imagePath);
