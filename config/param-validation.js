@@ -72,6 +72,11 @@ const schema = {
             files: {
                 image: Joi.object().required()
             }
+        },
+        deleteProfileImage: {
+            headers: {
+                authorization: Joi.string().required()
+            }
         }
     },
     auth: {

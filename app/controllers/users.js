@@ -269,3 +269,13 @@ module.exports.profileImage = async function(req, res, next) {
 
     return res.status(200).send(_.pick(req.user.get({plain: true}), [k.Attr.PictureUrl]));
 };
+
+module.exports.deleteProfileImage = async function(req, res, next) {
+    try {
+        await req.user.update({is_silhouette_picture: true});
+    } catch (e) {
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    }
+
+    return res.sendStatus(204);
+};
