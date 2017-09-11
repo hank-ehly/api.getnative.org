@@ -9,5 +9,7 @@ CMD \
     npm install && \
     ([ ! -z $RESET_DB ] && npm run sequelize db:migrate:undo:all || echo 'skipping npm run sequelize db:migrate:undo:all') && \
     ([ ! -z $RESET_DB ] && npm run sequelize db:migrate || echo 'skipping npm run sequelize db:migrate') && \
+    ([ ! -z $RESET_DB ] && NODE_ENV=test npm run sequelize db:migrate:undo:all || echo 'skipping `NODE_ENV=test npm run sequelize db:migrate:undo:all`') && \
+    ([ ! -z $RESET_DB ] && NODE_ENV=test npm run sequelize db:migrate || echo 'skipping `NODE_ENV=test npm run sequelize db:migrate`') && \
     ([ ! -z $RESET_DB ] && npm run sequelize db:seed:all || echo 'skipping npm run sequelize db:seed:all') && \
     npm start
