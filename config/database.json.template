@@ -3,7 +3,7 @@
         "username": "getnative",
         "password": "getnative",
         "database": "getnative_development",
-        "host": "db",
+        "host": "db_dev",
         "dialect": "mysql"
     },
     "staging": {
@@ -17,15 +17,17 @@
         "username": "getnative",
         "password": "getnative",
         "database": "getnative_test",
-        "host": "127.0.0.1",
+        "host": "db_test",
         "dialect": "mysql",
         "logging": false
     },
     "circle_ci": {
-        "username": "ubuntu",
-        "database": "circle_test",
-        "dialect": "mysql",
-        "logging": false
+        "username": "getnative",
+				"password": "getnative",
+				"database": "getnative_test",
+				"host": "127.0.0.1",
+				"dialect": "mysql",
+				"logging": false
     },
     "production": {
         "username": "",
