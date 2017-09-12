@@ -18,8 +18,7 @@
         "password": "getnative",
         "database": "getnative_test",
         "host": "db_test",
-        "dialect": "mysql",
-        "logging": false
+        "dialect": "mysql"
     },
     "circle_ci": {
         "username": "getnative",
