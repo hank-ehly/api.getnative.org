@@ -6,3 +6,4 @@ config/database.json
 node_modules
 logs
 maildev/
+upload_*
