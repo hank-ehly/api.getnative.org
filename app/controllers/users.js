@@ -22,6 +22,7 @@ const VerificationToken = db[k.Model.VerificationToken];
 const mailer            = require('../../config/initializers/mailer');
 const path              = require('path');
 const _                 = require('lodash');
+const moment            = require('moment');
 
 // todo: move all this to passport custom
 module.exports.create = async (req, res, next) => {
@@ -251,7 +252,7 @@ module.exports.delete = async (req, res, next) => {
 
 module.exports.profileImage = async function(req, res, next) {
     try {
-        const userIdHash = Utility.getHashForId(_.toNumber(req.user[k.Attr.Id]));
+        const userIdHash = `${Utility.getHashForId(_.toNumber(req.user[k.Attr.Id]))}+${moment().unix()}`;
 
         await Storage.upload(req.files.image.path, ['users/', userIdHash, '.', config.get(k.ImageFileExtension)].join(''));
         const bucket = config.get(k.GoogleCloud.StorageBucketName);
