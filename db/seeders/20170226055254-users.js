@@ -14,7 +14,7 @@ const _        = require('lodash');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        const count = process.env['NODE_ENV'] === k.Env.Test ? 5 : 500;
+        const count = _.includes([k.Env.Test, k.Env.CircleCI], process.env['NODE_ENV']) ? 5 : 500;
 
         return Language.findAll({attributes: [k.Attr.Id, k.Attr.Code]}).then(languages => {
             const records = [];

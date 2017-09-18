@@ -11,6 +11,7 @@ const User = db[k.Model.User];
 const Video = db[k.Model.Video];
 
 const chance = require('chance').Chance();
+const _ = require('lodash');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
@@ -31,7 +32,7 @@ module.exports = {
             for (let i = minUserId; i <= maxUserId; i++) {
                 let numStudySessions = chance.integer({
                     min: 5,
-                    max: process.env['NODE_ENV'] === k.Env.Test ? 10 : 365
+                    max: _.includes([k.Env.Test, k.Env.CircleCI], process.env['NODE_ENV']) ? 10 : 365
                 });
 
                 for (let j = 0; j < numStudySessions; j++) {
