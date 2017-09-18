@@ -6,7 +6,7 @@ jobs:
     docker:
       - image: circleci/ruby:2.3-node
         environment:
-          - NODE_ENV: test
+          - NODE_ENV: circle_ci
       - image: circleci/mysql:5.7
         environment:
           - MYSQL_ALLOW_EMPTY_PASSWORD: yes
