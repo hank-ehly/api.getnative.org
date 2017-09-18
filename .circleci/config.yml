@@ -29,12 +29,6 @@ jobs:
               sudo apt-get update -y
               sudo apt-get install -y build-essential libav-tools
   
-  #    - run:
-  #        name: Install nvm
-  #        command: .circleci/nvm.sh
-
-  #    - run: echo 'export PATH=${HOME}/.nvm/versions/node/v8.5.0/bin:$PATH' >> $BASH_ENV
-
       - restore_cache:
           keys:
               - api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
