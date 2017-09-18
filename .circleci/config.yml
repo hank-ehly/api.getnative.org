@@ -4,7 +4,7 @@ jobs:
     working_directory: ~/api.getnativelearning.com
 
     docker:
-      - image: circleci/ruby:2.3.4
+      - image: circleci/ruby:2.3-node
         environment:
           - NODE_ENV: test
       - image: circleci/mysql:5.7
@@ -28,12 +28,12 @@ jobs:
           command: |
               sudo apt-get update -y
               sudo apt-get install -y build-essential libav-tools
+  
+  #    - run:
+  #        name: Install nvm
+  #        command: .circleci/nvm.sh
 
-      - run:
-          name: Install nvm
-          command: .circleci/nvm.sh
-
-      - run: echo 'export PATH=${HOME}/.nvm/versions/node/v8.5.0/bin:$PATH' >> $BASH_ENV
+  #    - run: echo 'export PATH=${HOME}/.nvm/versions/node/v8.5.0/bin:$PATH' >> $BASH_ENV
 
       - restore_cache:
           keys:
