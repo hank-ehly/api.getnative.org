@@ -26,7 +26,7 @@ module.exports.callback = async (req, res, next) => {
         throw new ReferenceError('variable jsonWebToken is undefined');
     }
 
-    let pathname = 'dashboard';
+    let pathname = 'oauth';
     if ([k.Env.Staging, k.Env.Production].includes(config.get(k.ENVIRONMENT))) {
         pathname = [req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code), '/', pathname].join('');
     }

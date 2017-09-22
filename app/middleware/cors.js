@@ -19,7 +19,7 @@ router.use((req, res, next) => {
     const corsHeaders = {
         'Access-Control-Allow-Origin': 'null',
         'Access-Control-Expose-Headers': 'X-GN-Auth-Token, X-GN-Auth-Expire, Location',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-XSRF-TOKEN',
         'Access-Control-Allow-Methods': 'PATCH, DELETE'
     };
 
