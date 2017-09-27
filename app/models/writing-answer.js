@@ -57,7 +57,7 @@ module.exports = function(sequelize, DataTypes) {
                 return {
                     where: {
                         id: {
-                            $lte: +maxId
+                            $lt: +maxId
                         }
                     }
                 }

@@ -60,11 +60,7 @@ module.exports = function(sequelize, DataTypes) {
                     if (conditions.where && conditions.where.id) {
                         conditions.where.id.$lt = +maxId;
                     } else {
-                        conditions.where = {
-                            id: {
-                                $lt: +maxId
-                            }
-                        }
+                        conditions.where = {id: {$lt: +maxId}}
                     }
                 }
 
