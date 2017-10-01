@@ -21,6 +21,14 @@ describe('POST /confirm_email', function() {
     let server, token, user, db;
 
     before(function() {
+        return SpecUtil.startMailServer();
+    });
+
+    after(function() {
+        return SpecUtil.stopMailServer();
+    });
+
+    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
@@ -195,7 +203,11 @@ describe('POST /confirm_email', function() {
             const recipientEmailAddress = _.first(_.last(emails).envelope.to).address;
             assert.equal(recipientEmailAddress, user[k.Attr.Email]);
         });
-    });
 
-    it(`should use the VerificationToken with the most recent expiration_date if multiple tokens exist`);
+        it('should update the verification_token.is_verification_complete to true', async function() {
+            await request(server).post('/confirm_email').send({token: token});
+            const updatedToken = await db[k.Model.VerificationToken].find({where: {token: token}});
+            assert(updatedToken.get('is_verification_complete'));
+        });
+    });
 });

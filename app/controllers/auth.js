@@ -26,11 +26,7 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
     let verificationToken, user, jsonWebToken;
 
     try {
-        verificationToken = await VerificationToken.find({
-            where: {
-                token: req.body.token
-            }
-        });
+        verificationToken = await VerificationToken.find({where: {token: req.body.token}});
     } catch (e) {
         return next(e);
     }
@@ -40,15 +36,11 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
         return next(new GetNativeError(k.Error.TokenExpired));
     }
 
+    const t = await db.sequelize.transaction();
     try {
-        await User.update({
-            email_verified: true,
-            email_notifications_enabled: true
-        }, {
-            where: {
-                id: verificationToken[k.Attr.UserId]
-            }
-        });
+        await User.update({email_verified: true, email_notifications_enabled: true}, {where: {id: verificationToken[k.Attr.UserId]}, transaction: t});
+        await verificationToken.update({is_verification_complete: true}, {transaction: t});
+        await t.commit();
 
         user = await User.findByPrimary(verificationToken[k.Attr.UserId], {
             attributes: [
@@ -85,6 +77,8 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
             html:    emailTemplateVariables
         }, null);
     } catch (e) {
+        await t.rollback();
+
         if (e instanceof GetNativeError && e.code === k.Error.TokenExpired) {
             res.status(404);
         }
@@ -287,7 +281,7 @@ module.exports.sendEmailUpdateConfirmationEmail = async (req, res, next) => {
         return next(new GetNativeError(k.Error.UserMissing));
     }
 
-    let t = await db.sequelize.transaction();
+    const t = await db.sequelize.transaction();
     try {
         token = await VerificationToken.create({
             user_id: user.get(k.Attr.Id),
