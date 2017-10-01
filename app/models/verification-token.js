@@ -21,6 +21,11 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             defaultValue: ''
         },
+        is_verification_complete: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: 0
+        },
         expiration_date: {
             allowNull: false,
             type: DataTypes.DATE

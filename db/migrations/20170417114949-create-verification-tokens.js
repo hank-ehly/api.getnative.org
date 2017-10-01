@@ -23,6 +23,11 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.DATE
             },
+            is_verification_complete: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: 0
+            },
             user_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
