@@ -31,9 +31,12 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
         return next(e);
     }
 
-    if (!verificationToken || verificationToken.isExpired()) {
+    if (!verificationToken) {
         res.status(404);
-        return next(new GetNativeError(k.Error.TokenExpired));
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    } else if (verificationToken.isExpired()) {
+        res.status(422);
+        return next(new GetNativeError(k.Error.EmailConfirmPeriodExpired));
     } else if (verificationToken.is_verification_complete) {
         res.status(422);
         return next(new GetNativeError(k.Error.EmailAlreadyConfirmed));
@@ -254,7 +257,6 @@ module.exports.resetPassword = async (req, res, next) => {
         const credential = _.first(await db[k.Model.Credential].findOrCreate({where: {user_id: req.user.get(k.Attr.Id)}}));
         await credential.update({password: Auth.hashPassword(req.body[k.Attr.Password])}, {req: req});
     } catch (e) {
-        console.log(e);
         return next(e);
     }
 
@@ -366,6 +368,9 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
     if (!vt || vt.isExpired()) {
         res.status(404);
         return next(new GetNativeError(k.Error.TokenExpired));
+    }  else if (vt.is_verification_complete) {
+        res.status(422);
+        return next(new GetNativeError(k.Error.EmailAlreadyUpdated));
     }
 
     try {

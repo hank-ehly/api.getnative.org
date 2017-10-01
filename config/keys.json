@@ -67,6 +67,8 @@
         "Auth": "Auth",
         "CreateResourceFailure": "CreateResourceFailure",
         "EmailAlreadyConfirmed": "EmailAlreadyConfirmed",
+        "EmailAlreadyUpdated": "EmailAlreadyUpdated",
+        "EmailConfirmPeriodExpired": "EmailConfirmPeriodExpired",
         "FileMissing": "FileMissing",
         "ForeignKeyConstraintError": "ForeignKeyConstraintError",
         "JWT": "JWT",

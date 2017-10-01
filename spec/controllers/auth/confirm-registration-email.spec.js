@@ -21,6 +21,14 @@ describe('POST /confirm_email', function() {
     let server, token, user, db;
 
     before(function() {
+        return SpecUtil.startMailServer();
+    });
+
+    after(function() {
+        return SpecUtil.stopMailServer();
+    });
+
+    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
@@ -81,14 +89,14 @@ describe('POST /confirm_email', function() {
             return request(server).post('/confirm_email_update').send({token: 'bf294bed1332e34f9faf00413d0e61ab'}).expect(404);
         });
 
-        it(`should respond with 404 Not Found if the verification token is expired`, async function() {
+        it(`should respond with 422 Unprocessable Entity if the verification token is expired`, async function() {
             const _token = await db[k.Model.VerificationToken].create({
                 user_id: user[k.Attr.Id],
                 token: Auth.generateRandomHash(),
                 expiration_date: moment().subtract(1, 'days').toDate()
             });
 
-            return request(server).post(`/confirm_email`).send({token: _token.get(k.Attr.Token)}).expect(404);
+            return request(server).post(`/confirm_email`).send({token: _token.get(k.Attr.Token)}).expect(422);
         });
 
         it('should respond with 422 Unprocessable Entity if the verification token is_verification_complete is true', async function() {
