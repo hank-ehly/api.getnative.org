@@ -34,6 +34,9 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
     if (!verificationToken || verificationToken.isExpired()) {
         res.status(404);
         return next(new GetNativeError(k.Error.TokenExpired));
+    } else if (verificationToken.is_verification_complete) {
+        res.status(422);
+        return next(new GetNativeError(k.Error.EmailAlreadyConfirmed));
     }
 
     const t = await db.sequelize.transaction();
@@ -375,11 +378,13 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
         return next(new GetNativeError(k.Error.ResourceNotFound));
     }
 
+    const t = await db.sequelize.transaction();
     try {
         userBeforeUpdate = await db[k.Model.User].findByPrimary(vt.get(k.Attr.UserId));
 
-        await db[k.Model.User].update({email: emailChangeRequest.get(k.Attr.Email)}, {where: {id: vt.get(k.Attr.UserId)}});
-        await vt.update({expiration_date: new Date()});
+        await db[k.Model.User].update({email: emailChangeRequest.get(k.Attr.Email)}, {where: {id: vt.get(k.Attr.UserId)}, transaction: t});
+        await vt.update({is_verification_complete: true}, {transaction: t});
+        await t.commit();
 
         user = await User.findByPrimary(vt.get(k.Attr.UserId), {
             attributes: [
@@ -390,6 +395,7 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
 
         jwt = await Auth.generateTokenForUserId(user.get(k.Attr.Id));
     } catch (e) {
+        await t.rollback();
         return next(e);
     }
 

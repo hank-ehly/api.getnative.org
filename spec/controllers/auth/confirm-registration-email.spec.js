@@ -21,14 +21,6 @@ describe('POST /confirm_email', function() {
     let server, token, user, db;
 
     before(function() {
-        return SpecUtil.startMailServer();
-    });
-
-    after(function() {
-        return SpecUtil.stopMailServer();
-    });
-
-    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
@@ -97,6 +89,17 @@ describe('POST /confirm_email', function() {
             });
 
             return request(server).post(`/confirm_email`).send({token: _token.get(k.Attr.Token)}).expect(404);
+        });
+
+        it('should respond with 422 Unprocessable Entity if the verification token is_verification_complete is true', async function() {
+            const _token = await db[k.Model.VerificationToken].create({
+                user_id: user[k.Attr.Id],
+                token: Auth.generateRandomHash(),
+                expiration_date: moment().add(1, 'days').toDate(),
+                is_verification_complete: true
+            });
+
+            return request(server).post(`/confirm_email`).send({token: _token.get(k.Attr.Token)}).expect(422);
         });
     });
 

@@ -19,21 +19,22 @@
         "messageLineThree": "please <a style=\"color:#33CC99;text-decoration:underline;\" title=\"{contact}\" href=\"mailto:{contact}\">notify us</a> as soon as possible."
     },
     "errors": {
-        "JWT": "An error occurred while processing JWT",
-        "RequestParam": "Request param is invalid",
         "Auth": "Auth",
+        "CreateResourceFailure": "Failed to create resource",
+        "EmailAlreadyConfirmed": "Your email address has already been confirmed.",
+        "FileMissing": "Required file missing from request",
+        "ForeignKeyConstraintError": "Failed to take the specified action on the requested resource due to foreign key constraint",
+        "JWT": "An error occurred while processing JWT",
+        "MetadataMissing": "No metadata was provided in the request",
+        "MetadataFormat": "The provided metadata is not parsable JSON",
+        "PasswordIncorrect": "That username/password is incorrect",
+        "RequestParam": "Request param is invalid",
+        "ResourceNotFound": "No resource was found for the given conditions",
+        "TokenExpired": "Token has expired",
         "UserNamePasswordIncorrect": "Username or password is incorrect",
         "UserAlreadyExists": "User already exists",
-        "PasswordIncorrect": "That username/password is incorrect",
-        "TokenExpired": "Token has expired",
         "UserMissing": "No user with this email exists",
-        "UserAlreadyVerified": "This user is already verified",
-        "ResourceNotFound": "No resource was found for the given conditions",
-        "FileMissing": "Required file missing from request",
-        "CreateResourceFailure": "Failed to create resource",
-        "ForeignKeyConstraintError": "Failed to take the specified action on the requested resource due to foreign key constraint",
-        "MetadataMissing": "No metadata was provided in the request",
-        "MetadataFormat": "The provided metadata is not parsable JSON"
+        "UserAlreadyVerified": "This user is already verified"
     },
     "lang": "en",
     "notifyEmailUpdate": {
