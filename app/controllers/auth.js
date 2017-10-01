@@ -378,13 +378,14 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
     }
 
     if (!emailChangeRequest) {
-        return next(e);
+        return next(new GetNativeError(k.Error.ResourceNotFound));
     }
 
     try {
         userBeforeUpdate = await db[k.Model.User].findByPrimary(vt.get(k.Attr.UserId));
 
         await db[k.Model.User].update({email: emailChangeRequest.get(k.Attr.Email)}, {where: {id: vt.get(k.Attr.UserId)}});
+        await vt.update({expiration_date: new Date()});
 
         user = await User.findByPrimary(vt.get(k.Attr.UserId), {
             attributes: [

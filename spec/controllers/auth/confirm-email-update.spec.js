@@ -23,6 +23,14 @@ describe('POST /confirm_email_update', function() {
     let server, body, user, db, languages, newEmail, oldEmail;
 
     before(function() {
+        return SpecUtil.startMailServer();
+    });
+
+    after(function() {
+        return SpecUtil.stopMailServer();
+    });
+
+    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
@@ -190,6 +198,13 @@ describe('POST /confirm_email_update', function() {
             });
 
             assert(email);
+        });
+
+        it('should update the verification token expiration date to the current date/time', async function() {
+            await request(server).post('/confirm_email_update').send(body);
+            const updatedToken = await db[k.Model.VerificationToken].find({where: {token: body.token}});
+            const updatedTime = moment(updatedToken.get('expiration_date'));
+            assert(updatedTime.isBefore(moment()));
         });
     });
 });
