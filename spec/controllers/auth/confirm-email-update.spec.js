@@ -23,14 +23,6 @@ describe('POST /confirm_email_update', function() {
     let server, body, user, db, languages, newEmail, oldEmail;
 
     before(function() {
-        return SpecUtil.startMailServer();
-    });
-
-    after(function() {
-        return SpecUtil.stopMailServer();
-    });
-
-    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
@@ -90,14 +82,25 @@ describe('POST /confirm_email_update', function() {
             return request(server).post('/confirm_email_update').send({token: 'bf294bed1332e34f9faf00413d0e61ab'}).expect(404);
         });
 
-        it('should respond with 404 Not Found if the verification token is expired', async function() {
+        it('should respond with 422 Unprocessable Entity if the verification token is expired', async function() {
             const _token = await db[k.Model.VerificationToken].create({
                 user_id: user.id,
                 token: Auth.generateRandomHash(),
                 expiration_date: moment().subtract(1, 'days').toDate()
             });
 
-            return request(server).post('/confirm_email_update').send({token: _token.get(k.Attr.Token)}).expect(404);
+            return request(server).post('/confirm_email_update').send({token: _token.get(k.Attr.Token)}).expect(422);
+        });
+
+        it('should respond with 422 Unprocessable Entity if the verification token is_verification_complete is true', async function() {
+            const _token = await db[k.Model.VerificationToken].create({
+                user_id: user.id,
+                token: Auth.generateRandomHash(),
+                expiration_date: moment().add(1, 'days').toDate(),
+                is_verification_complete: true
+            });
+
+            return request(server).post('/confirm_email_update').send({token: _token.get(k.Attr.Token)}).expect(422);
         });
     });
 
@@ -200,11 +203,10 @@ describe('POST /confirm_email_update', function() {
             assert(email);
         });
 
-        it('should update the verification token expiration date to the current date/time', async function() {
+        it('should update the verification_token.is_verification_complete to true', async function() {
             await request(server).post('/confirm_email_update').send(body);
             const updatedToken = await db[k.Model.VerificationToken].find({where: {token: body.token}});
-            const updatedTime = moment(updatedToken.get('expiration_date'));
-            assert(updatedTime.isBefore(moment()));
+            assert(updatedToken.get('is_verification_complete'));
         });
     });
 });

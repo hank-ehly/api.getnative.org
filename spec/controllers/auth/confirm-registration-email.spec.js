@@ -21,14 +21,6 @@ describe('POST /confirm_email', function() {
     let server, token, user, db;
 
     before(function() {
-        return SpecUtil.startMailServer();
-    });
-
-    after(function() {
-        return SpecUtil.stopMailServer();
-    });
-
-    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });

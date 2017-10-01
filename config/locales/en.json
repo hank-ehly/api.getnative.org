@@ -24,6 +24,7 @@
         "EmailAlreadyConfirmed": "Your email address has already been confirmed.",
         "EmailAlreadyUpdated": "That email address can no longer be confirmed.",
         "EmailConfirmPeriodExpired": "The link you clicked has expired. Please issue a new link from the settings page. You must confirm your email within 24 hours.",
+        "EmailUpdatePeriodExpired": "The link you clicked has expired. Please try updating your email again within 24 hours.",
         "FileMissing": "Required file missing from request",
         "ForeignKeyConstraintError": "Failed to take the specified action on the requested resource due to foreign key constraint",
         "JWT": "An error occurred while processing JWT",

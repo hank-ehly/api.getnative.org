@@ -69,6 +69,7 @@
         "EmailAlreadyConfirmed": "EmailAlreadyConfirmed",
         "EmailAlreadyUpdated": "EmailAlreadyUpdated",
         "EmailConfirmPeriodExpired": "EmailConfirmPeriodExpired",
+        "EmailUpdatePeriodExpired": "EmailUpdatePeriodExpired",
         "FileMissing": "FileMissing",
         "ForeignKeyConstraintError": "ForeignKeyConstraintError",
         "JWT": "JWT",

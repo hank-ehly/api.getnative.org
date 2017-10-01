@@ -365,9 +365,12 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
         return next(e);
     }
 
-    if (!vt || vt.isExpired()) {
+    if (!vt) {
         res.status(404);
-        return next(new GetNativeError(k.Error.TokenExpired));
+        return next(new GetNativeError(k.Error.ResourceNotFound));
+    } else if (vt.isExpired()) {
+        res.status(422);
+        return next(new GetNativeError(k.Error.EmailUpdatePeriodExpired));
     }  else if (vt.is_verification_complete) {
         res.status(422);
         return next(new GetNativeError(k.Error.EmailAlreadyUpdated));
