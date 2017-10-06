@@ -238,9 +238,7 @@ module.exports.resetPassword = async (req, res, next) => {
     try {
         verificationToken = await VerificationToken.find({
             rejectOnEmpty: true,
-            where: {
-                token: req.body[k.Attr.Token]
-            }
+            where: {token: req.body[k.Attr.Token]}
         });
     } catch (e) {
         res.status(404);
@@ -248,15 +246,22 @@ module.exports.resetPassword = async (req, res, next) => {
     }
 
     if (verificationToken.isExpired()) {
-        res.status(420);
-        return next(new GetNativeError(k.Error.VerificationTokenExpired));
+        res.status(422);
+        return next(new GetNativeError(k.Error.PasswordResetPeriodExpired));
+    } else if (verificationToken.is_verification_complete) {
+        res.status(422);
+        return next(new GetNativeError(k.Error.PasswordResetAlreadyComplete));
     }
 
+    const t = await db.sequelize.transaction();
     try {
         req.user = await db[k.Model.User].findByPrimary(verificationToken.get(k.Attr.UserId));
-        const credential = _.first(await db[k.Model.Credential].findOrCreate({where: {user_id: req.user.get(k.Attr.Id)}}));
-        await credential.update({password: Auth.hashPassword(req.body[k.Attr.Password])}, {req: req});
+        const credential = _.first(await db[k.Model.Credential].findOrCreate({where: {user_id: req.user.get(k.Attr.Id)}, transaction: t}));
+        await credential.update({password: Auth.hashPassword(req.body[k.Attr.Password])}, {req: req, transaction: t});
+        await verificationToken.update({is_verification_complete: true}, {transaction: t});
+        await t.commit();
     } catch (e) {
+        await t.rollback();
         return next(e);
     }
 

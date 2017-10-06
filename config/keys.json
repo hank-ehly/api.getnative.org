@@ -76,6 +76,8 @@
         "MetadataMissing": "MetadataMissing",
         "MetadataFormat": "MetadataFormat",
         "PasswordIncorrect": "PasswordIncorrect",
+        "PasswordResetPeriodExpired": "PasswordResetPeriodExpired",
+        "PasswordResetAlreadyComplete": "PasswordResetAlreadyComplete",
         "RequestParam": "RequestParam",
         "ResourceNotFound": "ResourceNotFound",
         "TokenExpired": "TokenExpired",

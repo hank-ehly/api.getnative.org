@@ -21,6 +21,14 @@ describe('POST /reset_password', function() {
     let server, db, user, url = '/reset_password';
 
     before(function() {
+        return SpecUtil.startMailServer();
+    });
+
+    after(function() {
+        return SpecUtil.stopMailServer();
+    });
+
+    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
@@ -100,13 +108,35 @@ describe('POST /reset_password', function() {
                     });
                 });
 
-                it('should respond with a 420 Unprocessable Entity status code', function() {
-                    return request(server).post(url).send({password: password, token: token.get(k.Attr.Token)}).expect(420);
+                it('should respond with a 422 Unprocessable Entity status code', function() {
+                    return request(server).post(url).send({password: password, token: token.get(k.Attr.Token)}).expect(422);
                 });
 
-                it('should return an error object with the VerificationTokenExpired code', async function() {
+                it('should return an error object with the PasswordResetPeriodExpired code', async function() {
                     const response = await request(server).post(url).send({password: password, token: token.get(k.Attr.Token)});
-                    assert.equal(_.first(response.body).code, k.Error.VerificationTokenExpired);
+                    assert.equal(_.first(response.body).code, k.Error.PasswordResetPeriodExpired);
+                });
+            });
+
+            describe('is verification completed', function() {
+                let token;
+
+                before(async function() {
+                    token = await db[k.Model.VerificationToken].create({
+                        user_id: user.get(k.Attr.Id),
+                        token: Auth.generateRandomHash(),
+                        expiration_date: moment().add(1, 'days').toDate(),
+                        is_verification_complete: true
+                    });
+                });
+
+                it('should respond with a 422 Unprocessable Entity status code', function() {
+                    return request(server).post(url).send({password: password, token: token.get(k.Attr.Token)}).expect(422);
+                });
+
+                it('should return an error object with the PasswordResetAlreadyComplete code', async function() {
+                    const response = await request(server).post(url).send({password: password, token: token.get(k.Attr.Token)});
+                    assert.equal(_.first(response.body).code, k.Error.PasswordResetAlreadyComplete);
                 });
             });
         });
@@ -175,6 +205,34 @@ describe('POST /reset_password', function() {
             const mostRecentEmail = _.last(allEmails);
             const recipient = _.first(mostRecentEmail.envelope.to).address;
             assert.equal(recipient, user.get(k.Attr.Email));
+        });
+
+        it('should update the verification_token.is_verification_complete to true', async function() {
+            let token, user, password = '12345678';
+
+            const englishId = await db[k.Model.Language].findIdForCode('en');
+
+            user = await db[k.Model.User].create({
+                email: Auth.generateRandomHash() + '@test.com',
+                default_study_language_id: englishId,
+                interface_language_id: englishId
+            });
+
+            await db[k.Model.Credential].create({
+                user_id: user.get(k.Attr.Id),
+                password: password
+            });
+
+            token = await db[k.Model.VerificationToken].create({
+                user_id: user.get(k.Attr.Id),
+                token: Auth.generateRandomHash(),
+                expiration_date: moment().add(1, 'days').toDate()
+            });
+
+            await request(server).post(url).send({password: password, token: token.get(k.Attr.Token)});
+            const updatedToken = await db[k.Model.VerificationToken].find({where: {token: token.get(k.Attr.Token)}});
+
+            assert(updatedToken.get('is_verification_complete'));
         });
 
         describe('the user has no password yet', function() {

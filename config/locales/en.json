@@ -31,6 +31,8 @@
         "MetadataMissing": "No metadata was provided in the request",
         "MetadataFormat": "The provided metadata is not parsable JSON",
         "PasswordIncorrect": "That username/password is incorrect",
+        "PasswordResetPeriodExpired": "The link you clicked has expired. Please try resetting your password again within 24 hours.",
+        "PasswordResetAlreadyComplete": "The link you clicked has already been used to reset your password.",
         "RequestParam": "Request param is invalid",
         "ResourceNotFound": "No resource was found for the given conditions",
         "TokenExpired": "Token has expired",
