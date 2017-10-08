@@ -21,14 +21,6 @@ describe('POST /reset_password', function() {
     let server, db, user, url = '/reset_password';
 
     before(function() {
-        return SpecUtil.startMailServer();
-    });
-
-    after(function() {
-        return SpecUtil.stopMailServer();
-    });
-
-    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
