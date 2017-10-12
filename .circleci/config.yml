@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: ruby:2.3.1
+      - image: ruby:2.3-node
         environment:
           - NODE_ENV: circle_ci
       - image: circleci/mysql:5.7
