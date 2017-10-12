@@ -33,7 +33,16 @@ jobs:
           name: Install nvm
           command: .circleci/nvm.sh
             
-      
+      - run:
+          name: Foo
+          command: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+            nvm install 8.5.0
+            npm install -g npm
+            npm -v
+
       - run: echo 'export PATH=${HOME}/.nvm/versions/node/v8.5.0/bin:$PATH' >> $BASH_ENV
 
       - restore_cache:
