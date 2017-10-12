@@ -31,8 +31,10 @@ jobs:
 
       - run:
           name: Install nvm
-          command: .circleci/nvm.sh
-            
+          command: |
+            chmod +x .circleci/nvm.sh
+            .circleci/nvm.sh
+      
       - run: echo 'export PATH=${HOME}/.nvm/versions/node/v8.5.0/bin:$PATH' >> $BASH_ENV
 
       - restore_cache:
