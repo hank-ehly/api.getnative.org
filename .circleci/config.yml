@@ -4,7 +4,7 @@ jobs:
     working_directory: ~/api.getnativelearning.com
 
     docker:
-      - image: circleci/ruby:2.3-node
+      - image: circleci/ruby:2.3
         environment:
           - NODE_ENV: circle_ci
       - image: circleci/mysql:5.7
@@ -32,6 +32,14 @@ jobs:
       - restore_cache:
           keys:
               - api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
+
+      - run:
+          name: Install nvm
+          command: |
+            chmod +x .circleci/nvm.sh
+            .circleci/nvm.sh
+      
+      - run: echo 'export PATH=${HOME}/.nvm/versions/node/v8.5.0/bin:$PATH' >> $BASH_ENV
 
       - run:
           name: Install Node Dependencies
