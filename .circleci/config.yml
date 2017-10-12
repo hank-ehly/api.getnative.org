@@ -31,10 +31,7 @@ jobs:
 
       - run:
           name: Install nvm
-          command: |
-            nvm install 8.5.0
-            #chmod +x .circleci/nvm.sh
-            #.circleci/nvm.sh
+          command: .circleci/nvm.sh
       
       - run: echo 'export PATH=${HOME}/.nvm/versions/node/v8.5.0/bin:$PATH' >> $BASH_ENV
 
