@@ -27,7 +27,7 @@ jobs:
           name: Install System Dependencies
           command: |
               apt-get update -y
-              apt-get install -y build-essential libav-tools
+              apt-get install -y build-essential libav-tools libtool-bin
 
       - run:
           name: Install nvm
