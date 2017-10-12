@@ -1,8 +1,6 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/api.getnativelearning.com
-
     docker:
       - image: ruby:2.3.1
         environment:
@@ -14,6 +12,8 @@ jobs:
           - MYSQL_PASSWORD: getnative
           - MYSQL_ROOT_HOST: "%"
           - MYSQL_DATABASE: getnative_test
+
+    working_directory: ~/api.getnativelearning.com
 
     branches:
       only:
