@@ -8,7 +8,8 @@
         "start": "/usr/bin/env pm2 start ecosystem.config.json --no-daemon -i max --only development",
         "sequelize": "sequelize",
         "mocha": "mocha",
-        "start:staging": "/usr/local/nodejs-binary/bin/pm2 startOrReload ecosystem.config.json -i max --only staging"
+        "start:staging": "/usr/local/nodejs-binary/bin/pm2 startOrReload ecosystem.config.json -i max --only staging",
+        "start:staging": "/usr/local/nodejs-binary/bin/pm2 startOrReload ecosystem.config.json -i max --only production"
     },
     "repository": {
         "type": "git",
