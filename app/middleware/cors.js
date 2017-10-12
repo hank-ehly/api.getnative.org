@@ -25,7 +25,7 @@ router.use((req, res, next) => {
 
     if (config.isDev()) {
         corsHeaders['Access-Control-Allow-Origin'] = '*';
-    } else if (/^(https:\/\/.+\.getnativelearning\.com(?::\d{1,5})?)$/.test(req.headers.origin)) {
+    } else if (/^(https:\/\/(.+\.)*getnativelearning\.com(?::\d{1,5})?)$/.test(req.headers.origin)) {
         corsHeaders['Access-Control-Allow-Origin'] = req.headers.origin;
     }
 
