@@ -83,13 +83,18 @@ module.exports = function(sequelize, DataTypes) {
     });
 
     User.hook('afterCreate', async (user, options) => {
+        const role = await sequelize.models[k.Model.Role].findOne({name: 'user', transaction: options.transaction});
+
+        const userRole = await sequelize.models[k.Model.UserRole].create({
+            user_id: user.get(k.Attr.Id),
+            role_id: role.get(k.Attr.Id)
+        }, {transaction: options.transaction});
+
         const vt = await sequelize.models[k.Model.VerificationToken].create({
             user_id: user.get(k.Attr.Id),
             token: Auth.generateRandomHash(),
             expiration_date: Utility.tomorrow()
-        }, {
-            transaction: options.transaction
-        });
+        }, {transaction: options.transaction});
 
         if (!options.req || !options.req.app || !options.req.__) {
             return;

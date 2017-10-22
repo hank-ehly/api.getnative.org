@@ -8,6 +8,12 @@
 module.exports = {
     up: function(queryInterface, Sequelize) {
         return queryInterface.createTable('user_roles', {
+            id: {
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+                type: Sequelize.INTEGER
+            },
             user_id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
@@ -16,8 +22,7 @@ module.exports = {
                     key: 'id'
                 },
                 onUpdate: 'restrict',
-                onDelete: 'restrict',
-                primaryKey: true
+                onDelete: 'restrict'
             },
             role_id: {
                 type: Sequelize.INTEGER,
@@ -27,8 +32,7 @@ module.exports = {
                     key: 'id'
                 },
                 onUpdate: 'restrict',
-                onDelete: 'restrict',
-                primaryKey: true
+                onDelete: 'restrict'
             },
             created_at: {
                 allowNull: false,
