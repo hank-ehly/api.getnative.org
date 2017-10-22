@@ -162,6 +162,10 @@
     "PrivateKey": "kPrivateKey",
     "PublicKey": "kPublicKey",
     "DKIMPrivateKey": "kDKIMPrivateKey",
+    "UserRole": {
+        "Admin": "admin",
+        "User": "user"
+    },
     "SMTP": {
         "Port": "smtp:port",
         "Host": "smtp:host"

@@ -22,9 +22,9 @@ module.exports = {
                 let role_id;
 
                 if (userEmail === 'test@email.com') {
-                    role_id = _.find(roles, {name: 'user'}).get(k.Attr.Id);
+                    role_id = _.find(roles, {name: k.UserRole.User}).get(k.Attr.Id);
                 } else if (userEmail === 'admin@email.com') {
-                    role_id = _.find(roles, {name: 'admin'}).get(k.Attr.Id);
+                    role_id = _.find(roles, {name: k.UserRole.Admin}).get(k.Attr.Id);
                 } else {
                     role_id = _.sample(roles).get(k.Attr.Id);
                 }

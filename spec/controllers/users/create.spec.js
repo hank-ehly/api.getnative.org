@@ -201,7 +201,7 @@ describe('POST /users', function() {
             assert.equal(user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code), 'ja');
         });
 
-        it('should create a new "UserRole" role record for the new user', async function() {
+        it('should create a new "UserRole" role record with "user" permissions for the new user', async function() {
             await request(server).post('/users').send(credential);
 
             const user = await db[k.Model.User].find({
@@ -210,9 +210,10 @@ describe('POST /users', function() {
                 }
             });
 
-            const userRole = await db[k.Model.UserRole].findOne({where: {user_id: user.get(k.Attr.Id)}});
+            const userRole = await db[k.Model.UserRole].find({where: {user_id: user.get(k.Attr.Id)}});
+            const role = await db[k.Model.Role].find({where: {name: k.UserRole.User}});
 
-            assert(userRole);
+            assert.equal(userRole.get('role_id'), role.get(k.Attr.Id));
         });
 
         it(`should create an Identity record containing the new user ID and an auth type of 'local'`, function() {

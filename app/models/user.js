@@ -83,7 +83,10 @@ module.exports = function(sequelize, DataTypes) {
     });
 
     User.hook('afterCreate', async (user, options) => {
-        const role = await sequelize.models[k.Model.Role].findOne({name: 'user', transaction: options.transaction});
+        const role = await sequelize.models[k.Model.Role].find({
+            where: {name: k.UserRole.User},
+            transaction: options.transaction
+        });
 
         const userRole = await sequelize.models[k.Model.UserRole].create({
             user_id: user.get(k.Attr.Id),

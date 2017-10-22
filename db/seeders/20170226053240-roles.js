@@ -6,16 +6,17 @@
  */
 
 const chance = require('chance').Chance();
+const k = require('../../config/keys.json');
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
         return queryInterface.bulkInsert('roles', [
             {
-                description: chance.paragraph(),
-                name: 'admin'
+                description: 'The role for admin users. Allows login to admin screen.',
+                name: k.UserRole.Admin
             }, {
-                description: chance.paragraph(),
-                name: 'user'
+                description: 'The default role for normal users.',
+                name: k.UserRole.User
             }
         ]);
     },
