@@ -50,7 +50,6 @@ module.exports.upload = async function(filepath, destination) {
 
     const options = {
         destination: destination,
-        resumable: false,
         gzip: true,
         public: true
     };
