@@ -82,6 +82,7 @@ async function updateViews(logPath) {
                 }
             }
             await t.commit();
+            process.exit(0);
             return true;
         } catch (e) {
             await t.rollback();

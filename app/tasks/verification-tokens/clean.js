@@ -54,12 +54,12 @@ async function clean() {
         });
 
         await t.commit();
+        process.exit(0);
+        return true;
     } catch (e) {
         await t.rollback();
         return e;
     }
-
-    return true;
 }
 
 module.exports = clean;

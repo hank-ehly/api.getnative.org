@@ -5,6 +5,8 @@ const moment = require('moment');
 const _ = require('lodash');
 
 async function clean() {
+    const t = await db.sequelize.transaction();
+
     try {
         const yesterday = moment().subtract(1, 'days').toDate();
 
@@ -15,7 +17,8 @@ async function clean() {
                 created_at: {
                     $lt: yesterday
                 }
-            }
+            },
+            transaction: t
         });
 
         const plainStudySessions = _.invokeMap(studySessions, 'get', {plain: true});
@@ -26,7 +29,8 @@ async function clean() {
                 study_session_id: {
                     $in: studySessionIds
                 }
-            }
+            },
+            transaction: t
         });
 
         await db[k.Model.StudySession].destroy({
@@ -35,13 +39,18 @@ async function clean() {
                 created_at: {
                     $lt: yesterday
                 }
-            }
+            },
+            transaction: t
         });
+
+        await t.commit();
+        process.exit(0);
+        return true;
     } catch (e) {
+        await t.rollback();
+        console.log(e);
         return e;
     }
-
-    return true;
 }
 
 module.exports = clean;
