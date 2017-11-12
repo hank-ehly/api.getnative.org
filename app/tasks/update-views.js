@@ -21,10 +21,11 @@ const REQUEST_METHOD = 5;
 const REQUEST_URI = 6;
 
 async function updateViews(logPath) {
-    return readFile(logPath, 'UTF8').then(async function(logStr) {
+    const lp = path.resolve(__dirname, '../../spec/fixtures/access_log');
+    return readFile(lp, 'UTF8').then(async function(logStr) {
         // console.log(`Working with file at ${logPath}`);
 
-        let lines = logStr.split('\n');
+        let lines = _.trim(logStr).split('\n');
 
         lines = _.map(lines, ln => {
             let splitLn = ln.split(' ');
