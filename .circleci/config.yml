@@ -32,11 +32,10 @@ jobs:
       - run:
           name: Install nvm
           command: |
-            export NVM_DIR="$HOME/.nvm"
             echo "STEP 1"
             curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.6/install.sh | bash
             echo "STEP 2"
-            source ${NVM_DIR}/nvm.sh
+            . /root/.nvm/nvm.sh
             echo "STEP 3"
             nvm install 8.9.1 \
             echo "STEP 4"
