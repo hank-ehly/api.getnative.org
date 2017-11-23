@@ -40,7 +40,9 @@ jobs:
             echo 'nvm install v8.9.1' >> $BASH_ENV
             echo 'nvm alias default v8.9.1' >> $BASH_ENV
       
-      - run: echo 'export PATH=${HOME}/.nvm/versions/node/v8.9.1/bin:$PATH' >> $BASH_ENV
+      - run:
+          name: verify node version
+          command: node --version
 
       - restore_cache:
           keys:
