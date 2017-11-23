@@ -9,7 +9,7 @@
     },
     "deleteAccountReason": {
         "subject": "Deleted Account",
-        "description": "{email} has left getnative."
+        "description": "A user has left getnative."
     },
     "emailUpdateSuccess": {
         "subject": "Email Updated Successfully",

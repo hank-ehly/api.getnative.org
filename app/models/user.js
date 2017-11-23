@@ -146,7 +146,6 @@ module.exports = function(sequelize, DataTypes) {
             const variables = {
                 __: options.req.__,
                 __mf: options.req.__mf,
-                email: user.get(k.Attr.Email),
                 contact: config.get(k.EmailAddress.Contact),
                 reason: options.req.body.reason,
                 facebookPageURL: config.get(k.SNS.FacebookPageURL),
@@ -164,12 +163,16 @@ module.exports = function(sequelize, DataTypes) {
             });
         });
 
-        return mailer.sendMail({
-            subject: options.req.__('deleteAccountReason.subject'),
-            from: config.get(k.EmailAddress.NoReply),
-            to: config.get(k.EmailAddress.Contact),
-            html: html
-        }, null);
+        try {
+            mailer.sendMail({
+                subject: options.req.__('deleteAccountReason.subject'),
+                from: config.get(k.EmailAddress.NoReply),
+                to: config.get(k.EmailAddress.Contact),
+                html: html
+            }, null);
+        } catch (error) {
+            // Account deletion succeeded, but failed to send email
+        }
     });
 
     User.existsForEmail = function(email) {
