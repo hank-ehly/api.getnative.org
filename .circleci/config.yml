@@ -35,12 +35,12 @@ jobs:
             echo "STEP 1"
             curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.6/install.sh | bash
             echo "STEP 2"
-            ls -la /root/.nvm/nvm.sh
-            source /root/.nvm/nvm.sh
+#            ls -la /root/.nvm/nvm.sh
+#            source /root/.nvm/nvm.sh
             echo "STEP 3"
-            nvm install 8.9.1 \
+            nvm install 8.9.1
             echo "STEP 4"
-            npm install -g npm \
+            npm install -g npm
             echo "STEP 5"
             npm -v
       
