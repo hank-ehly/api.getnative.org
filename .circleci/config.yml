@@ -23,7 +23,7 @@ jobs:
     steps:
       - checkout
 
-      - run: sudo apt-get update -y
+      - run: apt-get update -y
 
       - restore_cache:
           keys:
