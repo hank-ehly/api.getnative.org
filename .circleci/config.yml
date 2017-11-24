@@ -34,11 +34,11 @@ jobs:
           paths:
             - "node_modules"
 
-      - run: .circleci/generate-jwt-keypair.sh
-
       - run:
-          name: Migrate Database
-          command: cp config/database.json.template config/database.json && npm run sequelize db:migrate
+          name: Prepare app for testing
+          command: |
+            .circleci/generate-jwt-keypair.sh
+            cp config/database.json.template config/database.json && npm run sequelize db:migrate
 
       - run: npm test
 
