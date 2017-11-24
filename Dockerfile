@@ -1,15 +1,7 @@
-FROM node:latest
-EXPOSE 3000
-WORKDIR /var/www/api.getnativelearning.com
+FROM ruby:2.3
 RUN apt-get update && apt-get install -y build-essential libav-tools
-RUN npm install -g pm2
-CMD \
-    .circleci/generate-jwt-keypair.sh && \
-    cp -fp config/database.json.template config/database.json && \
-    npm install && \
-    NODE_ENV=test npm run sequelize db:migrate:undo:all && \
-    NODE_ENV=test npm run sequelize db:migrate && \
-    NODE_ENV=development npm run sequelize db:migrate:undo:all && \
-    NODE_ENV=development npm run sequelize db:migrate && \
-    NODE_ENV=development npm run sequelize db:seed:all && \
-    NODE_ENV=development npm start
+ENV NVM_DIR $HOME/.nvm
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.6/install.sh | bash \
+        && . ${NVM_DIR}/nvm.sh \
+        && nvm install 8.9.1 \
+        && npm install -g npm pm2
