@@ -23,8 +23,6 @@ jobs:
     steps:
       - checkout
 
-      - run: apt-get update -y
-
       - restore_cache:
           keys:
               - api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
