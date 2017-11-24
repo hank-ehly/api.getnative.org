@@ -21,17 +21,9 @@ const _ = require('lodash');
 describe('DELETE /users', function() {
     let authorization, server, user, db, users;
 
-    before(function() {
-        return SpecUtil.startMailServer();
-    });
-
-    after(function() {
-        return SpecUtil.stopMailServer();
-    });
-
-    before(function() {
+    before(async function() {
         this.timeout(SpecUtil.defaultTimeout);
-        return SpecUtil.seedAll();
+        await SpecUtil.seedAll();
     });
 
     beforeEach(async function() {
