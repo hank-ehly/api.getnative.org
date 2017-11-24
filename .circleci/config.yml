@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: hankehly/api.getnativelearning.com:0.0.1
+      - image: hankehly/api.getnativelearning.com:0.0.2
         environment:
           - NODE_ENV: circle_ci
       - image: circleci/mysql:5.7
