@@ -15,7 +15,8 @@ const _ = require('lodash');
 let client;
 
 if (![k.Env.Test, k.Env.CircleCI].includes(config.get(k.ENVIRONMENT))) {
-    client = require('@google-cloud/speech')({
+    const speech = require('@google-cloud/speech');
+    client = new speech.SpeechClient({
         projectId: config.get(k.GoogleCloud.ProjectId),
         keyFilename: config.get(k.GoogleCloud.KeyFilename)
     });
