@@ -46,7 +46,8 @@
         "VideoUrl": "video_url",
         "WordCount": "word_count",
         "WordsPerMinute": "words_per_minute",
-        "WritingQuestionId": "writing_question_id"
+        "WritingQuestionId": "writing_question_id",
+        "YouTubeVideoId": "youtube_video_id"
     },
     "Client": {
         "Host": "kClientHost",
@@ -157,7 +158,8 @@
     "GoogleCloud": {
         "ProjectId": "kGoogleCloudProjectId",
         "KeyFilename": "kGoogleCloudKeyFilename",
-        "StorageBucketName": "kGoogleCloudStorageBucketName"
+        "StorageBucketName": "kGoogleCloudStorageBucketName",
+        "OAuth2ClientSecret": "kGoogleCloudOAuth2ClientSecret"
     },
     "PrivateKey": "kPrivateKey",
     "PublicKey": "kPublicKey",

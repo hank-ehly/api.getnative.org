@@ -45,6 +45,13 @@ function Config() {
     nconf.set(k.PrivateKey, jwtKeyPair.privateKey);
     nconf.set(k.PublicKey, jwtKeyPair.publicKey);
 
+    try {
+        const googleClientSecret = require('./secrets/client_secret.json');
+        nconf.set(k.GoogleCloud.OAuth2ClientSecret, googleClientSecret);
+    } catch (e) {
+        logger.info('Error occurred when loading google client secret.');
+    }
+
     nconf.set(k.VideoLanguageCodes, ['en', 'ja']);
     nconf.set(k.TempDir, fs.mkdtempSync('/tmp/com.getnativelearning.'));
 }
