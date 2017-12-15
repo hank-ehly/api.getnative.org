@@ -14,12 +14,32 @@ const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, 
 const request = require('supertest');
 const assert = require('assert');
 const _ = require('lodash');
+const youtube = require('../../../app/services/youtube');
 
 describe('GET /videos', function() {
     let server, authorization, user, db;
 
     before(function() {
+        return SpecUtil.startMailServer();
+    });
+
+    after(function() {
+        return SpecUtil.stopMailServer();
+    });
+
+    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
+
+        youtube.videosListMultipleIds = function(idx) {
+            return Promise.resolve({
+                items: _.times(idx.length, _.constant({
+                    id: 'ri6Pip_w6HM',
+                    contentDetails: {duration: 'PT1M3S'},
+                    statistics: {viewCount: '13438'}
+                }))
+            });
+        };
+
         return SpecUtil.seedAll();
     });
 
@@ -102,10 +122,9 @@ describe('GET /videos', function() {
     });
 
     describe('success', function() {
-        it('should respond with an X-GN-Auth-Token header if authorized', function() {
-            return request(server).get('/videos').set('authorization', authorization).then(function(response) {
-                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
-            });
+        it('should respond with an X-GN-Auth-Token header if authorized', async function() {
+            const response = await request(server).get('/videos').set('authorization', authorization);
+            assert(_.gt(response.header[k.Header.AuthToken].length, 0));
         });
 
         it('should not respond with an X-GN-Auth-Token header if not authorized', function() {
@@ -306,20 +325,14 @@ describe('GET /videos', function() {
         });
 
         // subcategory.id is not needed for display; rather for data validation
-        it(`should contain a non-null number for 'subcategory.id' on each record`, function() {
-            return request(server).get('/videos').set('authorization', authorization).then(function(response) {
-                _.forEach(response.body.records, function(record) {
-                    assert(_.isNumber(record.subcategory.id));
-                });
-            });
+        it(`should contain a non-null number for 'subcategory.id' on each record`, async function() {
+            const response = await request(server).get('/videos').set('authorization', authorization);
+            assert(_.every(response.body.records, record => _.isNumber(record.subcategory.id)));
         });
 
-        it(`should contain a positive number for 'loop_count' on each record`, function() {
-            return request(server).get('/videos').set('authorization', authorization).then(function(response) {
-                _.forEach(response.body.records, function(record) {
-                    assert(_.isNumber(record.loop_count), 'loop_count is not a number');
-                });
-            });
+        it(`should contain a positive number for 'loop_count' on each record`, async function() {
+            const response = await request(server).get('/videos').set('authorization', authorization);
+            assert(_.every(response.body.records, record => _.isNumber(record.loop_count)));
         });
 
         it(`should contain a 'youtube_video_id' string on each record`, async function() {

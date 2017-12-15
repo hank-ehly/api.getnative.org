@@ -10,22 +10,15 @@ const _ = require('lodash');
 
 module.exports = function(sequelize, DataTypes) {
     const Video = sequelize.define('Video', {
-        length: DataTypes.INTEGER,
-        picture_url: {
+        youtube_video_id: {
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: ''
         },
-        loop_count: DataTypes.INTEGER,
         is_public: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: 0
-        },
-        video_url: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: ''
         }
     }, {
         tableName: 'videos',
@@ -39,7 +32,6 @@ module.exports = function(sequelize, DataTypes) {
             models[k.Model.Video].hasMany(models[k.Model.Like], {as: 'likes'});
             models[k.Model.Video].hasMany(models[k.Model.StudySession], {as: 'study_sessions'});
             models[k.Model.Video].hasMany(models[k.Model.Transcript], {as: 'transcripts'});
-            models[k.Model.Video].hasMany(models[k.Model.VideoLocalized], {as: 'videos_localized'});
         },
         scopes: {
             count: function(count) {
@@ -69,7 +61,7 @@ module.exports = function(sequelize, DataTypes) {
             newestFirst: {
                 order: [[k.Attr.Id, 'DESC']]
             },
-            orderMostViewed: {
+            orderMostViewed: { // todo
                 order: [[k.Attr.LoopCount, 'DESC']]
             },
             relatedToVideo: function(videoId) {

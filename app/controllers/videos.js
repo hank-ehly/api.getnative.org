@@ -109,7 +109,7 @@ module.exports.index = async (req, res, next) => {
         let ytVideo = _.find(ytVideos, {id: video[k.Attr.YouTubeVideoId]});
         let ISO8601Duration = _.get(ytVideo, 'contentDetails.duration');
 
-        video[k.Attr.LoopCount] = _.get(ytVideo, 'statistics.viewCount');
+        video[k.Attr.LoopCount] = parseInt(_.get(ytVideo, 'statistics.viewCount'));
         video[k.Attr.Length] = moment.duration(ISO8601Duration).asSeconds();
 
         if (isAuthenticated) {

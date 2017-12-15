@@ -64,6 +64,10 @@ Config.prototype.isDev = function() {
     return [k.Env.Development, k.Env.Test, k.Env.CircleCI].includes(this.get(k.ENVIRONMENT));
 };
 
+Config.prototype.isTest = function() {
+    return [k.Env.Test, k.Env.CircleCI].includes(this.get(k.ENVIRONMENT));
+};
+
 const config = new Config();
 
 module.exports.config = config;
