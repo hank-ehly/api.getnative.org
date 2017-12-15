@@ -15,11 +15,6 @@ const chance      = require('chance').Chance();
 const moment      = require('moment');
 const _           = require('lodash');
 
-const videoUrls = [
-    'http://techslides.com/demos/sample-videos/small.mp4',
-    'http://www.sample-videos.com/video/mp4/480/big_buck_bunny_480p_2mb.mp4'
-];
-
 module.exports = {
     up: function(queryInterface, Sequelize) {
         const promises = [
@@ -48,17 +43,8 @@ module.exports = {
                 ]);
 
                 videos.push({
-                    length: chance.integer({
-                        min: 30,
-                        max: 150
-                    }),
                     is_public: true,
-                    picture_url: 'https://dummyimage.com/450x300.png/5fa2dd/ffffff',
-                    loop_count: chance.integer({
-                        min: 10,
-                        max: 20000
-                    }),
-                    video_url: _.sample(videoUrls),
+                    youtube_video_id: 'ri6Pip_w6HM',
                     speaker_id: chance.integer({
                         min: minSpeakerId,
                         max: maxSpeakerId

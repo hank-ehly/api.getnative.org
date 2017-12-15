@@ -27,15 +27,18 @@ const CollocationOccurrence = db[k.Model.CollocationOccurrence];
 const UsageExample = db[k.Model.UsageExample];
 const Video = db[k.Model.Video];
 const Like = db[k.Model.Like];
+const YouTube = require('../services/youtube');
 
+const moment = require('moment');
 const _ = require('lodash');
 
 module.exports.index = async (req, res, next) => {
     let videos, conditions = {}, isAuthenticated = req.isAuthenticated();
 
-    _.set(conditions, k.Attr.IsPublic, true);
     if (req.query.include_private && isAuthenticated && await req.user.isAdmin()) {
         _.unset(conditions, k.Attr.IsPublic);
+    } else {
+        _.set(conditions, k.Attr.IsPublic, true);
     }
 
     const fallbackCode = isAuthenticated ? req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code) : req.locale;
@@ -50,21 +53,16 @@ module.exports.index = async (req, res, next) => {
     }
 
     const createdAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
-    const attributes = [createdAt, k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length];
-
+    const attributes = [createdAt, k.Attr.Id, k.Attr.YouTubeVideoId];
     if (isAuthenticated) {
         attributes.push(Video.getCuedAttributeForUserId(req.user[k.Attr.Id]));
     }
 
-    const scopes = [
-        'newestFirst',
-        {method: ['count', req.query.count]}
-    ];
-
+    const videoQueryScopes = ['newestFirst', {method: ['count', req.query.count]}];
     if (isAuthenticated) {
-        scopes.push({method: ['cuedAndMaxId', req.query.cued_only, req.user[k.Attr.Id], req.query.max_id]})
+        videoQueryScopes.push({method: ['cuedAndMaxId', req.query.cued_only, req.user[k.Attr.Id], req.query.max_id]})
     } else {
-        scopes.push({method: ['cuedAndMaxId', null, null, req.query.max_id]});
+        videoQueryScopes.push({method: ['cuedAndMaxId', null, null, req.query.max_id]});
     }
 
     const include = [
@@ -92,20 +90,28 @@ module.exports.index = async (req, res, next) => {
     ];
 
     try {
-        videos = await Video.scope(scopes).findAll({attributes: attributes, where: conditions, include: include});
+        videos = await Video.scope(videoQueryScopes).findAll({attributes: attributes, where: conditions, include: include});
     } catch (e) {
-        return next(e);
+        return next(new GetNativeError(e));
     }
 
     if (_.size(videos) === 0) {
         return res.send({records: [], count: 0});
     }
 
-    videos = _.invokeMap(videos, 'get', {
-        plain: true
-    });
+    videos = _.invokeMap(videos, 'get', {plain: true});
 
-    videos = ResponseWrapper.wrap(videos.map(video => {
+    const videoIdx = _.map(videos, k.Attr.YouTubeVideoId);
+    const ytRes = await YouTube.videosListMultipleIds(videoIdx, ['contentDetails', 'statistics']);
+    const ytVideos = ytRes.items;
+
+    const videoList = _.map(videos, video => {
+        let ytVideo = _.find(ytVideos, {id: video[k.Attr.YouTubeVideoId]});
+        let ISO8601Duration = _.get(ytVideo, 'contentDetails.duration');
+
+        video[k.Attr.LoopCount] = _.get(ytVideo, 'statistics.viewCount');
+        video[k.Attr.Length] = moment.duration(ISO8601Duration).asSeconds();
+
         if (isAuthenticated) {
             video.cued = video.cued === 1;
         }
@@ -117,8 +123,9 @@ module.exports.index = async (req, res, next) => {
         delete video.subcategory.subcategories_localized;
 
         return video;
-    }));
+    });
 
+    videos = ResponseWrapper.wrap(videoList);
     return res.send(videos)
 };
 

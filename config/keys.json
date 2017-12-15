@@ -159,7 +159,7 @@
         "ProjectId": "kGoogleCloudProjectId",
         "KeyFilename": "kGoogleCloudKeyFilename",
         "StorageBucketName": "kGoogleCloudStorageBucketName",
-        "OAuth2ClientSecret": "kGoogleCloudOAuth2ClientSecret"
+        "APIKey": "kGoogleCloudAPIKey"
     },
     "PrivateKey": "kPrivateKey",
     "PublicKey": "kPublicKey",

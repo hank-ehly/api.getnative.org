@@ -46,10 +46,10 @@ function Config() {
     nconf.set(k.PublicKey, jwtKeyPair.publicKey);
 
     try {
-        const googleClientSecret = require('./secrets/client_secret.json');
-        nconf.set(k.GoogleCloud.OAuth2ClientSecret, googleClientSecret);
+        const googleAPIKey = require('./secrets/google_api_keys.json')[nconf.get(k.ENVIRONMENT)];
+        nconf.set(k.GoogleCloud.APIKey, googleAPIKey);
     } catch (e) {
-        logger.info('Error occurred when loading google client secret.');
+        logger.info('Error occurred when loading google api key.');
     }
 
     nconf.set(k.VideoLanguageCodes, ['en', 'ja']);

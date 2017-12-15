@@ -322,25 +322,14 @@ describe('GET /videos', function() {
             });
         });
 
-        it(`should contain a valid URI string for 'picture_url' on each record`, function() {
-            return request(server).get('/videos').set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isValidURL(_.first(response.body.records).picture_url));
-            });
+        it(`should contain a 'youtube_video_id' string on each record`, async function() {
+            const response = await request(server).get('/videos').set('authorization', authorization);
+            assert(_.every(response.body.records, k.Attr.YouTubeVideoId));
         });
 
-        it(`should contain a valid URI string for 'video_url' on each record`, function() {
-            return request(server).get('/videos').set('authorization', authorization).then(function(response) {
-                assert(SpecUtil.isValidURL(_.first(response.body.records).video_url));
-            });
-        });
-
-        it(`should contain a positive number for 'length' on each record`, function() {
-            return request(server).get('/videos').set('authorization', authorization).then(function(response) {
-                _.forEach(response.body.records, function(record) {
-                    assert(_.isNumber(record.length));
-                    assert(_.gt(record.length, 0));
-                });
-            });
+        it(`should contain a positive number for 'length' on each record`, async function() {
+            const response = await request(server).get('/videos').set('authorization', authorization);
+            assert(_.every(response.body.records, record => _.isNumber(record.length) && _.gt(record.length, 0)));
         });
 
         it('should respond with an empty records array if no matching records are found', function() {
