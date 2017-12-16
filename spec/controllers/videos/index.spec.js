@@ -20,17 +20,9 @@ describe('GET /videos', function() {
     let server, authorization, user, db;
 
     before(function() {
-        return SpecUtil.startMailServer();
-    });
-
-    after(function() {
-        return SpecUtil.stopMailServer();
-    });
-
-    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
 
-        youtube.videosListMultipleIds = function(idx) {
+        youtube.videosList = function(idx) {
             return Promise.resolve({
                 items: _.times(idx.length, _.constant({
                     id: 'ri6Pip_w6HM',
