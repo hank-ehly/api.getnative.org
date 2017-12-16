@@ -97,7 +97,7 @@ module.exports.index = async (req, res, next) => {
     videos = _.invokeMap(videos, 'get', {plain: true});
 
     const videoIdx = _.map(videos, k.Attr.YouTubeVideoId);
-    const ytRes = await YouTube.videosListMultipleIds(videoIdx, ['contentDetails', 'statistics']);
+    const ytRes = await YouTube.videosList(videoIdx, ['contentDetails', 'statistics']);
     const ytVideos = ytRes.items;
 
     const videoList = _.map(videos, video => {
@@ -348,32 +348,36 @@ module.exports.dequeue = async (req, res, next) => {
 };
 
 module.exports.create = async (req, res, next) => {
-    let video, t = await db.sequelize.transaction();
+    const youtubeVideoId = req.body[k.Attr.YouTubeVideoId];
 
     try {
-        video = await Video.create({
-            language_id: req.body[k.Attr.LanguageId],
-            speaker_id: req.body[k.Attr.SpeakerId],
-            subcategory_id: req.body[k.Attr.SubcategoryId],
-            description: req.body[k.Attr.Description],
-            is_public: req.body[k.Attr.IsPublic] || false
-        }, {transaction: t});
+        await YouTube.videosList([youtubeVideoId]);
+    } catch (e) {
+        return res.status(404).send(new GetNativeError(k.Error.YouTubeVideoDoesNotExist));
+    }
 
-        const videosLocalized = [];
+
+    let video, t = await db.sequelize.transaction();
+
+    const params = {
+        youtube_video_id: youtubeVideoId,
+        language_id: req.body[k.Attr.LanguageId],
+        speaker_id: req.body[k.Attr.SpeakerId],
+        subcategory_id: req.body[k.Attr.SubcategoryId],
+        is_public: req.body[k.Attr.IsPublic] || false
+    };
+
+    try {
+        video = await Video.create(params, {transaction: t});
+
         const transcripts = [];
         for (let localization of req.body['localizations']) {
-            videosLocalized.push({
-                video_id: video[k.Attr.Id],
-                language_id: localization[k.Attr.LanguageId],
-                description: localization[k.Attr.Description]
-            });
             transcripts.push({
                 video_id: video[k.Attr.Id],
                 language_id: localization[k.Attr.LanguageId],
                 text: localization['transcript']
             });
         }
-        await db[k.Model.VideoLocalized].bulkCreate(videosLocalized, {transaction: t});
         const persistedTranscripts = await Transcript.bulkCreate(transcripts, {transaction: t});
 
         const unsavedCollocationOccurrences = [];
@@ -387,6 +391,7 @@ module.exports.create = async (req, res, next) => {
             }
         }
         await CollocationOccurrence.bulkCreate(unsavedCollocationOccurrences, {transaction: t});
+
         await t.commit();
     } catch (e) {
         await t.rollback();
@@ -397,11 +402,7 @@ module.exports.create = async (req, res, next) => {
         return next(e);
     }
 
-    const responseBody = {
-        id: video.get(k.Attr.Id)
-    };
-
-    return res.status(201).send(responseBody);
+    return res.status(201).send({id: video.get(k.Attr.Id)});
 };
 
 module.exports.update = async (req, res, next) => {

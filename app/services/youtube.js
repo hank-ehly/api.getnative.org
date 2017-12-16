@@ -19,7 +19,7 @@ const service = google.youtube('v3');
  * @param {String} hl
  * @return {Promise} A JSON object.
  */
-module.exports.videosListMultipleIds = (idx, part = ['snippet'], hl = 'en') => {
+module.exports.videosList = (idx, part = ['snippet'], hl = 'en') => {
     return new Promise(function(resolve, reject) {
         service.videos.list({
             id: idx.join(','),

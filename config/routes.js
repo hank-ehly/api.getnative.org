@@ -72,13 +72,10 @@ router.get(    '/videos',                                                       
 router.post(   '/videos',                                                                            validate(pv.videos.create),                       passport.authenticate('custom'), isAuthenticated, isAdmin, ctrl.videos.create);
 router.get(    '/videos/:id',                                                                        validate(pv.videos.show),                         passport.authenticate('custom'),                           ctrl.videos.show);
 router.patch(  '/videos/:id',                                                                        validate(pv.videos.update),                       passport.authenticate('custom'), isAuthenticated,          ctrl.videos.update);
-router.post(   '/videos/:id/upload',      parseForm,                                                 validate(pv.videos.upload),                       passport.authenticate('custom'), isAuthenticated,          ctrl.videos.upload);
-router.get(    '/videos/:id/videos_localized',                                                       validate(pv.videos.videosLocalized),              passport.authenticate('custom'), isAuthenticated, isAdmin, ctrl.videos.videosLocalized);
 router.get(    '/videos/:id/collocation_occurrences',                                                validate(pv.videos.collocationOccurrences.index), passport.authenticate('custom'), isAuthenticated, isAdmin, ctrl.videos.collocationOccurrences.index);
 router.post(   '/videos/:id/dequeue',                                                                validate(pv.videos.dequeue),                      passport.authenticate('custom'), isAuthenticated,          ctrl.videos.dequeue);
 router.post(   '/videos/:id/like',                                                                   validate(pv.videos.like),                         passport.authenticate('custom'), isAuthenticated,          ctrl.videos.like);
 router.post(   '/videos/:id/queue',                                                                  validate(pv.videos.queue),                        passport.authenticate('custom'), isAuthenticated,          ctrl.videos.queue);
 router.post(   '/videos/:id/unlike',                                                                 validate(pv.videos.unlike),                       passport.authenticate('custom'), isAuthenticated,          ctrl.videos.unlike);
-router.post(   '/videos/transcribe',      parseForm,                                                 validate(pv.videos.transcribe),                   passport.authenticate('custom'), isAuthenticated, isAdmin, ctrl.videos.transcribe);
 
 module.exports = router;

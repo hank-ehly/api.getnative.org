@@ -438,13 +438,13 @@ const schema = {
                 authorization: Joi.string().required()
             },
             body: {
+                youtube_video_id: Joi.string().required(),
                 subcategory_id: Joi.number().integer().min(1).required(),
                 speaker_id: Joi.number().integer().min(1).required(),
                 language_id: Joi.number().integer().min(1).required(),
                 is_public: Joi.boolean(),
                 localizations: Joi.array().length(validLangCodes.length).items(Joi.object().keys({
                     language_id: Joi.number().integer().min(1).required(),
-                    description: Joi.string().min(1).required(),
                     transcript: Joi.string().min(1).required()
                 })).required()
             }
@@ -466,17 +466,6 @@ const schema = {
                     description: Joi.string().min(1),
                     transcript: Joi.string().min(1)
                 }))
-            }
-        },
-        upload: {
-            headers: {
-                authorization: Joi.string().required()
-            },
-            params: {
-                id: Joi.number().integer().min(1).required()
-            },
-            files: {
-                video: Joi.object().required()
             }
         },
         index: {
@@ -532,26 +521,7 @@ const schema = {
                 id: Joi.number().integer().min(1).required()
             }
         },
-        transcribe: {
-            headers: {
-                authorization: Joi.string().required()
-            },
-            query: {
-                language_code: Joi.string().lowercase().valid(GoogleCloudSpeechLanguageCodes)
-            },
-            files: {
-                video: Joi.object().required()
-            }
-        },
         unlike: {
-            headers: {
-                authorization: Joi.string().required()
-            },
-            params: {
-                id: Joi.number().integer().min(1).required()
-            }
-        },
-        videosLocalized: {
             headers: {
                 authorization: Joi.string().required()
             },

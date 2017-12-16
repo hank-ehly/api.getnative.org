@@ -9,6 +9,7 @@ const SpecUtil = require('../../spec-util');
 const config = require('../../../config/application').config;
 const k = require('../../../config/keys.json');
 const Utility = require('../../../app/services')['Utility'];
+const youtube = require('../../../app/services/youtube');
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
@@ -20,8 +21,6 @@ const fs = require('fs');
 const _ = require('lodash');
 
 describe('POST /videos', function() {
-    const eDescription = chance.paragraph({sentences: 2});
-    const jDescription = 'ローラという名は米国のテレビドラマ『大草原の小さな家』の登場人物「ローラ」に由来する。幼少の頃に両親が離婚。実父とともに実父の再婚相手となった中国人の継母と生活して育った。';
     const eTranText = `
         I actually have {a number of} different hobbies. Uhm, {first off} there's music. 
         I grew up in a pretty musical family and my grandpa is actually a famous conductor, 
@@ -45,18 +44,17 @@ describe('POST /videos', function() {
         const aSubcategory = await db[k.Model.Subcategory].find();
         const aSpeaker = await db[k.Model.Speaker].find();
         return {
+            youtube_video_id: 'ri6Pip_w6HM',
             subcategory_id: aSubcategory.get(k.Attr.Id),
             speaker_id: aSpeaker.get(k.Attr.Id),
             language_id: eLang.get(k.Attr.Id),
             localizations: [
                 {
                     language_id: eLang.get(k.Attr.Id),
-                    description: eDescription,
                     transcript: eTranText
                 },
                 {
                     language_id: jLang.get(k.Attr.Id),
-                    description: jDescription,
                     transcript: jTranText
                 }
             ]
@@ -71,12 +69,22 @@ describe('POST /videos', function() {
         await db[k.Model.StudySession].destroy({where: {}});
         await db[k.Model.Like].destroy({where: {}, force: true});
         await db[k.Model.CuedVideo].destroy({where: {}});
-        await db[k.Model.VideoLocalized].destroy({where: {}, force: true});
         await db[k.Model.Video].destroy({where: {}, force: true});
     }
 
     before(async function() {
         this.timeout(SpecUtil.defaultTimeout);
+
+        youtube.videosList = function(idx) {
+            return Promise.resolve({
+                items: _.times(idx.length, _.constant({
+                    id: 'ri6Pip_w6HM',
+                    contentDetails: {duration: 'PT1M3S'},
+                    statistics: {viewCount: '13438'}
+                }))
+            });
+        };
+
         await SpecUtil.seedAll();
     });
 
@@ -174,6 +182,18 @@ describe('POST /videos', function() {
             });
         });
 
+        describe('youtube_video_id', function() {
+            it('should return 400 Bad Request if youtube_video_id is not present', function() {
+                delete body.youtube_video_id;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+
+            it('should return 400 Bad Request if youtube_video_id is not a string', function() {
+                body.youtube_video_id = 123;
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+        });
+
         describe('localizations', function() {
             it('should return 400 Bad Request if localizations is not present', function() {
                 delete body.localizations;
@@ -210,23 +230,6 @@ describe('POST /videos', function() {
             it('should return 404 Not Found if the localizations.language_id does not correspond to an existing Language record', function() {
                 _.first(body.localizations).language_id = Math.pow(10, 5);
                 return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(404);
-            });
-        });
-
-        describe('localizations.description', function() {
-            it('should return 400 Bad Request if localizations.description is not present', function() {
-                delete _.first(body.localizations).description;
-                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
-            });
-
-            it('should return 400 Bad Request if localizations.description is not a string', function() {
-                _.first(body.localizations).description = _.stubObject();
-                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
-            });
-
-            it('should return 400 Bad Request if localizations.description is 0 length', function() {
-                _.first(body.localizations).description = _.stubString();
-                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
         });
 
@@ -313,32 +316,6 @@ describe('POST /videos', function() {
                 });
 
                 assert.equal(video.get('transcripts').length, body.localizations.length);
-            });
-
-            it('should create new VideoLocalized records with the correct descriptions', async function() {
-                this.timeout(SpecUtil.defaultTimeout);
-                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
-
-                let video = await db[k.Model.Video].find({
-                    include: {
-                        model: db[k.Model.VideoLocalized],
-                        attributes: [k.Attr.Description],
-                        as: 'videos_localized',
-                        include: {
-                            model: db[k.Model.Language],
-                            attributes: [k.Attr.Code],
-                            as: 'language'
-                        }
-                    }
-                });
-
-                video = video.get({plain: true});
-
-                const english = _.find(video.videos_localized, {language: {code: 'en'}})[k.Attr.Description];
-                const japanese = _.find(video.videos_localized, {language: {code: 'ja'}})[k.Attr.Description];
-
-                assert.equal(english, body.localizations[0].description);
-                assert.equal(japanese, body.localizations[1].description);
             });
 
             it('should create the same number of new collocation occurrence records as specified in the combined transcript text', async function() {
