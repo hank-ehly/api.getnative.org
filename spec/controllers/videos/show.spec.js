@@ -20,14 +20,6 @@ describe('GET /videos/:id', function() {
     let authorization, videoId, server, user, db;
 
     before(function() {
-        return SpecUtil.startMailServer();
-    });
-
-    after(function() {
-        return SpecUtil.stopMailServer();
-    });
-
-    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
 
         youtube.videosList = function(idx) {

@@ -89,6 +89,82 @@ module.exports = function(sequelize, DataTypes) {
             },
             orderByRandom: {
                 order: [sequelize.fn('RAND')]
+            },
+            includeSpeaker: function(languageId) {
+                return {
+                    include: [
+                        {
+                            model: sequelize.models[k.Model.Speaker],
+                            attributes: [k.Attr.Id, k.Attr.PictureUrl],
+                            as: 'speaker',
+                            include: {
+                                model: sequelize.models[k.Model.SpeakerLocalized],
+                                as: 'speakers_localized',
+                                attributes: [k.Attr.Description, k.Attr.Name],
+                                where: {
+                                    language_id: languageId
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            includeSubcategory: function(languageId) {
+                return {
+                    include: [
+                        {
+                            model: sequelize.models[k.Model.Subcategory],
+                            attributes: [k.Attr.Id],
+                            as: 'subcategory',
+                            include: {
+                                model: sequelize.models[k.Model.SubcategoryLocalized],
+                                as: 'subcategories_localized',
+                                attributes: [k.Attr.Name],
+                                where: {
+                                    language_id: languageId
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            includeLanguage: function() {
+                return {
+                    include: [
+                        {
+                            model: sequelize.models[k.Model.Language],
+                            attributes: [k.Attr.Id, k.Attr.Name, k.Attr.Code],
+                            as: 'language'
+                        }
+                    ]
+                }
+            },
+            includeTranscripts: function() {
+                return {
+                    include: [
+                        {
+                            model: sequelize.models[k.Model.Transcript],
+                            attributes: [k.Attr.Id, k.Attr.Text],
+                            as: 'transcripts',
+                            include: [
+                                {
+                                    model: sequelize.models[k.Model.CollocationOccurrence],
+                                    attributes: [k.Attr.Id, k.Attr.Text, k.Attr.IPASpelling],
+                                    as: 'collocation_occurrences',
+                                    include: {
+                                        model: sequelize.models[k.Model.UsageExample],
+                                        attributes: [k.Attr.Text],
+                                        as: 'usage_examples'
+                                    }
+                                }, {
+                                    model: sequelize.models[k.Model.Language],
+                                    attributes: [k.Attr.Id, k.Attr.Name, k.Attr.Code],
+                                    as: 'language'
+                                }
+                            ]
+                        }
+                    ]
+                }
             }
         }
     });
