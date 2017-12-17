@@ -9,6 +9,7 @@ const SpecUtil = require('../../spec-util');
 const k = require('../../../config/keys.json');
 const Utility = require('../../../app/services/utility');
 const config = require('../../../config/application').config;
+const db = require('../../../app/models');
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
@@ -77,9 +78,13 @@ describe('POST /users/profile_image', function() {
         it('should save a new image asset with the appropriate hash title to Google Cloud Storage', async function() {
             this.timeout(SpecUtil.defaultTimeout);
             await request(server).post('/users/profile_image').set(k.Header.Authorization, authorization).attach('image', imagePath);
+            await user.reload();
+
+            const startIndex = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/users/`.length;
+            let filename = user.get(k.Attr.PictureUrl).substring(startIndex);
 
             const expectedHash = Utility.getHashForId(user.get(k.Attr.Id));
-            const expectedImagePath = path.resolve(config.get(k.TempDir), 'users', expectedHash + '.jpg');
+            const expectedImagePath = path.resolve(config.get(k.TempDir), 'users', filename);
 
             assert(fs.existsSync(expectedImagePath));
         });
@@ -94,24 +99,17 @@ describe('POST /users/profile_image', function() {
         it("should set the user record 'picture_url' to the public url of the uploaded image", async function() {
             this.timeout(SpecUtil.defaultTimeout);
             await request(server).post('/users/profile_image').set(k.Header.Authorization, authorization).attach('image', imagePath);
-
             await user.reload();
-
             const actualUrl = user.get(k.Attr.PictureUrl);
             const userIdHash = Utility.getHashForId(user.get(k.Attr.Id));
-            const expectedUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/users/${userIdHash}.jpg`;
-
-            assert.equal(actualUrl, expectedUrl);
+            assert(_.startsWith(actualUrl, `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/users/${userIdHash}`));
         });
 
         it('should return the picture_url', async function() {
             this.timeout(SpecUtil.defaultTimeout);
             const response = await request(server).post('/users/profile_image').set(k.Header.Authorization, authorization).attach('image', imagePath);
-
-            const userIdHash = Utility.getHashForId(user.get(k.Attr.Id));
-            const expectedUrl = `https://storage.googleapis.com/${config.get(k.GoogleCloud.StorageBucketName)}/users/${userIdHash}.jpg`;
-
-            assert.equal(response.body[k.Attr.PictureUrl], expectedUrl);
+            await user.reload();
+            assert.equal(response.body[k.Attr.PictureUrl], user.get(k.Attr.PictureUrl));
         });
     });
 });
