@@ -353,30 +353,42 @@ module.exports.create = async (req, res, next) => {
 };
 
 module.exports.update = async (req, res, next) => {
-    if (_.size(req.body) === 0) {
+    const updateQueryAttrs = _.pick(req.body, [
+        k.Attr.YouTubeVideoId,
+        k.Attr.IsPublic,
+        k.Attr.LanguageId,
+        k.Attr.SpeakerId,
+        k.Attr.SubcategoryId
+    ]);
+
+    if (_.isEmpty(updateQueryAttrs)) {
         return res.sendStatus(304);
     }
 
+    if (req.body[k.Attr.YouTubeVideoId]) {
+        try {
+            await YouTube.videosList([req.body[k.Attr.YouTubeVideoId]]);
+        } catch (e) {
+            return res.status(404).send(new GetNativeError(k.Error.YouTubeVideoDoesNotExist));
+        }
+    }
+
     const t = await db.sequelize.transaction();
-    const videoUpdates = _.pick(req.body, [k.Attr.IsPublic, k.Attr.LanguageId, k.Attr.SpeakerId, k.Attr.SubcategoryId]);
 
     try {
-        if (_.size(videoUpdates) > 0) {
-            await Video.update(videoUpdates, {
-                where: {id: req.params[k.Attr.Id]},
-                transaction: t
-            });
-        }
+        await Video.update(updateQueryAttrs, {
+            where: {
+                id: req.params[k.Attr.Id]
+            },
+            transaction: t
+        });
 
-        if (_.has(req.body, 'localizations') && _.size(req.body['localizations']) > 0) {
-            for (let localization of req.body['localizations']) {
-                let changes = _.pick(localization, [k.Attr.Description, 'transcript']);
-                await db[k.Model.VideoLocalized].update(changes, {
-                    where: {id: localization[k.Attr.Id]},
-                    transaction: t
-                });
-            }
-        }
+        // TODO: Update transcripts
+        // if (_.has(req.body, 'localizations') && _.size(req.body['localizations']) > 0) {
+        //     for (let localization of req.body['localizations']) {
+        //         let changes = _.pick(localization, ['transcript']);
+        //     }
+        // }
 
         await t.commit();
     } catch (e) {

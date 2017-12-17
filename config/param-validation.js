@@ -460,12 +460,7 @@ const schema = {
                 subcategory_id: Joi.number().integer().min(1),
                 speaker_id: Joi.number().integer().min(1),
                 language_id: Joi.number().integer().min(1),
-                is_public: Joi.boolean(),
-                localizations: Joi.array().length(validLangCodes.length).items(Joi.object().keys({
-                    id: Joi.number().integer().min(1).required(),
-                    description: Joi.string().min(1),
-                    transcript: Joi.string().min(1)
-                }))
+                is_public: Joi.boolean()
             }
         },
         index: {
