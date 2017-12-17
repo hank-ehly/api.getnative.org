@@ -128,7 +128,8 @@ module.exports.show = async (req, res, next) => {
     let video, relatedVideos, isAuthenticated = req.isAuthenticated();
 
     const fallbackCode = isAuthenticated ? req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code) : req.locale;
-    const interfaceLanguageId = await Language.findIdForCode(_.defaultTo(req.query.lang, fallbackCode));
+    const interfaceLanguageCode = _.defaultTo(req.query.lang, fallbackCode);
+    const interfaceLanguageId = await Language.findIdForCode(interfaceLanguageCode);
 
     const relatedInclude = [
         {
@@ -176,11 +177,6 @@ module.exports.show = async (req, res, next) => {
                 where: {language_id: interfaceLanguageId}
             }
         }, {
-            model: db[k.Model.VideoLocalized],
-            attributes: [k.Attr.Description],
-            as: 'videos_localized',
-            where: {language_id: interfaceLanguageId}
-        }, {
             model: Language,
             attributes: [k.Attr.Id, k.Attr.Name, k.Attr.Code],
             as: 'language'
@@ -208,7 +204,7 @@ module.exports.show = async (req, res, next) => {
     ];
 
     const relatedCreatedAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
-    const relatedVideosAttributes = [k.Attr.Id, relatedCreatedAt, k.Attr.Length, k.Attr.PictureUrl, k.Attr.LoopCount];
+    const relatedVideosAttributes = [k.Attr.Id, relatedCreatedAt, k.Attr.YouTubeVideoId]; // k.Attr.Length, k.Attr.PictureUrl, k.Attr.LoopCount
     if (isAuthenticated) {
         relatedVideosAttributes.push(Video.getCuedAttributeForUserId(req.user[k.Attr.Id]));
     }
@@ -220,7 +216,7 @@ module.exports.show = async (req, res, next) => {
             limit: 3
         });
 
-        const videoAttributes = [k.Attr.Id, k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length];
+        const videoAttributes = [k.Attr.Id, k.Attr.YouTubeVideoId]; // k.Attr.LoopCount, k.Attr.PictureUrl, k.Attr.VideoUrl, k.Attr.Length
         if (isAuthenticated && await req.user.isAdmin()) {
             videoAttributes.push(k.Attr.IsPublic);
         }
@@ -238,9 +234,8 @@ module.exports.show = async (req, res, next) => {
         return next(e);
     }
 
-    video = video.get({
-        plain: true
-    });
+    video = video.get({plain: true});
+    video['related_videos'] = _.invokeMap(relatedVideos, 'get', {plain: true});
 
     try {
         video.like_count = await Video.getLikeCount(db, req.params.id);
@@ -252,39 +247,53 @@ module.exports.show = async (req, res, next) => {
         return next(e);
     }
 
-    video.speaker[k.Attr.Name] = _.first(video.speaker.speakers_localized)[k.Attr.Name];
-    video.speaker[k.Attr.Description] = _.first(video.speaker.speakers_localized)[k.Attr.Description];
-    _.unset(video, 'speaker.speakers_localized');
+    const videoIdx = [video[k.Attr.YouTubeVideoId], _.map(video['related_videos'], k.Attr.YouTubeVideoId)];
+    let youTubeVideoList;
+    try {
+        youTubeVideoList = (await YouTube.videosList(videoIdx, ['snippet', 'contentDetails', 'statistics'], interfaceLanguageCode)).items;
+    } catch (e) {
+        return next(new GetNativeError(k.Error.YouTubeVideoDoesNotExist));
+    }
 
-    video[k.Attr.Description] = _.first(video.videos_localized)[k.Attr.Description];
-    _.unset(video, 'videos_localized');
+    const youTubeItem = _.find(youTubeVideoList, {id: video[k.Attr.YouTubeVideoId]});
 
-    video.subcategory[k.Attr.Name] = _.first(video.subcategory.subcategories_localized)[k.Attr.Name];
-    _.unset(video, 'subcategory.subcategories_localized');
+    video[k.Attr.Length] = moment.duration(youTubeItem['contentDetails']['duration']).asSeconds();
+    video[k.Attr.LoopCount] = parseInt(youTubeItem['statistics']['viewCount']);
+    video[k.Attr.Description] = youTubeItem['snippet']['description'];
+    video['speaker'][k.Attr.Name] = video['speaker']['speakers_localized'][0][k.Attr.Name];
+    video['speaker'][k.Attr.Description] = video['speaker']['speakers_localized'][0][k.Attr.Description];
+    video['subcategory'][k.Attr.Name] = video['subcategory']['subcategories_localized'][0][k.Attr.Name];
 
-    video.related_videos = _.invokeMap(relatedVideos, 'get', {
-        plain: true
-    });
+    delete video['speaker']['speakers_localized'];
+    delete video['subcategory']['subcategories_localized'];
 
-    video.related_videos = ResponseWrapper.wrap(video.related_videos.map(relatedVideo => {
+    video['related_videos'] = _.map(video['related_videos'], video => {
+        const youTubeItem = _.find(youTubeVideoList, {id: video[k.Attr.YouTubeVideoId]});
+
+        video[k.Attr.Length] = moment.duration(youTubeItem['contentDetails']['duration']).asSeconds();
+        video[k.Attr.LoopCount] = parseInt(youTubeItem['statistics']['viewCount']);
+        video['speaker'][k.Attr.Name] = video['speaker']['speakers_localized'][0][k.Attr.Name];
+        video['subcategory'][k.Attr.Name] = video['subcategory']['subcategories_localized'][0][k.Attr.Name];
+
+        delete video['speaker']['speakers_localized'];
+        delete video['speaker']['id'];
+        delete video['subcategory']['subcategories_localized'];
+
         if (isAuthenticated) {
-            relatedVideo.cued = relatedVideo.cued === 1;
+            video['cued'] = video['cued'] === 1;
         }
 
-        relatedVideo.speaker[k.Attr.Name] = _.first(relatedVideo.speaker.speakers_localized)[k.Attr.Name];
-        _.unset(relatedVideo, 'speaker.speakers_localized');
-        _.unset(relatedVideo, 'speaker.id');
+        return video;
+    });
 
-        relatedVideo.subcategory[k.Attr.Name] = _.first(relatedVideo.subcategory.subcategories_localized)[k.Attr.Name];
-        _.unset(relatedVideo, 'subcategory.subcategories_localized');
-
-        return relatedVideo;
-    }));
-
-    video.transcripts = ResponseWrapper.wrap(video.transcripts.map(transcript => {
-        transcript.collocation_occurrences = ResponseWrapper.deepWrap(transcript.collocation_occurrences, ['usage_examples']);
+    video['transcripts'] = _.map(video['transcripts'], transcript => {
+        transcript['collocation_occurrences'] = ResponseWrapper.deepWrap(transcript['collocation_occurrences'], ['usage_examples']);
         return transcript;
-    }));
+    });
+
+    for (const key of ['related_videos', 'transcripts']) {
+        video[key] = _.zipObject(['records', 'count'], [video[key], video[key].length]);
+    }
 
     return res.send(video);
 };

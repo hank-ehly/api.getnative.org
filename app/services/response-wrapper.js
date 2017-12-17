@@ -16,7 +16,7 @@ module.exports.wrap = (list) => {
 
     for (let item of list) {
         if (!_.isPlainObject(item)) {
-            throw new TypeError(`Item must be an object`);
+            throw new TypeError(`Item must be an object, received ${typeof item}: ${item}`);
         }
 
         wrappedList.records.push(item);

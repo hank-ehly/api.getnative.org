@@ -6,8 +6,9 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const Utility  = require('../../../app/services')['Utility'];
+const Utility  = require('../../../app/services/utility');
 const k        = require('../../../config/keys.json');
+const youtube  = require('../../../app/services/youtube');
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
@@ -19,7 +20,27 @@ describe('GET /videos/:id', function() {
     let authorization, videoId, server, user, db;
 
     before(function() {
+        return SpecUtil.startMailServer();
+    });
+
+    after(function() {
+        return SpecUtil.stopMailServer();
+    });
+
+    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
+
+        youtube.videosList = function(idx) {
+            return Promise.resolve({
+                items: _.times(idx.length, _.constant({
+                    id: 'ri6Pip_w6HM',
+                    contentDetails: {duration: 'PT1M3S'},
+                    statistics: {viewCount: '13438'},
+                    snippet: {description: 'test description'}
+                }))
+            });
+        };
+
         return SpecUtil.seedAll();
     });
 
@@ -100,6 +121,12 @@ describe('GET /videos/:id', function() {
             });
         });
 
+        it(`should contain a non-null 'youtube_video_id' string`, function() {
+            return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
+                assert(_.isString(response.body.youtube_video_id));
+            });
+        });
+
         it(`should contain a non-null 'id' integer`, function() {
             return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
                 assert(_.isNumber(response.body.id));
@@ -149,11 +176,6 @@ describe('GET /videos/:id', function() {
             });
         });
 
-        it(`should contain a non-null 'speaker.picture_url' url string`, async function() {
-            const response = await request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization);
-            assert(_.isString(response.body.speaker[k.Attr.PictureUrl]));
-        });
-
         it(`should contain a non-null 'subcategory' object`, function() {
             return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
                 assert(_.isPlainObject(response.body.subcategory));
@@ -175,18 +197,6 @@ describe('GET /videos/:id', function() {
         it(`should contain a non-null 'loop_count' integer`, function() {
             return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
                 assert(_.isNumber(response.body.loop_count));
-            });
-        });
-
-        it(`should contain a non-null 'picture_url' url string`, function() {
-            return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
-                assert(SpecUtil.isValidURL(response.body[k.Attr.PictureUrl]));
-            });
-        });
-
-        it(`should contain a non-null 'video_url' url string`, function() {
-            return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
-                assert(SpecUtil.isValidURL(response.body[k.Attr.VideoUrl]));
             });
         });
 
@@ -222,6 +232,7 @@ describe('GET /videos/:id', function() {
 
         it(`should contain a non-null 'related_videos.records' array`, function() {
             return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
+                // console.log(response.body.related_videos);
                 assert(_.isArray(response.body.related_videos.records));
             });
         });
@@ -312,12 +323,6 @@ describe('GET /videos/:id', function() {
             });
         });
 
-        it(`should contain a non-null 'related_videos.records[N].picture_url url string`, function() {
-            return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
-                assert(SpecUtil.isValidURL(_.first(response.body.related_videos.records).picture_url));
-            });
-        });
-
         it(`should return related videos whose category is the same as the video being shown`, async function() {
             let [expectedSubcategoryIds] = await db.sequelize.query(`
                 SELECT id FROM subcategories WHERE category_id IN (
@@ -334,15 +339,6 @@ describe('GET /videos/:id', function() {
 
             assert.equal(_.difference(actualSubcategoryIds, expectedSubcategoryIds), 0);
         });
-
-        // it(`should return different related videos if the same video is requested twice`, async function() {
-        //     const r1 = request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization);
-        //     const r2 = request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization);
-        //     let [first, second] = await Promise.all([r1, r2]);
-        //     assert(!_.isEqual(first.body.related_videos, second.body.related_videos));
-        // });
-
-        it('should not return the video being viewed in the related_videos array');
 
         it(`should contain a non-null 'like_count' integer`, function() {
             return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
