@@ -33,10 +33,10 @@ module.exports = function(schema) {
                 }
 
                 for (let i = 0; i < error.details.length; i++) {
-                    let d = error.details[i];
-                    if (d.path === 'authorization') {
+                    let detail = error.details[i];
+                    if (_.first(detail.path) === 'authorization') {
                         x = true;
-                        m = d.message;
+                        m = detail.message;
                     }
                 }
             });
