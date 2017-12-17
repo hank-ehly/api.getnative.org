@@ -43,7 +43,6 @@
         "Token": "token",
         "UpdatedAt": "updated_at",
         "VideoId": "video_id",
-        "VideoUrl": "video_url",
         "WordCount": "word_count",
         "WordsPerMinute": "words_per_minute",
         "WritingQuestionId": "writing_question_id",
@@ -135,8 +134,7 @@
         "CollocationOccurrence": "CollocationOccurrence",
         "UsageExample": "UsageExample",
         "VerificationToken": "VerificationToken",
-        "Notification": "Notification",
-        "VideoLocalized": "VideoLocalized"
+        "Notification": "Notification"
     },
     "NODE_ENV": "NODE_ENV",
     "OAuth": {
