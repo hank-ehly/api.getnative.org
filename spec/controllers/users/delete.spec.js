@@ -36,16 +36,22 @@ describe('DELETE /users', function() {
                 attributes: [k.Attr.Email],
                 where: {
                     email: {
-                        $notIn: [SpecUtil.credentials.email, SpecUtil.adminCredentials.email]
+                        $notIn: [
+                            SpecUtil.credentials.email, SpecUtil.adminCredentials.email
+                        ]
                     }
                 }
             });
         }
 
+        const testUser = _.pullAt(users, 0)[0];
+
         const credentials = {
-            email: _.sample(users).get(k.Attr.Email),
+            email: testUser.get(k.Attr.Email),
             password: _.clone(SpecUtil.credentials.password)
         };
+
+        console.log(credentials.email, users.length);
 
         const response = await request(retObj.server).post('/sessions').send(credentials);
 
@@ -86,7 +92,14 @@ describe('DELETE /users', function() {
             await SpecUtil.deleteAllEmail();
             const testReason = 'this is the test reason';
             await request(server).delete('/users').set(k.Header.Authorization, authorization).send({reason: testReason});
-            const emails = await SpecUtil.getAllEmail();
+
+            let emails;
+            try {
+                emails = await SpecUtil.getAllEmail();
+            } catch (e) {
+                assert.fail(null, null, e);
+            }
+
             const recipientEmailAddress = _.first(_.last(emails).envelope.to).address;
             assert.equal(recipientEmailAddress, config.get(k.EmailAddress.Contact));
         });
@@ -95,7 +108,14 @@ describe('DELETE /users', function() {
             await SpecUtil.deleteAllEmail();
             const testReason = 'this is the test reason';
             await request(server).delete('/users').set(k.Header.Authorization, authorization).send({reason: testReason});
-            const emails = await SpecUtil.getAllEmail();
+
+            let emails;
+            try {
+                emails = await SpecUtil.getAllEmail();
+            } catch (e) {
+                assert.fail(null, null, e);
+            }
+
             assert(_.includes(_.last(emails).html, testReason));
         });
     });

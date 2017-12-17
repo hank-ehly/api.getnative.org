@@ -38,7 +38,7 @@ module.exports.seedAllUndo = function() {
 };
 
 module.exports.startMailServer = function() {
-    maildev = new MailDev({silent: true});
+    maildev = new MailDev();
     return new Promise(function(resolve) {
         maildev.listen(function() {
             resolve();

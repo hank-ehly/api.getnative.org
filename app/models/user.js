@@ -164,7 +164,7 @@ module.exports = function(sequelize, DataTypes) {
         });
 
         try {
-            mailer.sendMail({
+            await mailer.sendMail({
                 subject: options.req.__('deleteAccountReason.subject'),
                 from: config.get(k.EmailAddress.NoReply),
                 to: config.get(k.EmailAddress.Contact),
