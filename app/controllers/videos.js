@@ -178,7 +178,7 @@ module.exports.show = async (req, res, next) => {
 
     video[k.Attr.Length] = moment.duration(primaryYouTubeVideo['contentDetails']['duration']).asSeconds();
     video[k.Attr.LoopCount] = parseInt(primaryYouTubeVideo['statistics']['viewCount']);
-    video[k.Attr.Description] = primaryYouTubeVideo['snippet']['description'];
+    video[k.Attr.Description] = primaryYouTubeVideo['snippet']['localized']['description'];
     video['speaker'][k.Attr.Name] = video['speaker']['speakers_localized'][0][k.Attr.Name];
     video['speaker'][k.Attr.Description] = video['speaker']['speakers_localized'][0][k.Attr.Description];
     video['subcategory'][k.Attr.Name] = video['subcategory']['subcategories_localized'][0][k.Attr.Name];
@@ -283,7 +283,6 @@ module.exports.create = async (req, res, next) => {
     } catch (e) {
         return res.status(404).send(new GetNativeError(k.Error.YouTubeVideoDoesNotExist));
     }
-
 
     let video, t = await db.sequelize.transaction();
 
