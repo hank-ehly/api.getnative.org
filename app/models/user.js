@@ -83,21 +83,33 @@ module.exports = function(sequelize, DataTypes) {
     });
 
     User.hook('afterCreate', async (user, options) => {
-        const role = await sequelize.models[k.Model.Role].find({
-            where: {name: k.UserRole.User},
-            transaction: options.transaction
-        });
+        const findRoleQueryOptions = {
+            where: {
+                name: k.UserRole.User
+            }
+        };
+
+        if (options.transaction) {
+            findRoleQueryOptions['transaction'] = options.transaction;
+        }
+
+        const role = await sequelize.models[k.Model.Role].find(findRoleQueryOptions);
+
+        let createQueryOptions = {};
+        if (options.transaction) {
+            createQueryOptions['transaction'] = options.transaction;
+        }
 
         const userRole = await sequelize.models[k.Model.UserRole].create({
             user_id: user.get(k.Attr.Id),
             role_id: role.get(k.Attr.Id)
-        }, {transaction: options.transaction});
+        }, createQueryOptions);
 
         const vt = await sequelize.models[k.Model.VerificationToken].create({
             user_id: user.get(k.Attr.Id),
             token: Auth.generateRandomHash(),
             expiration_date: Utility.tomorrow()
-        }, {transaction: options.transaction});
+        }, createQueryOptions);
 
         if (!options.req || !options.req.app || !options.req.__) {
             return;
@@ -129,12 +141,17 @@ module.exports = function(sequelize, DataTypes) {
             });
         });
 
-        return mailer.sendMail({
-            subject: options.req.__('welcome.subject'),
-            from: config.get(k.EmailAddress.NoReply),
-            to: user.get(k.Attr.Email),
-            html: html
-        }, null);
+        try {
+            await mailer.sendMail({
+                subject: options.req.__('welcome.subject'),
+                from: config.get(k.EmailAddress.NoReply),
+                to: user.get(k.Attr.Email),
+                html: html
+            }, null);
+        } catch (e) {
+            // Request can succeed, but mail is not sent
+            console.log(e);
+        }
     });
 
     User.hook('afterDestroy', async (user, options) => {
@@ -170,8 +187,9 @@ module.exports = function(sequelize, DataTypes) {
                 to: config.get(k.EmailAddress.Contact),
                 html: html
             }, null);
-        } catch (error) {
+        } catch (e) {
             // Account deletion succeeded, but failed to send email
+            console.log(e);
         }
     });
 

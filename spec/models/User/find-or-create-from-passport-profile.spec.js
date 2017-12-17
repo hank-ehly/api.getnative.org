@@ -21,7 +21,7 @@ const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, 
 const _          = require('lodash');
 
 describe('User.findOrCreateFromPassportProfile', function() {
-    let languages, authAdapterTypes, profile;
+    let languages, authAdapterTypes, profile, server;
 
     before(async function() {
         this.timeout(SpecUtil.defaultTimeout);
@@ -30,11 +30,12 @@ describe('User.findOrCreateFromPassportProfile', function() {
 
         [languages, authAdapterTypes] = [
             await Language.bulkCreate([{name: 'English', code: 'en'}, {name: '日本語', code: 'ja'}]),
-            await AuthAdapterType.bulkCreate([{name: 'facebook'}, {name: 'twitter'}, {name: 'local'}])
+            await AuthAdapterType.bulkCreate([{name: 'facebook'}, {name: 'twitter'}, {name: 'local'}]),
+            await db[k.Model.Role].bulkCreate([{description: 'x', name: k.UserRole.Admin}, {description: 'x', name: k.UserRole.User}])
         ];
     });
 
-    beforeEach(function() {
+    beforeEach(async function() {
         profile = {
             id: chance.string({
                 length: 13,
@@ -49,6 +50,7 @@ describe('User.findOrCreateFromPassportProfile', function() {
 
     afterEach(async function() {
         await db[k.Model.VerificationToken].destroy({where: {}});
+        await db[k.Model.UserRole].destroy({where: {}, force: true});
         await Identity.destroy({where: {}, force: true});
         await User.destroy({where: {}, force: true});
     });
