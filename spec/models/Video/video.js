@@ -20,14 +20,6 @@ describe('Video', function() {
     let server = null;
 
     before(function() {
-        return SpecUtil.startMailServer();
-    });
-
-    after(function() {
-        return SpecUtil.stopMailServer();
-    });
-
-    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
