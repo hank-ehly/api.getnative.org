@@ -11,6 +11,49 @@ const GetNativeError = require('../services/get-native-error');
 
 const _ = require('lodash');
 
+module.exports.index = async (req, res, next) => {
+    let video;
+
+    try {
+        video = await db[k.Model.Video].findByPrimary(req.params[k.Attr.Id], {
+            rejectOnEmpty: true,
+            include: {
+                model: db[k.Model.Transcript],
+                as: 'transcripts',
+                include: {
+                    model: db[k.Model.CollocationOccurrence],
+                    as: 'collocation_occurrences',
+                    order: [[k.Attr.CreatedAt, 'DESC']],
+                    include: {
+                        model: db[k.Model.UsageExample],
+                        attributes: [k.Attr.Id, k.Attr.Text],
+                        as: 'usage_examples'
+                    }
+                }
+            }
+        });
+    } catch (e) {
+        if (e instanceof db.sequelize.EmptyResultError) {
+            res.status(404);
+            return next(new GetNativeError(k.Error.ResourceNotFound));
+        }
+
+        return next(e);
+    }
+
+    let occurrences = _.flatten(_.invokeMap(video.transcripts, 'get', 'collocation_occurrences'));
+
+    let occurrencesZippedUsageExamples = _.map(occurrences, o => {
+        o = o.get({plain: true});
+        _.set(o, 'usage_examples', _.zipObject(['records', 'count'], [o['usage_examples'], o['usage_examples'].length]));
+        return o;
+    });
+
+    const responseBody = _.zipObject(['records', 'count'], [occurrencesZippedUsageExamples, occurrencesZippedUsageExamples.length]);
+
+    return res.status(200).send(responseBody);
+};
+
 module.exports.update = async (req, res, next) => {
     if (_.size(req.body) === 0) {
         return res.sendStatus(304);

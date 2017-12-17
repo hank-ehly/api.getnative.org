@@ -31,66 +31,47 @@ module.exports.index = async (req, res, next) => {
     let videos, conditions = {}, isAuthenticated = req.isAuthenticated();
 
     if (req.query.include_private && isAuthenticated && await req.user.isAdmin()) {
-        _.unset(conditions, k.Attr.IsPublic);
+        delete conditions[k.Attr.IsPublic];
     } else {
-        _.set(conditions, k.Attr.IsPublic, true);
+        conditions[k.Attr.IsPublic] = true;
     }
 
-    const fallbackCode = isAuthenticated ? req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code) : req.locale;
-    const interfaceLanguageId = await Language.findIdForCode(_.defaultTo(req.query.interface_lang, fallbackCode));
-
     conditions.language_id = await Language.findIdForCode(_.defaultTo(req.query.lang, 'en'));
-
     const subcategoryIds = await Subcategory.findIdsForCategoryIdOrSubcategoryId(req.query);
-
     if (subcategoryIds.length) {
         conditions.subcategory_id = {$in: subcategoryIds};
     }
 
-    const createdAt = ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset);
-    const attributes = [createdAt, k.Attr.Id, k.Attr.YouTubeVideoId];
-    if (isAuthenticated) {
-        attributes.push(Video.getCuedAttributeForUserId(req.user[k.Attr.Id]));
-    }
-
-    const videoQueryScopes = ['newestFirst', {method: ['count', req.query.count]}];
-    if (isAuthenticated) {
-        videoQueryScopes.push({method: ['cuedAndMaxId', req.query.cued_only, req.user[k.Attr.Id], req.query.max_id]})
-    } else {
-        videoQueryScopes.push({method: ['cuedAndMaxId', null, null, req.query.max_id]});
-    }
-
-    const include = [
-        {
-            model: Speaker,
-            as: 'speaker',
-            attributes: [k.Attr.Id],
-            include: {
-                model: SpeakerLocalized,
-                as: 'speakers_localized',
-                attributes: [k.Attr.Name],
-                where: {language_id: interfaceLanguageId}
-            }
-        }, {
-            model: Subcategory,
-            as: 'subcategory',
-            attributes: [k.Attr.Id],
-            include: {
-                model: SubcategoryLocalized,
-                as: 'subcategories_localized',
-                attributes: [k.Attr.Name],
-                where: {language_id: interfaceLanguageId}
-            }
-        }
+    const queryAttrs = [
+        k.Attr.Id,
+        k.Attr.YouTubeVideoId,
+        ModelHelper.getDateAttrForTableColumnTZOffset(k.Model.Video, k.Attr.CreatedAt, req.query.time_zone_offset)
     ];
 
+    const fallbackCode = isAuthenticated ? req.user.get(k.Attr.InterfaceLanguage).get(k.Attr.Code) : req.locale;
+    const interfaceLanguageId = await Language.findIdForCode(_.defaultTo(req.query.interface_lang, fallbackCode));
+
+    const queryScopes = [
+        {method: ['count', req.query.count]},
+        {method: ['includeSpeaker', interfaceLanguageId]},
+        {method: ['includeSubcategory', interfaceLanguageId]},
+        'newestFirst'
+    ];
+
+    if (isAuthenticated) {
+        queryAttrs.push(Video.getCuedAttributeForUserId(req.user[k.Attr.Id]));
+        queryScopes.push({method: ['cuedAndMaxId', req.query.cued_only, req.user[k.Attr.Id], req.query.max_id]})
+    } else {
+        queryScopes.push({method: ['cuedAndMaxId', null, null, req.query.max_id]});
+    }
+
     try {
-        videos = await Video.scope(videoQueryScopes).findAll({attributes: attributes, where: conditions, include: include});
+        videos = await Video.scope(queryScopes).findAll({attributes: queryAttrs, where: conditions});
     } catch (e) {
         return next(new GetNativeError(e));
     }
 
-    if (_.size(videos) === 0) {
+    if (_.isEmpty(videos)) {
         return res.send({records: [], count: 0});
     }
 
@@ -121,7 +102,7 @@ module.exports.index = async (req, res, next) => {
     });
 
     videos = ResponseWrapper.wrap(videoList);
-    return res.send(videos)
+    return res.send(videos);
 };
 
 module.exports.show = async (req, res, next) => {
@@ -398,48 +379,4 @@ module.exports.update = async (req, res, next) => {
     }
 
     return res.sendStatus(204);
-};
-
-module.exports.collocationOccurrences = {};
-module.exports.collocationOccurrences.index = async (req, res, next) => {
-    let video;
-
-    try {
-        video = await db[k.Model.Video].findByPrimary(req.params[k.Attr.Id], {
-            rejectOnEmpty: true,
-            include: {
-                model: db[k.Model.Transcript],
-                as: 'transcripts',
-                include: {
-                    model: db[k.Model.CollocationOccurrence],
-                    as: 'collocation_occurrences',
-                    order: [[k.Attr.CreatedAt, 'DESC']],
-                    include: {
-                        model: db[k.Model.UsageExample],
-                        attributes: [k.Attr.Id, k.Attr.Text],
-                        as: 'usage_examples'
-                    }
-                }
-            }
-        });
-    } catch (e) {
-        if (e instanceof db.sequelize.EmptyResultError) {
-            res.status(404);
-            return next(new GetNativeError(k.Error.ResourceNotFound));
-        }
-
-        return next(e);
-    }
-
-    let occurrences = _.flatten(_.invokeMap(video.transcripts, 'get', 'collocation_occurrences'));
-
-    let occurrencesZippedUsageExamples = _.map(occurrences, o => {
-        o = o.get({plain: true});
-        _.set(o, 'usage_examples', _.zipObject(['records', 'count'], [o.usage_examples, o.usage_examples.length]));
-        return o;
-    });
-
-    const responseBody = _.zipObject(['records', 'count'], [occurrencesZippedUsageExamples, occurrencesZippedUsageExamples.length]);
-
-    return res.status(200).send(responseBody);
 };
