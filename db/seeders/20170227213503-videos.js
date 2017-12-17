@@ -15,6 +15,14 @@ const chance      = require('chance').Chance();
 const moment      = require('moment');
 const _           = require('lodash');
 
+const youTubeVideoIds = [
+    'ri6Pip_w6HM',
+    '60gku_E_rAc',
+    'mugGiwFG9XY',
+    'ibDTuAPefms',
+    'NvEafA3cUqc'
+];
+
 module.exports = {
     up: function(queryInterface, Sequelize) {
         const promises = [
@@ -44,7 +52,7 @@ module.exports = {
 
                 videos.push({
                     is_public: true,
-                    youtube_video_id: 'ri6Pip_w6HM',
+                    youtube_video_id: _.sample(youTubeVideoIds),
                     speaker_id: chance.integer({
                         min: minSpeakerId,
                         max: maxSpeakerId
