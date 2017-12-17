@@ -20,6 +20,14 @@ describe('POST /sessions', function() {
     let response = null;
 
     before(function() {
+        return SpecUtil.startMailServer();
+    });
+
+    after(function() {
+        return SpecUtil.stopMailServer();
+    });
+
+    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
@@ -114,7 +122,7 @@ describe('POST /sessions', function() {
         });
 
         it('should respond with an object containing the user\'s profile picture URL', function() {
-            assert(SpecUtil.isValidURL(response.body[k.Attr.PictureUrl]));
+            assert(_.isString(response.body[k.Attr.PictureUrl]));
         });
 
         it('should respond with an object containing the user\'s preference for using the profile picture or silhouette image', function() {
