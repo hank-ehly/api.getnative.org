@@ -78,7 +78,12 @@ module.exports = function(sequelize, DataTypes) {
 
                 return {
                     where: {
-                        subcategory_id: {$in: [sequelize.literal(queryString)]}
+                        subcategory_id: {
+                            $in: [sequelize.literal(queryString)]
+                        },
+                        id: {
+                            $ne: videoId
+                        }
                     }
                 };
             },

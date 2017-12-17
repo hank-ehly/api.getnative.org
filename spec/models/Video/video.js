@@ -20,6 +20,14 @@ describe('Video', function() {
     let server = null;
 
     before(function() {
+        return SpecUtil.startMailServer();
+    });
+
+    after(function() {
+        return SpecUtil.stopMailServer();
+    });
+
+    before(function() {
         this.timeout(SpecUtil.defaultTimeout);
         return SpecUtil.seedAll();
     });
@@ -104,6 +112,14 @@ describe('Video', function() {
                     assert.equal(_.difference(actual, expected).length, 0);
                 });
             });
+        });
+
+        it('should not return the same video as the target video', async function() {
+            const video = await Video.find();
+            const targetVideoId = video.get(k.Attr.Id);
+            const relatedVideos = await Video.scope({method: ['relatedToVideo', targetVideoId]}).findAll();
+            const relatedVideoIdx = _.map(relatedVideos, v => v.get(k.Attr.Id));
+            assert(!_.includes(relatedVideoIdx, relatedVideos));
         });
     });
 
