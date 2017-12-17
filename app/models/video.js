@@ -61,9 +61,6 @@ module.exports = function(sequelize, DataTypes) {
             newestFirst: {
                 order: [[k.Attr.Id, 'DESC']]
             },
-            orderMostViewed: { // todo
-                order: [[k.Attr.LoopCount, 'DESC']]
-            },
             relatedToVideo: function(videoId) {
                 const queryString = ` 
                     SELECT id
