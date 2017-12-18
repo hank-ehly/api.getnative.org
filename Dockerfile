@@ -1,7 +1,7 @@
 FROM ruby:2.3
 
 ENV NVM_DIR $HOME/.nvm
-ENV NODE_VERSION 8.9.1
+ENV NODE_VERSION 8.9.3
 
 RUN apt-get update && apt-get install -y build-essential libav-tools
 
