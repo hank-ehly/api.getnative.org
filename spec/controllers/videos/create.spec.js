@@ -21,14 +21,6 @@ const fs = require('fs');
 const _ = require('lodash');
 
 describe('POST /videos', function() {
-    before(function() {
-        return SpecUtil.startMailServer();
-    });
-
-    after(function() {
-        return SpecUtil.stopMailServer();
-    });
-
     let jLang, japaneseSampleText = 'Japanese writing question 1 text', japaneseSampleAnswer = 'Japanese writing question 1 example answer';
     let authorization, server, db, body;
 
