@@ -21,8 +21,8 @@ const fs = require('fs');
 const _ = require('lodash');
 
 describe('POST /videos', function() {
-    let jLang, japaneseSampleText = 'Japanese writing question 1 text', japaneseSampleAnswer = 'Japanese writing question 1 example answer';
-    let authorization, server, db, body;
+    const japaneseSampleText = 'Japanese writing question 1 text', japaneseSampleAnswer = 'Japanese writing question 1 example answer';
+    let authorization, server, db, body, jLang;
 
     const eTranText = `
         I actually have {a number of} different hobbies. Uhm, {first off} there's music. 
