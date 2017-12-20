@@ -443,7 +443,11 @@ const schema = {
                 is_public: Joi.boolean(),
                 localizations: Joi.array().length(validLangCodes.length).items(Joi.object().keys({
                     language_id: Joi.number().integer().min(1).required(),
-                    transcript: Joi.string().min(1).required()
+                    transcript: Joi.string().min(1).required(),
+                    writing_questions: Joi.array().items(Joi.object().keys({
+                        text: Joi.string().required(),
+                        example_answer: Joi.string().required()
+                    }))
                 })).required()
             }
         },
