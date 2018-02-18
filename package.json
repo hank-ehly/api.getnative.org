@@ -20,7 +20,6 @@
     "private": true,
     "dependencies": {
         "@google-cloud/storage": "^1.6.0",
-        "@nguniversal/express-engine": "^5.0.0-beta.5",
         "body-parser": "^1.18.2",
         "cookie-parser": "^1.4.3",
         "ejs": "^2.5.7",
