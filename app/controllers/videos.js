@@ -361,7 +361,8 @@ module.exports.update = async (req, res, next) => {
         k.Attr.IsPublic,
         k.Attr.LanguageId,
         k.Attr.SpeakerId,
-        k.Attr.SubcategoryId
+        k.Attr.SubcategoryId,
+        'localizations.writing_questions'
     ]);
 
     if (_.isEmpty(updateQueryAttrs)) {
