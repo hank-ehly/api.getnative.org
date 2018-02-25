@@ -1,7 +1,7 @@
 {
     "apps": [
         {
-            "name": "development",
+            "name": "dev",
             "script": "index.js",
             "error_file": "logs/api.dev.err.log",
             "out_file": "logs/api.dev.out.log",
@@ -12,19 +12,19 @@
                 "config",
                 "ecosystem.config.js"
             ],
-            "interpreter": "/Users/henryehly/.nvm/versions/node/v8.9.3/bin/node",
+            "interpreter": "/Users/henryehly/.nvm/versions/node/v8.9.4/bin/node",
             "env": {
                 "NODE_ENV": "development",
                 "GOOGLE_APPLICATION_CREDENTIALS": "config/secrets/gcloud-credentials.json"
             }
         },
         {
-            "name": "staging",
-            "script": "/var/www/api.stg.getnativelearning.com/current/index.js",
-            "cwd": "/var/www/api.stg.getnativelearning.com/current",
-            "error_file": "/var/log/pm2/api.stg.err.log",
-            "out_file": "/var/log/pm2/api.stg.out.log",
-            "pid_file": "/run/pm2/api.stg.pid",
+            "name": "api.stg.getnativelearning.com",
+            "script": "/var/www/api.getnativelearning.com/staging/current/index.js",
+            "cwd": "/var/www/api.getnativelearning.com/staging/current",
+            "error_file": "/var/log/pm2/api.stg.getnativelearning.com-error.log",
+            "out_file": "/var/log/pm2/api.stg.getnativelearning.com-out.log",
+            "pid_file": "/run/pm2/api.stg.getnativelearning.com.pid",
             "exec_mode": "cluster",
             "combine_logs": true,
             "interpreter": "/usr/local/nodejs-binary/bin/node",
@@ -34,12 +34,12 @@
             }
         },
         {
-            "name": "production",
-            "script": "/var/www/api.getnativelearning.com/current/index.js",
-            "cwd": "/var/www/api.getnativelearning.com/current",
-            "error_file": "/var/log/pm2/api.err.log",
-            "out_file": "/var/log/pm2/api.out.log",
-            "pid_file": "/run/pm2/api.pid",
+            "name": "api.getnativelearning.com",
+            "script": "/var/www/api.getnativelearning.com/production/current/index.js",
+            "cwd": "/var/www/api.getnativelearning.com/production/current",
+            "error_file": "/var/log/pm2/api.getnativelearning.com-error.log",
+            "out_file": "/var/log/pm2/api.getnativelearning.com-out.log",
+            "pid_file": "/run/pm2/api.getnativelearning.com.pid",
             "exec_mode": "cluster",
             "combine_logs": true,
             "interpreter": "/usr/local/nodejs-binary/bin/node",

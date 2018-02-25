@@ -5,11 +5,11 @@
     "main": "index.js",
     "scripts": {
         "test": "mocha --exit -R spec --recursive spec",
-        "start": "/usr/bin/env pm2 start ecosystem.config.json --no-daemon -i max --only development",
+        "start": "pm2 start ecosystem.config.json --no-daemon -i max --only dev",
         "sequelize": "sequelize",
         "mocha": "mocha",
-        "start:staging": "/usr/local/nodejs-binary/bin/pm2 startOrReload ecosystem.config.json -i max --only staging",
-        "start:production": "/usr/local/nodejs-binary/bin/pm2 startOrReload ecosystem.config.json -i max --only production"
+        "start:staging": "pm2 startOrReload ecosystem.config.json -i max --only api.stg.getnativelearning.com",
+        "start:production": "pm2 startOrReload ecosystem.config.json -i max --only api.getnativelearning.com"
     },
     "repository": {
         "type": "git",
@@ -50,6 +50,7 @@
         "chance": "^1.0.13",
         "maildev": "^1.0.0-rc3",
         "mocha": "^4.1.0",
+        "pm2": "^2.10.1",
         "sequelize-cli": "^3.2.0",
         "supertest": "^3.0.0"
     }
