@@ -1,10 +1,10 @@
 {
     "apps": [
         {
-            "name": "dev",
+            "name": "api",
             "script": "index.js",
-            "error_file": "logs/api.dev.err.log",
-            "out_file": "logs/api.dev.out.log",
+            "error_file": "logs/api.err.log",
+            "out_file": "logs/api.out.log",
             "exec_mode": "cluster",
             "merge_logs": true,
             "watch": [

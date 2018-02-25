@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "test": "mocha --exit -R spec --recursive spec",
-        "start": "pm2 start ecosystem.config.json --no-daemon -i max --only dev",
+        "start": "pm2 start ecosystem.config.json --no-daemon -i max --only api",
         "sequelize": "sequelize",
         "mocha": "mocha",
         "start:staging": "pm2 startOrReload ecosystem.config.json -i max --only api.stg.getnativelearning.com",
