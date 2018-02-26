@@ -21,6 +21,9 @@ const fs = require('fs');
 const _ = require('lodash');
 
 describe('POST /videos', function() {
+    const japaneseSampleText = 'Japanese writing question 1 text', japaneseSampleAnswer = 'Japanese writing question 1 example answer';
+    let authorization, server, db, body, jLang;
+
     const eTranText = `
         I actually have {a number of} different hobbies. Uhm, {first off} there's music. 
         I grew up in a pretty musical family and my grandpa is actually a famous conductor, 
@@ -36,11 +39,10 @@ describe('POST /videos', function() {
         物事を考えて独立して生活できなくなる危険性もあると思います。私は元々アメリカに住んでいたが、二十歳で日本に引っ越したのです。日本はいい国だが、人はアメリカより
         排他的で、孤独になりやすいタイプだと思います。
     `;
-    let authorization, server, db, body;
 
     async function setupRequestBody() {
         const eLang = await db[k.Model.Language].find({where: {code: 'en'}});
-        const jLang = await db[k.Model.Language].find({where: {code: 'ja'}});
+        jLang = await db[k.Model.Language].find({where: {code: 'ja'}});
         const aSubcategory = await db[k.Model.Subcategory].find();
         const aSpeaker = await db[k.Model.Speaker].find();
         return {
@@ -51,21 +53,39 @@ describe('POST /videos', function() {
             localizations: [
                 {
                     language_id: eLang.get(k.Attr.Id),
-                    transcript: eTranText
+                    transcript: eTranText,
+                    writing_questions: [
+                        {
+                            text: 'English writing question 1 text',
+                            example_answer: 'English writing question 1 example answer'
+                        },
+                        {
+                            text: 'English writing question 2 text',
+                            example_answer: 'English writing question 2 example answer'
+                        }
+                    ]
                 },
                 {
                     language_id: jLang.get(k.Attr.Id),
-                    transcript: jTranText
+                    transcript: jTranText,
+                    writing_questions: [
+                        {
+                            text: japaneseSampleText,
+                            example_answer: japaneseSampleAnswer
+                        }
+                    ]
                 }
             ]
         };
     }
 
     async function destroyAllVideos() {
+        await db[k.Model.WritingQuestionLocalized].destroy({where: {}});
+        await db[k.Model.WritingAnswer].destroy({where: {}});
+        await db[k.Model.WritingQuestion].destroy({where: {}});
         await db[k.Model.UsageExample].destroy({where: {}});
         await db[k.Model.CollocationOccurrence].destroy({where: {}, force: true});
         await db[k.Model.Transcript].destroy({where: {}});
-        await db[k.Model.WritingAnswer].destroy({where: {}});
         await db[k.Model.StudySession].destroy({where: {}});
         await db[k.Model.Like].destroy({where: {}, force: true});
         await db[k.Model.CuedVideo].destroy({where: {}});
@@ -201,7 +221,7 @@ describe('POST /videos', function() {
             });
 
             it('should return 400 Bad Request if localizations is not an array', function() {
-                body.localizations = _.stubObject();
+                body.localizations = {};
                 return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
@@ -218,7 +238,7 @@ describe('POST /videos', function() {
             });
 
             it('should return 400 Bad Request if localizations.language_id is not a number', function() {
-                _.first(body.localizations).language_id = _.stubString();
+                _.first(body.localizations).language_id = '';
                 return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
@@ -240,12 +260,43 @@ describe('POST /videos', function() {
             });
 
             it('should return 400 Bad Request if localizations.transcript is not a string', function() {
-                _.first(body.localizations).transcript = _.stubObject();
+                _.first(body.localizations).transcript = {};
                 return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
 
             it('should return 400 Bad Request if localizations.transcript is 0 length', function() {
-                _.first(body.localizations).transcript = _.stubString();
+                _.first(body.localizations).transcript = '';
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+        });
+
+        describe('localizations.writing_questions', function() {
+            it('should return 400 Bad Request if localizations.writing_questions is not an array', function() {
+                body.localizations[0].writing_questions = {};
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+        });
+
+        describe('localizations.writing_questions.text', function() {
+            it('should return 400 Bad Request if localizations.writing_questions.text is not a string', function() {
+                body.localizations[0].writing_questions[0].text = {};
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+
+            it('should return 400 Bad Request if localizations.writing_questions.text is 0 length', function() {
+                body.localizations[0].writing_questions[0].text = '';
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+        });
+
+        describe('localizations.writing_questions.example_answer', function() {
+            it('should return 400 Bad Request if localizations.writing_questions.example_answer is not a string', function() {
+                body.localizations[0].writing_questions[0].example_answer = {};
+                return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
+            });
+
+            it('should return 400 Bad Request if localizations.writing_questions.example_answer is 0 length', function() {
+                body.localizations[0].writing_questions[0].example_answer = '';
                 return request(server).post('/videos').set(k.Header.Authorization, authorization).send(body).expect(400);
             });
         });
@@ -334,6 +385,28 @@ describe('POST /videos', function() {
                 });
 
                 assert.equal(_.first(video.get('transcripts'))['collocation_occurrences'].length, eTranText.match(/{/g).length);
+            });
+
+            it('should create the appropriate number of writing_questions records', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
+                const beforeCount = await db[k.Model.WritingQuestion].count();
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
+                const afterCount = await db[k.Model.WritingQuestion].count();
+                assert(afterCount === (beforeCount + 3));
+            });
+
+            it('should set the appropriate text attribute value of the writing_questions record', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
+                const count = await db[k.Model.WritingQuestionLocalized].count({where: {text: japaneseSampleText}});
+                assert.equal(count, 1);
+            });
+
+            it('should set the appropriate example_answer attribute value of the writing_questions record', async function() {
+                this.timeout(SpecUtil.defaultTimeout);
+                await request(server).post('/videos').set(k.Header.Authorization, authorization).send(body);
+                const count = await db[k.Model.WritingQuestionLocalized].count({where: {example_answer: japaneseSampleAnswer}});
+                assert.equal(count, 1);
             });
 
             it('should set the video "is_public" to false by default', async function() {

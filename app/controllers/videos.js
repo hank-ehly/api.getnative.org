@@ -297,7 +297,8 @@ module.exports.create = async (req, res, next) => {
     try {
         video = await Video.create(params, {transaction: t});
 
-        const transcripts = [];
+        // Transcripts
+        let transcripts = [];
         for (let localization of req.body['localizations']) {
             transcripts.push({
                 video_id: video[k.Attr.Id],
@@ -305,10 +306,32 @@ module.exports.create = async (req, res, next) => {
                 text: localization['transcript']
             });
         }
-        const persistedTranscripts = await Transcript.bulkCreate(transcripts, {transaction: t});
+        transcripts = await Transcript.bulkCreate(transcripts, {transaction: t});
 
+        // WritingQuestions
+        let questions = [];
+        let localizedQuestions = [];
+        for (let locale of req.body['localizations']) {
+            for (let question of locale['writing_questions']) {
+                questions.push({subcategory_id: params.subcategory_id});
+
+                localizedQuestions.push({
+                    text: question[k.Attr.Text],
+                    example_answer: question[k.Attr.ExampleAnswer],
+                    language_id: locale[k.Attr.LanguageId]
+                });
+            }
+        }
+        questions = await db[k.Model.WritingQuestion].bulkCreate(questions, {transaction: t});
+
+        for (let i = 0; i < questions.length; i++) {
+            localizedQuestions[i][k.Attr.WritingQuestionId] = questions[i].get(k.Attr.Id);
+        }
+        await db[k.Model.WritingQuestionLocalized].bulkCreate(localizedQuestions, {transaction: t});
+
+        // CollocationOccurrences
         const unsavedCollocationOccurrences = [];
-        for (let transcript of persistedTranscripts) {
+        for (let transcript of transcripts) {
             let occurrenceTextValues = Utility.pluckCurlyBraceEnclosedContent(transcript.get(k.Attr.Text));
             for (let text of occurrenceTextValues) {
                 unsavedCollocationOccurrences.push({
@@ -338,7 +361,8 @@ module.exports.update = async (req, res, next) => {
         k.Attr.IsPublic,
         k.Attr.LanguageId,
         k.Attr.SpeakerId,
-        k.Attr.SubcategoryId
+        k.Attr.SubcategoryId,
+        'localizations.writing_questions'
     ]);
 
     if (_.isEmpty(updateQueryAttrs)) {

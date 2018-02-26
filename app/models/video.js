@@ -41,19 +41,11 @@ module.exports = function(sequelize, DataTypes) {
                 const conditions = {};
 
                 if (cuedOnly && userId) {
-                    conditions.where = {
-                        id: {
-                            $in: [sequelize.literal('SELECT `video_id` FROM `cued_videos` WHERE `user_id` = ' + userId)]
-                        }
-                    };
+                    _.set(conditions, 'where.id.$in', [sequelize.literal('SELECT `video_id` FROM `cued_videos` WHERE `user_id` = ' + userId)]);
                 }
 
                 if (maxId) {
-                    if (conditions.where && conditions.where.id) {
-                        conditions.where.id.$lt = +maxId;
-                    } else {
-                        conditions.where = {id: {$lt: +maxId}}
-                    }
+                    _.set(conditions, 'where.id.$lt', +maxId);
                 }
 
                 return conditions;

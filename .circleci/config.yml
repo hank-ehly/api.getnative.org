@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: hankehly/api.getnativelearning.com:0.0.2
+      - image: hankehly/api.getnativelearning.com:0.0.3
         environment:
           - NODE_ENV: circle_ci
       - image: circleci/mysql:5.7
@@ -44,11 +44,5 @@ jobs:
 
       - deploy:
           name: Deploy
-          command: |
-              if [ "${CIRCLE_BRANCH}" == "develop" ]; then
-                    git clone git@github.com:hank-ehly/devops.getnativelearning.com.git
-                    cd devops.getnativelearning.com/deploy && bundle install --jobs 4 --retry 3 --path vendor/bundle && bundle exec cap server:staging deploy
-              elif [ "${CIRCLE_BRANCH}" == "master" ]; then
-                    git clone git@github.com:hank-ehly/devops.getnativelearning.com.git
-                    cd devops.getnativelearning.com/deploy && bundle install --jobs 4 --retry 3 --path vendor/bundle && bundle exec cap server:production deploy
-              fi
+          command: .circleci/deploy.sh ${CIRCLE_BRANCH}
+
