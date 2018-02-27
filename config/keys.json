@@ -169,7 +169,11 @@
     },
     "SMTP": {
         "Port": "smtp:port",
-        "Host": "smtp:host"
+        "Host": "smtp:host",
+        "Auth": {
+            "User": "smtp:auth:user",
+            "Pass": "smtp:auth:pass"
+        }
     },
     "SNS": {
         "TwitterPageURL": "kSNSTwitterPageURL",

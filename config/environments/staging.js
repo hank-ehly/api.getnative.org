@@ -31,6 +31,9 @@ config[k.OAuth.Google.ClientID] = OAuthConfig.staging.google.clientId;
 config[k.OAuth.Google.ClientSecret] = OAuthConfig.staging.google.clientSecret;
 config[k.OAuth.Google.CallbackURL] = 'https://api.stg.getnativelearning.com/oauth/google/callback';
 
-config[k.SMTP.Port] = 25;
+config[k.SMTP.Host] = 'smtp.mailtrap.io';
+config[k.SMTP.Port] = 2525;
+config[k.SMTP.Auth.User] = 'ba8aeeb50b2007';
+config[k.SMTP.Auth.Pass] = '16f902b7fbcd0f';
 
 module.exports = config;

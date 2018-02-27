@@ -6,10 +6,10 @@
  */
 
 const config = require('../application').config;
-const k      = require('../keys.json');
+const k = require('../keys.json');
 
 const mailer = require('nodemailer');
-const _      = require('lodash');
+const _ = require('lodash');
 
 const smtpConfig = {
     host: config.get(k.SMTP.Host),
@@ -22,6 +22,15 @@ if (_.includes([k.Env.Development, k.Env.Test, k.Env.CircleCI], config.get(k.ENV
             rejectUnauthorized: false
         }
     });
+
+    if (config.get(k.ENVIRONMENT) === k.Env.Staging) {
+        _.assign(smtpConfig, {
+            auth: {
+                user: config.get(k.SMTP.Auth.User),
+                pass: config.get(k.SMTP.Auth.Pass)
+            }
+        });
+    }
 }
 
 const transport = mailer.createTransport(smtpConfig);
