@@ -22,15 +22,15 @@ if (_.includes([k.Env.Development, k.Env.Test, k.Env.CircleCI], config.get(k.ENV
             rejectUnauthorized: false
         }
     });
+}
 
-    if (config.get(k.ENVIRONMENT) === k.Env.Staging) {
-        _.assign(smtpConfig, {
-            auth: {
-                user: config.get(k.SMTP.Auth.User),
-                pass: config.get(k.SMTP.Auth.Pass)
-            }
-        });
-    }
+if (config.get(k.ENVIRONMENT) === k.Env.Staging) {
+    _.assign(smtpConfig, {
+        auth: {
+            user: config.get(k.SMTP.Auth.User),
+            pass: config.get(k.SMTP.Auth.Pass)
+        }
+    });
 }
 
 const transport = mailer.createTransport(smtpConfig);
