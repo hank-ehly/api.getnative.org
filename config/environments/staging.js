@@ -10,6 +10,7 @@ const OAuthConfig = require('../secrets/oauth.json');
 
 const config = {};
 
+config[k.API.Port] = 3005;
 config[k.API.Hostname] = 'stg.api.getnativelearning.com';
 
 config[k.Client.Host] = 'stg.getnativelearning.com';
