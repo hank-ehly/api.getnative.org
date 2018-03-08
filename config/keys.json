@@ -106,6 +106,9 @@
         "Authorization": "authorization",
         "Location": "location"
     },
+    "MailChimp": {
+        "APIKey": "kMailChimpAPIKey"
+    },
     "Model": {
         "AuthAdapterType": "AuthAdapterType",
         "Identity": "Identity",

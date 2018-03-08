@@ -54,6 +54,13 @@ function Config() {
 
     nconf.set(k.VideoLanguageCodes, ['en', 'ja']);
     nconf.set(k.TempDir, fs.mkdtempSync('/tmp/com.getnativelearning.'));
+
+    try {
+        const mailChimpAPIKey = require('./secrets/mailchimp.json')[nconf.get(k.ENVIRONMENT)];
+        nconf.set(k.MailChimp.APIKey, mailChimpAPIKey);
+    } catch (e) {
+        logger.info('Error occurred when loading mailchimp api key.');
+    }
 }
 
 Config.prototype.get = function(key) {
