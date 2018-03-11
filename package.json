@@ -8,8 +8,8 @@
         "start": "pm2 start ecosystem.config.json --no-daemon -i max --only api",
         "sequelize": "sequelize",
         "mocha": "mocha",
-        "start:staging": "pm2 startOrReload ecosystem.config.json -i max --only api.stg.getnativelearning.com",
-        "start:production": "pm2 startOrReload ecosystem.config.json -i max --only api.getnativelearning.com"
+        "start:staging": "pm2 startOrRestart ecosystem.config.json -i max --only api.stg.getnativelearning.com",
+        "start:production": "pm2 startOrRestart ecosystem.config.json -i max --only api.getnativelearning.com"
     },
     "repository": {
         "type": "git",
