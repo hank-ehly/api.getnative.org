@@ -44,5 +44,6 @@ defaults[k.SNS.TwitterPageURL] = 'https://twitter.com/getnativeweb';
 defaults[k.SNS.YouTubeChannelURL] = 'https://www.youtube.com/channel/UCz_j0iuKIXdyAb6nSSHLswQ';
 
 defaults[k.VideoFileExtension] = 'mp4';
+defaults[k.VideoLanguageCodes] = ['en', 'ja'];
 
 module.exports = defaults;

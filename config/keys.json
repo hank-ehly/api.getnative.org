@@ -1,6 +1,6 @@
 {
     "API": {
-        "Port": "API_PORT",
+        "Port": "PORT",
         "Hostname": "API_HOSTNAME"
     },
     "Attr": {

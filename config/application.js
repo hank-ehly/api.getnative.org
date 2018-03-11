@@ -14,53 +14,70 @@ const fs = require('fs');
 const _ = require('lodash');
 
 function Config() {
-    nconf.env([k.API.Port, k.Debug, k.NODE_ENV]).use('memory');
 
-    /* Normalized run-environment value */
-    nconf.set(k.ENVIRONMENT, _.toLower(nconf.get(k.NODE_ENV) || k.Env.Development));
+    function loadENVVars() {
+        nconf.env([k.API.Port, k.Debug, k.NODE_ENV]).use('memory');
+        nconf.set(k.ENVIRONMENT, _.toLower(nconf.get(k.NODE_ENV) || k.Env.Development));
+    }
 
-    let config = {};
+    function loadAppConfig() {
+        let config = {};
 
-    try {
-        config = require(path.resolve(__dirname, 'environments', nconf.get(k.ENVIRONMENT)));
-    } catch (e) {
-        if (_.isError(e) && e.code === 'MODULE_NOT_FOUND') {
-            logger.info(`${_.capitalize(nconf.get(k.ENVIRONMENT))} environment configuration file missing. Ignoring.`);
-        } else {
-            throw e;
+        try {
+            config = require(path.resolve(__dirname, 'environments', nconf.get(k.ENVIRONMENT)));
+        } catch (e) {
+            if (_.isError(e) && e.code === 'MODULE_NOT_FOUND') {
+                logger.info(`${_.capitalize(nconf.get(k.ENVIRONMENT))} environment configuration file missing. Ignoring.`);
+            } else {
+                throw e;
+            }
+        }
+
+        config = _.defaults(config, require('./environments/default'));
+
+        for (let key in config) {
+            if (!nconf.get(key)) {
+                nconf.set(key, config[key]);
+            }
         }
     }
 
-    config = _.defaults(config, require(path.resolve(__dirname, 'environments', 'default')));
+    function loadSecrets() {
+        if (!_.includes([k.Env.CircleCI, k.Env.Test], nconf.get(k.ENVIRONMENT))) {
+            nconf.set(k.GoogleCloud.KeyFilename, path.resolve(__dirname, 'secrets', 'gcloud-credentials.json'));
+        }
 
-    for (let key in config) {
-        nconf.set(key, config[key]);
+        const jwtKeyPair = require('./secrets/jwt-keypair.json');
+        nconf.set(k.PrivateKey, jwtKeyPair.privateKey);
+        nconf.set(k.PublicKey, jwtKeyPair.publicKey);
+
+        try {
+            const googleAPIKey = require('./secrets/google_api_keys.json')[nconf.get(k.ENVIRONMENT)];
+            nconf.set(k.GoogleCloud.APIKey, googleAPIKey);
+        } catch (e) {
+            logger.info('Error occurred when loading google api key.');
+        }
+
+        try {
+            const mailChimpAPIKey = require('./secrets/mailchimp.json')[nconf.get(k.ENVIRONMENT)];
+            nconf.set(k.MailChimp.APIKey, mailChimpAPIKey);
+        } catch (e) {
+            logger.info('Error occurred when loading mailchimp api key.');
+        }
     }
 
-    if (!_.includes([k.Env.CircleCI, k.Env.Test], nconf.get(k.ENVIRONMENT))) {
-        nconf.set(k.GoogleCloud.KeyFilename, path.resolve(__dirname, 'secrets', 'gcloud-credentials.json'));
+    function setupTempDir() {
+        nconf.set(k.TempDir, fs.mkdtempSync('/tmp/com.getnativelearning.'));
     }
 
-    const jwtKeyPair = require('./secrets/jwt-keypair.json');
-    nconf.set(k.PrivateKey, jwtKeyPair.privateKey);
-    nconf.set(k.PublicKey, jwtKeyPair.publicKey);
-
-    try {
-        const googleAPIKey = require('./secrets/google_api_keys.json')[nconf.get(k.ENVIRONMENT)];
-        nconf.set(k.GoogleCloud.APIKey, googleAPIKey);
-    } catch (e) {
-        logger.info('Error occurred when loading google api key.');
+    function __construct() {
+        loadENVVars();
+        loadAppConfig();
+        loadSecrets();
+        setupTempDir();
     }
 
-    nconf.set(k.VideoLanguageCodes, ['en', 'ja']);
-    nconf.set(k.TempDir, fs.mkdtempSync('/tmp/com.getnativelearning.'));
-
-    try {
-        const mailChimpAPIKey = require('./secrets/mailchimp.json')[nconf.get(k.ENVIRONMENT)];
-        nconf.set(k.MailChimp.APIKey, mailChimpAPIKey);
-    } catch (e) {
-        logger.info('Error occurred when loading mailchimp api key.');
-    }
+    __construct();
 }
 
 Config.prototype.get = function(key) {
