@@ -13,11 +13,9 @@ set :default_env, {
 }
 
 set :keep_releases, 5
-set :locales, %w(en ja)
-set :deploy_user, 'getnative'
 
 server '139.162.114.38',
-       user: fetch(:deploy_user),
+       user: 'getnative',
        roles: %w(api),
        ssh_options: {
                forward_agent: false,
