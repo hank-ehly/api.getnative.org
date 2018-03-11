@@ -24,5 +24,20 @@ server '139.162.114.38',
                auth_methods: %w(publickey)
        }
 
-after 'deploy:updated', 'npm:install'
-after 'deploy:publishing', 'npm:start'
+namespace :deploy do
+    after :updated, :npm_install do
+        on roles(:api) do
+            within release_path do
+                execute :npm, '--production=false', 'install'
+            end
+        end
+    end
+
+    after :publishing, :npm_start do
+        on roles(:api) do
+            within current_path do
+                execute :npm, :run, ['start', fetch(:stage)].join(':')
+            end
+        end
+    end
+end
