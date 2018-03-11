@@ -124,13 +124,13 @@ describe('POST /confirm_email', function() {
             });
         });
 
-        it('should respond with an object containing the user\'s email address', function() {
+        it("should respond with an object containing the user's email address", function() {
             return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
                 assert(SpecUtil.isValidEmail(response.body[k.Attr.Email]));
             });
         });
 
-        it('should respond with an object containing the user\'s preference for receiving browser notifications', function() {
+        it("should respond with an object containing the user's preference for receiving browser notifications", function() {
             return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
                 assert(_.isBoolean(response.body[k.Attr.BrowserNotificationsEnabled]));
             });
@@ -172,13 +172,12 @@ describe('POST /confirm_email', function() {
             });
         });
 
-        it('should respond with an object containing the user\'s profile picture URL', function() {
-            return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
-                assert(SpecUtil.isValidURL(response.body[k.Attr.PictureUrl]));
-            });
+        it("should respond with an object containing the user's profile picture URL", async function() {
+            const response = await request(server).post(`/confirm_email`).send({token: token});
+            assert(_.isString(response.body[k.Attr.PictureUrl]));
         });
 
-        it('should respond with an object containing the user\'s preference for using the profile picture or silhouette image', function() {
+        it("should respond with an object containing the user's preference for using the profile picture or silhouette image", function() {
             return request(server).post(`/confirm_email`).send({token: token}).then(function(response) {
                 assert(_.isBoolean(response.body[k.Attr.IsSilhouettePicture]));
             });
