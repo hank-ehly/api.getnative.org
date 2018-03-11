@@ -12,5 +12,4 @@ fi
 
 [[ ${1} = "master" ]] && stage="production" || stage="staging"
 
-git clone git@github.com:hank-ehly/devops.getnativelearning.com.git
-cd devops.getnativelearning.com/deploy && bundle install --jobs 4 --retry 3 --path vendor/bundle && bundle exec cap api:${stage} deploy
+bundle install --jobs 4 --retry 3 --deployment && bundle exec cap ${stage} deploy
