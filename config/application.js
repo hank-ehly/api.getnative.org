@@ -62,7 +62,14 @@ function Config() {
             const mailChimpAPIKey = require('./secrets/mailchimp.json')[nconf.get(k.ENVIRONMENT)];
             nconf.set(k.MailChimp.APIKey, mailChimpAPIKey);
         } catch (e) {
-            logger.info('Error occurred when loading mailchimp api key.');
+            logger.info('Failed to load mailchimp api key.');
+        }
+
+        try {
+            const sendGridAPIKey = require('./secrets/sendgrid.json')[nconf.get(k.ENVIRONMENT)];
+            nconf.set(k.SendGrid.APIKey, sendGridAPIKey);
+        } catch (e) {
+            logger.info('Failed to load sendgrid api key.');
         }
     }
 

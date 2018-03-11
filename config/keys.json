@@ -170,6 +170,9 @@
         "Admin": "admin",
         "User": "user"
     },
+    "SendGrid": {
+        "APIKey": "kSendGridAPIKey"
+    },
     "SMTP": {
         "Port": "smtp:port",
         "Host": "smtp:host",

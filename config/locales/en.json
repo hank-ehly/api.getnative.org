@@ -45,8 +45,8 @@
     "lang": "en",
     "notifyEmailUpdate": {
         "subject": "Notification Of Email Update",
-        "title": "Your email address was changed!",
-        "message": "Your email address for <strong>getnative</strong> has been updated to <strong>{updatedEmail}</strong>. This email address will no longer receive messages from getnative. If you think this is a mistake, please <a style=\"color:#33cc99;text-decoration:underline;\" title=\"{contact}\" href=\"mailto:{contact}\">contact us</a> immediately."
+        "title": "Your email address was changed.",
+        "message": "Your email address for <strong>getnative</strong> has been updated. This email address will no longer receive messages from getnative. If you think this is a mistake, please <a style=\"color:#33cc99;text-decoration:underline;\" title=\"{contact}\" href=\"mailto:{contact}\">contact us</a> immediately."
     },
     "passwordUpdated": {
         "subject": "Password Updated",

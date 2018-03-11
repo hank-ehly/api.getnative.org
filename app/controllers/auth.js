@@ -427,8 +427,7 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
                 facebookPageURL: config.get(k.SNS.FacebookPageURL),
                 twitterPageURL: config.get(k.SNS.TwitterPageURL),
                 youtubeChannelURL: config.get(k.SNS.YouTubeChannelURL),
-                websiteURL: config.get(k.Client.BaseURI),
-                updatedEmail: user.get(k.Attr.Email)
+                websiteURL: config.get(k.Client.BaseURI)
             };
             res.app.render(k.Templates.NotifyEmailUpdate, locals, (err, html) => {
                 if (err) {

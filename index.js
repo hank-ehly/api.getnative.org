@@ -13,9 +13,8 @@ const logger = require('./config/logger');
 const server = require('./config/initializers/server');
 const mailer = require('./config/initializers/mailer');
 const db = require('./app/models');
-const _ = require('lodash');
 
-logger.info(`Initializing ${_.toUpper(config.get(k.ENVIRONMENT))} environment`);
+logger.info(`Initializing ${config.get(k.ENVIRONMENT).toUpperCase()} environment`);
 
 const initPromises = [server(), db.sequelize.authenticate(), new Promise(mailer.verify)];
 
