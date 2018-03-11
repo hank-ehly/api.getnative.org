@@ -148,37 +148,6 @@ describe('PATCH /videos/:id', function() {
                 return request(server).patch(`/videos/${video.get(k.Attr.Id)}`).set(k.Header.Authorization, authorization).send(updates).expect(404);
             });
         });
-
-        describe('localizations.writing_questions', function() {
-            it('should return 400 Bad Request if localizations.writing_questions is not an array', function() {
-                updates.localizations[0].writing_questions = {};
-                return request(server).patch(`/videos/${video.get(k.Attr.Id)}`).send(updates).set(k.Header.Authorization, authorization).expect(400);
-            });
-        });
-
-        describe('localizations.writing_questions.text', function() {
-            it('should return 400 Bad Request if localizations.writing_questions.text is not a string', function() {
-                updates.localizations[0].writing_questions[0].text = {};
-                return request(server).patch(`/videos/${video.get(k.Attr.Id)}`).send(updates).set(k.Header.Authorization, authorization).expect(400);
-            });
-
-            it('should return 400 Bad Request if localizations.writing_questions.text is 0 length', function() {
-                updates.localizations[0].writing_questions[0].text = '';
-                return request(server).patch(`/videos/${video.get(k.Attr.Id)}`).send(updates).set(k.Header.Authorization, authorization).expect(400);
-            });
-        });
-
-        describe('localizations.writing_questions.example_answer', function() {
-            it('should return 400 Bad Request if localizations.writing_questions.example_answer is not a string', function() {
-                updates.localizations[0].writing_questions[0].example_answer = {};
-                return request(server).patch(`/videos/${video.get(k.Attr.Id)}`).send(updates).set(k.Header.Authorization, authorization).expect(400);
-            });
-
-            it('should return 400 Bad Request if localizations.writing_questions.example_answer is 0 length', function() {
-                updates.localizations[0].writing_questions[0].example_answer = '';
-                return request(server).patch(`/videos/${video.get(k.Attr.Id)}`).send(updates).set(k.Header.Authorization, authorization).expect(400);
-            });
-        });
     });
 
     describe('success', function() {
@@ -207,33 +176,6 @@ describe('PATCH /videos/:id', function() {
                 await request(server).patch(`/videos/${video.get(k.Attr.Id)}`).send(updates).set(k.Header.Authorization, authorization);
                 await video.reload();
                 assert.equal(video.get(k.Attr.SubcategoryId), updates.subcategory_id);
-            });
-
-            it('should create the appropriate number of writing_questions records', async function() {
-                // this.timeout(SpecUtil.defaultTimeout);
-                // const beforeCount = await db[k.Model.WritingQuestion].count();
-                // await request(server).patch(`/videos/${video.get(k.Attr.Id)}`).send(updates).set(k.Header.Authorization, authorization);
-                // const afterCount = await db[k.Model.WritingQuestion].count();
-                // assert(afterCount === (beforeCount + 3));
-                assert(false); // todo
-            });
-
-            it('should delete the appropriate number of writing_questions records', async function() {
-                assert(false); // todo
-            });
-
-            it('should set the appropriate text attribute value of the writing_questions record', async function() {
-                this.timeout(SpecUtil.defaultTimeout);
-                await request(server).patch(`/videos/${video.get(k.Attr.Id)}`).send(updates).set(k.Header.Authorization, authorization);
-                const count = await db[k.Model.WritingQuestionLocalized].count({where: {text: japaneseSampleText}});
-                assert.equal(count, 1);
-            });
-
-            it('should set the appropriate example_answer attribute value of the writing_questions record', async function() {
-                this.timeout(SpecUtil.defaultTimeout);
-                await request(server).patch(`/videos/${video.get(k.Attr.Id)}`).send(updates).set(k.Header.Authorization, authorization);
-                const count = await db[k.Model.WritingQuestionLocalized].count({where: {example_answer: japaneseSampleAnswer}});
-                assert.equal(count, 1);
             });
         });
     });

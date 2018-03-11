@@ -361,8 +361,7 @@ module.exports.update = async (req, res, next) => {
         k.Attr.IsPublic,
         k.Attr.LanguageId,
         k.Attr.SpeakerId,
-        k.Attr.SubcategoryId,
-        'localizations.writing_questions'
+        k.Attr.SubcategoryId
     ]);
 
     if (_.isEmpty(updateQueryAttrs)) {
@@ -393,6 +392,11 @@ module.exports.update = async (req, res, next) => {
         //         let changes = _.pick(localization, ['transcript']);
         //     }
         // }
+
+        // TODO: WritingQuestions
+        // Writing questions are associated with Subcategory records, not Video records.
+        // Therefore, they should be created during the Subcategory create/update process,
+        // or with a separate API endpoint.
 
         await t.commit();
     } catch (e) {
