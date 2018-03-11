@@ -156,7 +156,7 @@ module.exports.show = async (req, res, next) => {
         video = video.get({plain: true});
         video['related_videos'] = _.invokeMap(relatedVideos, 'get', {plain: true});
 
-        const videoIdx = [video[k.Attr.YouTubeVideoId], _.map(video['related_videos'], k.Attr.YouTubeVideoId)];
+        const videoIdx = _.map(video['related_videos'], k.Attr.YouTubeVideoId).concat(video[k.Attr.YouTubeVideoId]);
         const youTubeRes = await YouTube.videosList(videoIdx, ['snippet', 'contentDetails', 'statistics'], interfaceLanguageCode);
         youTubeVideos = youTubeRes.items;
 

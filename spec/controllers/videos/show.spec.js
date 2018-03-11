@@ -6,15 +6,15 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const Utility  = require('../../../app/services/utility');
-const k        = require('../../../config/keys.json');
-const youtube  = require('../../../app/services/youtube');
+const Utility = require('../../../app/services/utility');
+const k = require('../../../config/keys.json');
+const youtube = require('../../../app/services/youtube');
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
-const request  = require('supertest');
-const assert   = require('assert');
-const _        = require('lodash');
+const request = require('supertest');
+const assert = require('assert');
+const _ = require('lodash');
 
 describe('GET /videos/:id', function() {
     let authorization, videoId, server, user, db;
@@ -24,12 +24,23 @@ describe('GET /videos/:id', function() {
 
         youtube.videosList = function(idx) {
             return Promise.resolve({
-                items: _.times(idx.length, _.constant({
-                    id: 'ri6Pip_w6HM',
-                    contentDetails: {duration: 'PT1M3S'},
-                    statistics: {viewCount: '13438'},
-                    snippet: {description: 'test description'}
-                }))
+                items: _.map(idx, id => {
+                    return {
+                        id: id,
+                        contentDetails: {
+                            duration: 'PT1M3S'
+                        },
+                        statistics: {
+                            viewCount: '13438'
+                        },
+                        snippet: {
+                            localized: {
+                                title: 'The power of introverts | Susan Cain',
+                                description: 'In a culture where being social and outgoing are prized above all else...'
+                            }
+                        }
+                    }
+                })
             });
         };
 
@@ -63,10 +74,9 @@ describe('GET /videos/:id', function() {
     });
 
     describe('success', function() {
-        it('should respond with an X-GN-Auth-Token header if authorized', function() {
-            return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
-                assert(_.gt(response.header[k.Header.AuthToken].length, 0));
-            });
+        it('should respond with an X-GN-Auth-Token header if authorized', async function() {
+            const response = await request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization);
+            assert(_.gt(response.header[k.Header.AuthToken].length, 0));
         });
 
         it('should not respond with an X-GN-Auth-Token header if unauthorized', function() {
@@ -297,10 +307,11 @@ describe('GET /videos/:id', function() {
         });
 
         it(`should apply the timezone offset in the request to related videos 'created_at'`, function() {
-            return request(server).get(`/videos/${videoId}?time_zone_offset=-540`).set(k.Header.Authorization, authorization).then(function(response) {
-                const timeZoneOffset = _.first(response.body.related_videos.records).created_at.split(' ')[4];
-                assert.equal('+0900', timeZoneOffset);
-            });
+            return request(server).get(`/videos/${videoId}?time_zone_offset=-540`).set(k.Header.Authorization, authorization)
+                .then(function(response) {
+                    const timeZoneOffset = _.first(response.body.related_videos.records).created_at.split(' ')[4];
+                    assert.equal('+0900', timeZoneOffset);
+                });
         });
 
         it(`should contain a non-null 'related_videos.records[N].cued boolean if authorized`, function() {
@@ -430,8 +441,7 @@ describe('GET /videos/:id', function() {
 
         it(`collocation_occurrences.records.length and collocation_occurrences.count should be equal`, function() {
             return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
-                assert.equal(_.first(response.body.transcripts.records).collocation_occurrences.records.length,
-                    _.first(response.body.transcripts.records).collocation_occurrences.count);
+                assert.equal(_.first(response.body.transcripts.records).collocation_occurrences.records.length, _.first(response.body.transcripts.records).collocation_occurrences.count);
             });
         });
 
@@ -473,8 +483,7 @@ describe('GET /videos/:id', function() {
 
         it(`usage_examples.records.length should be equal to usage_examples.count`, function() {
             return request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).then(function(response) {
-                assert.equal(_.first(_.first(response.body.transcripts.records).collocation_occurrences.records).usage_examples.records.length,
-                    _.first(_.first(response.body.transcripts.records).collocation_occurrences.records).usage_examples.count);
+                assert.equal(_.first(_.first(response.body.transcripts.records).collocation_occurrences.records).usage_examples.records.length, _.first(_.first(response.body.transcripts.records).collocation_occurrences.records).usage_examples.count);
             });
         });
 
@@ -485,12 +494,14 @@ describe('GET /videos/:id', function() {
         });
 
         it('should localize the subcategory name based on the "lang" query param regardless of "Accept-Language" and user.interface_lang', async function() {
-            const response = await request(server).get(`/videos/${videoId}`).query({lang: 'ja'}).set(k.Header.Authorization, authorization).set('Accept-Language', 'en-US,en;q=0.8,ja;q=0.6');
+            const response = await request(server).get(`/videos/${videoId}`).query({lang: 'ja'}).set(k.Header.Authorization, authorization)
+                .set('Accept-Language', 'en-US,en;q=0.8,ja;q=0.6');
             assert(/[^a-z]/i.test(response.body.subcategory[k.Attr.Name]));
         });
 
         it('should localize the subcategory name based on "user.interface_language" if "lang" is absent and "Accept-Language" is different than user.interface_language', async function() {
-            const response = await request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization).set('Accept-Language', 'ja-JP,ja;q=0.8,en;q=0.6');
+            const response = await request(server).get(`/videos/${videoId}`).set(k.Header.Authorization, authorization)
+                .set('Accept-Language', 'ja-JP,ja;q=0.8,en;q=0.6');
             assert(/[a-z]/i.test(response.body.subcategory[k.Attr.Name]));
         });
 
