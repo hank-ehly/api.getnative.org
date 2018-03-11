@@ -77,15 +77,15 @@ module.exports.index = async (req, res, next) => {
 
     videos = _.invokeMap(videos, 'get', {plain: true});
 
-    const videoIdx = _.map(videos, k.Attr.YouTubeVideoId);
+    const videoIdx = _(videos).map(k.Attr.YouTubeVideoId).uniq().value();
     const ytRes = await YouTube.videosList(videoIdx, ['contentDetails', 'statistics']);
     const ytVideos = ytRes.items;
 
     const videoList = _.map(videos, video => {
         let ytVideo = _.find(ytVideos, {id: video[k.Attr.YouTubeVideoId]});
-        let ISO8601Duration = _.get(ytVideo, 'contentDetails.duration');
+        let ISO8601Duration = _.get(ytVideo, 'contentDetails.duration', 0);
 
-        video[k.Attr.LoopCount] = parseInt(_.get(ytVideo, 'statistics.viewCount'));
+        video[k.Attr.LoopCount] = parseInt(_.get(ytVideo, 'statistics.viewCount', 0));
         video[k.Attr.Length] = moment.duration(ISO8601Duration).asSeconds();
 
         if (isAuthenticated) {

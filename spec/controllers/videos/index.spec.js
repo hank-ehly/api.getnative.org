@@ -24,11 +24,13 @@ describe('GET /videos', function() {
 
         youtube.videosList = function(idx) {
             return Promise.resolve({
-                items: _.times(idx.length, _.constant({
-                    id: 'ri6Pip_w6HM',
-                    contentDetails: {duration: 'PT1M3S'},
-                    statistics: {viewCount: '13438'}
-                }))
+                items: _.map(idx, id => {
+                    return {
+                        id: id,
+                        contentDetails: {duration: 'PT1M3S'},
+                        statistics: {viewCount: '13438'}
+                    }
+                })
             });
         };
 
@@ -374,22 +376,27 @@ describe('GET /videos', function() {
 
         it(`should return videos if a category_id is specified`, function() {
             return db[k.Model.Category].find({attributes: ['id']}).then(function(category) {
-                return request(server).get(`/videos?category_id=${category.get('id')}`).set('authorization', authorization).then(function(response) {
-                    assert(_.isNumber(response.body.count));
-                    assert(_.isArray(response.body.records));
-                });
+                return request(server).get(`/videos?category_id=${category.get('id')}`).set('authorization', authorization)
+                    .then(function(response) {
+                        assert(_.isNumber(response.body.count));
+                        assert(_.isArray(response.body.records));
+                    });
             });
         });
 
         it(`should return only English videos if the request contains no 'lang' parameter`, function() {
             return request(server).get(`/videos`).set('authorization', authorization).then(function(response) {
                 let firstVideoId = _.first(response.body.records)[k.Attr.Id];
-                return db.sequelize.query(`SELECT language_id FROM videos WHERE videos.id = ${firstVideoId} LIMIT 1`).then(function(values) {
-                    const [rows] = values;
-                    return db[k.Model.Language].find({where: {code: 'en'}, attributes: [k.Attr.Id]}).then(function(language) {
-                        assert.equal(_.first(rows).language_id, language.get(k.Attr.Id));
+                return db.sequelize.query(`SELECT language_id FROM videos WHERE videos.id = ${firstVideoId} LIMIT 1`)
+                    .then(function(values) {
+                        const [rows] = values;
+                        return db[k.Model.Language].find({
+                            where: {code: 'en'},
+                            attributes: [k.Attr.Id]
+                        }).then(function(language) {
+                            assert.equal(_.first(rows).language_id, language.get(k.Attr.Id));
+                        });
                     });
-                });
             });
         });
 
@@ -418,21 +425,24 @@ describe('GET /videos', function() {
                     result.push(n.get('id'));
                 }, []);
 
-                return request(server).get(`/videos?category_id=${categoryId}`).set('authorization', authorization).then(function(response) {
-                    _.forEach(response.body.records, function(record) {
-                        assert(_.includes(ids, record.subcategory.id));
+                return request(server).get(`/videos?category_id=${categoryId}`).set('authorization', authorization)
+                    .then(function(response) {
+                        _.forEach(response.body.records, function(record) {
+                            assert(_.includes(ids, record.subcategory.id));
+                        });
                     });
-                });
             });
         });
 
         it('should localize the subcategory name based on the interface_lang query parameter', async function() {
-            const response = await request(server).get(`/videos`).query({interface_lang: 'ja'}).set('Accept-Language', 'en-US,en;q=0.8,ja;q=0.6');
+            const response = await request(server).get(`/videos`).query({interface_lang: 'ja'})
+                .set('Accept-Language', 'en-US,en;q=0.8,ja;q=0.6');
             assert(/[^a-z]/i.test(_.first(response.body.records).subcategory[k.Attr.Name]));
         });
 
         it('should localize the subcategory name based on the user.interface_language if authenticated and "interface_lang" is absent, even if "Accept-Language" is different than user.interface_language', async function() {
-            const response = await request(server).get(`/videos`).set('authorization', authorization).set('Accept-Language', 'ja-JP,ja;q=0.8,en;q=0.6');
+            const response = await request(server).get(`/videos`).set('authorization', authorization)
+                .set('Accept-Language', 'ja-JP,ja;q=0.8,en;q=0.6');
             assert(/[a-z]/i.test(_.first(response.body.records).subcategory[k.Attr.Name]));
         });
 
