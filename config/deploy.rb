@@ -9,7 +9,7 @@ append :linked_files, 'config/database.json'
 append :linked_dirs, 'config/secrets'
 
 set :default_env, {
-        NODE_ENV: 'production'
+        NODE_ENV: fetch(:stage)
 }
 
 set :keep_releases, 5
