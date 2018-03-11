@@ -11,21 +11,20 @@ const k = require('../keys.json');
 const mailer = require('nodemailer');
 const _ = require('lodash');
 
-const smtpConfig = {
+let transportConfig = {
     host: config.get(k.SMTP.Host),
-    port: config.get(k.SMTP.Port)
+    port: config.get(k.SMTP.Port),
+    tls: {
+        rejectUnauthorized: false
+    }
 };
 
-if (_.includes([k.Env.Development, k.Env.Test, k.Env.CircleCI], config.get(k.ENVIRONMENT))) {
-    _.assign(smtpConfig, {
-        tls: {
-            rejectUnauthorized: false
-        }
-    });
-}
-
-if (config.get(k.ENVIRONMENT) === k.Env.Staging) {
-    _.assign(smtpConfig, {
+if (config.get(k.ENVIRONMENT) === k.Env.Production) {
+    const nodemailerSendGrid = require('nodemailer-sendgrid');
+    const apiKey = config.get(k.SendGrid.APIKey);
+    transportConfig = nodemailerSendGrid({apiKey: apiKey});
+} else if (config.get(k.ENVIRONMENT) === k.Env.Staging) {
+    _.assign(transportConfig, {
         auth: {
             user: config.get(k.SMTP.Auth.User),
             pass: config.get(k.SMTP.Auth.Pass)
@@ -33,6 +32,6 @@ if (config.get(k.ENVIRONMENT) === k.Env.Staging) {
     });
 }
 
-const transport = mailer.createTransport(smtpConfig);
+const transport = mailer.createTransport(transportConfig);
 
 module.exports = transport;

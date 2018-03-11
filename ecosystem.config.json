@@ -30,7 +30,8 @@
             "interpreter": "/usr/local/nodejs-binary/bin/node",
             "env": {
                 "NODE_ENV": "staging",
-                "GOOGLE_APPLICATION_CREDENTIALS": "config/secrets/gcloud-credentials.json"
+                "GOOGLE_APPLICATION_CREDENTIALS": "config/secrets/gcloud-credentials.json",
+                "PORT": 3005
             }
         },
         {
@@ -45,7 +46,8 @@
             "interpreter": "/usr/local/nodejs-binary/bin/node",
             "env": {
                 "NODE_ENV": "production",
-                "GOOGLE_APPLICATION_CREDENTIALS": "config/secrets/gcloud-credentials.json"
+                "GOOGLE_APPLICATION_CREDENTIALS": "config/secrets/gcloud-credentials.json",
+                "PORT": 3000
             }
         }
     ]

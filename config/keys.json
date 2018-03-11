@@ -1,6 +1,6 @@
 {
     "API": {
-        "Port": "API_PORT",
+        "Port": "PORT",
         "Hostname": "API_HOSTNAME"
     },
     "Attr": {
@@ -169,6 +169,9 @@
     "UserRole": {
         "Admin": "admin",
         "User": "user"
+    },
+    "SendGrid": {
+        "APIKey": "kSendGridAPIKey"
     },
     "SMTP": {
         "Port": "smtp:port",
