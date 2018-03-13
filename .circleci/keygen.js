@@ -19,11 +19,11 @@ if (!output) {
 try {
     clean();
 
-    exec(`ssh-keygen -t rsa -N '' -f ${keyname} -q`);
+    exec(`ssh-keygen -t rsa -N "" -f ${keyname} -q`);
 
     const keys = {};
     keys.private = fs.readFileSync(keyname, 'UTF8').replace(/\n/g, '\n');
-    keys.public = fs.readFileSync(keyname + '.pub', 'UTF8').replace(/\n/g, '\n');
+    keys.public = exec(`ssh-keygen -f ${keyname}.pub -e -m pem`).toString().replace(/\n/g, '\n');
 
     fs.writeFileSync(output, JSON.stringify(keys), {encoding: 'UTF8'});
 
