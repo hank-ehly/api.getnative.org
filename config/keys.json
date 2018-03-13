@@ -107,7 +107,10 @@
         "Location": "location"
     },
     "MailChimp": {
-        "APIKey": "kMailChimpAPIKey"
+        "APIKey": "kMailChimpAPIKey",
+        "List": {
+            "Newsletter": "kMailChimpListNewsletter"
+        }
     },
     "Model": {
         "AuthAdapterType": "AuthAdapterType",

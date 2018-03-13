@@ -59,10 +59,16 @@ function Config() {
         }
 
         try {
-            const mailChimpAPIKey = require('./secrets/mailchimp.json')[nconf.get(k.ENVIRONMENT)];
+            const mailchimpConfig = require('./secrets/mailchimp.json');
+
+            const mailChimpAPIKey = _.get(mailchimpConfig, [nconf.get(k.ENVIRONMENT), 'apiKey'].join('.'));
+            const mailChimpNewsletterList = _.get(mailchimpConfig, [nconf.get(k.ENVIRONMENT), 'lists', 'newsletter'].join('.'));
+
             nconf.set(k.MailChimp.APIKey, mailChimpAPIKey);
+            nconf.set(k.MailChimp.List.Newsletter, mailChimpNewsletterList);
         } catch (e) {
-            logger.info('Failed to load mailchimp api key.');
+            logger.info('Failed to load mailchimp api key and/or list ids.');
+            logger.info(e, {json: true});
         }
 
         try {
