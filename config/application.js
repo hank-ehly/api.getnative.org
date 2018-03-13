@@ -47,9 +47,9 @@ function Config() {
             nconf.set(k.GoogleCloud.KeyFilename, path.resolve(__dirname, 'secrets', 'gcloud-credentials.json'));
         }
 
-        const jwtKeyPair = require('./secrets/jwt-keypair.json');
-        nconf.set(k.PrivateKey, jwtKeyPair.privateKey);
-        nconf.set(k.PublicKey, jwtKeyPair.publicKey);
+        const jwtKeys = require('./secrets/jwt-keypair.json');
+        nconf.set(k.PrivateKey, jwtKeys.private);
+        nconf.set(k.PublicKey, jwtKeys.public);
 
         try {
             const googleAPIKey = require('./secrets/google_api_keys.json')[nconf.get(k.ENVIRONMENT)];

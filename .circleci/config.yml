@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Prepare app for testing
           command: |
-            .circleci/generate-jwt-keypair.sh
+            node .circleci/keygen.js config/secrets/jwt.json
             cp config/database.json.template config/database.json && npm run sequelize db:migrate
 
       - run: npm test
