@@ -60,7 +60,6 @@ function Config() {
 
         try {
             const mailchimpConfig = require('./secrets/mailchimp.json');
-
             const mailChimpAPIKey = _.get(mailchimpConfig, [nconf.get(k.ENVIRONMENT), 'apiKey'].join('.'));
             const mailChimpNewsletterList = _.get(mailchimpConfig, [nconf.get(k.ENVIRONMENT), 'lists', 'newsletter'].join('.'));
 

@@ -112,6 +112,11 @@ function createMailChimpError(message, code) {
     return error;
 }
 
-const api = new MailChimpAPI(config.get(k.MailChimp.APIKey));
+let api;
+if (config.isTest()) {
+    api = function() {};
+} else {
+    api = new MailChimpAPI(config.get(k.MailChimp.APIKey));
+}
 
 module.exports = api;

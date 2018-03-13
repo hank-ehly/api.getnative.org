@@ -363,5 +363,9 @@ module.exports = function(sequelize, DataTypes) {
         return _.first(_.first(result))['is_admin'] === 1;
     };
 
+    User.prototype.mailChimpSubscriberHash = function() {
+        return Utility.md5(this.email.toLowerCase());
+    };
+
     return User;
 };
