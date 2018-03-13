@@ -6,8 +6,9 @@
  */
 
 const Hashids = require('hashids');
-const moment  = require('moment');
-const _       = require('lodash');
+const moment = require('moment');
+const _ = require('lodash');
+const crypto = require('crypto');
 
 const hashids = new Hashids('', 11);
 
@@ -133,4 +134,16 @@ module.exports.pluckCurlyBraceEnclosedContent = function(text) {
     }
 
     return wrappedItems.map(i => i.replace('{', '').replace('}', ''));
+};
+
+module.exports.md5 = function(str) {
+    if (!str) {
+        throw new ReferenceError('At least 1 argument is required.');
+    }
+
+    if (!_.isString(str)) {
+        throw new TypeError('First argument must be a string.');
+    }
+
+    return crypto.createHash('md5').update(str).digest('hex');
 };
