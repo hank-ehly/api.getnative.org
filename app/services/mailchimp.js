@@ -15,22 +15,19 @@ const _ = require('lodash');
 function MailChimpAPI(apiKey, options) {
     options = options || {};
 
-    this.version = '3.0';
     this.apiKey = apiKey;
-    this.packageInfo = options.packageInfo;
     let datacenter = apiKey.split('-');
-    datacenter = datacenter[datacenter - 1];
-    this.httpHost = datacenter + '.api.mailchimp.com';
-    this.httpUri = 'https://' + this.httpHost + ':443';
+    datacenter = datacenter[datacenter.length - 1];
+    this.httpUri = 'https://' + datacenter + '.api.mailchimp.com' + '/3.0';
     this.userAgent = options.userAgent + ' ' || '';
 }
 
-MailChimpAPI.prototype.execute = function(action, method, availableParams, givenParams) {
+MailChimpAPI.prototype.execute = function(action, method, whiteListParams, givenParams) {
     let finalParams = {apikey: this.apiKey};
     let currentParam;
 
-    for (let i = 0; i < availableParams.length; i++) {
-        currentParam = availableParams[i];
+    for (let i = 0; i < whiteListParams.length; i++) {
+        currentParam = whiteListParams[i];
         if (_.has(givenParams, currentParam)) {
             finalParams[currentParam] = givenParams[currentParam];
         }
@@ -38,10 +35,9 @@ MailChimpAPI.prototype.execute = function(action, method, availableParams, given
 
     return new Promise((resolve, reject) => {
         request({
-            uri: [this.httpUri, this.version, action].join('/'),
+            uri: [this.httpUri, action].join('/'),
             method: method,
             headers: {
-                'User-Agent': [this.userAgent, this.packageInfo.version].join('/'),
                 'Accept-Encoding': ['gzip', 'deflate'].join(',')
             },
             gzip: true,
@@ -68,13 +64,8 @@ MailChimpAPI.prototype.execute = function(action, method, availableParams, given
     });
 };
 
-MailChimpAPI.prototype.listsMembersCreate = function(listId, params, callback) {
-    if (_.isFunction(params)) {
-        callback = params;
-        params = {};
-    }
-
-    this.execute('lists/' + listId + '/members', 'POST', [
+MailChimpAPI.prototype.listsMembersCreate = function(listId, params) {
+    const whiteList = [
         'email_address',
         'email_type',
         'status',
@@ -87,16 +78,13 @@ MailChimpAPI.prototype.listsMembersCreate = function(listId, params, callback) {
         'timestamp_signup',
         'ip_opt',
         'timestamp_opt'
-    ], params, callback);
+    ];
+
+    return this.execute('lists/' + listId + '/members', 'POST', whiteList, params);
 };
 
-MailChimpAPI.prototype.listsMembersUpdate = function(listId, subscriberHash, params, callback) {
-    if (_.isFunction(params)) {
-        callback = params;
-        params = {};
-    }
-
-    this.execute('lists/' + listId + '/members/' + subscriberHash, 'PATCH', [
+MailChimpAPI.prototype.listsMembersUpdate = function(listId, subscriberHash, params) {
+    const whiteList = [
         'email_address',
         'email_type',
         'status',
@@ -109,7 +97,9 @@ MailChimpAPI.prototype.listsMembersUpdate = function(listId, subscriberHash, par
         'timestamp_signup',
         'ip_opt',
         'timestamp_opt'
-    ], params, callback);
+    ];
+
+    return this.execute('lists/' + listId + '/members/' + subscriberHash, 'PATCH', whiteList, params);
 };
 
 function createMailChimpError(message, code) {
