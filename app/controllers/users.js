@@ -135,9 +135,11 @@ module.exports.update = async (req, res, next) => {
     try {
         [updateCount] = await User.update(changes, {where: {id: req.user[k.Attr.Id]}, transaction: t});
 
+        const user = await User.findByPrimary(req.user[k.Attr.Id], {rejectOnEmpty: true});
+
         if (_.has(changes, k.Attr.EmailNotificationsEnabled)) {
             const enabled = changes[k.Attr.EmailNotificationsEnabled];
-            await mailchimp.listsMembersUpdate({
+            await mailchimp.listsMembersUpdate(config.get(k.MailChimp.List.Newsletter), user.mailChimpSubscriberHash(), {
                 status: enabled ? 'subscribed' : 'unsubscribed'
             });
         }
