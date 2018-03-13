@@ -6,7 +6,8 @@
  */
 
 const SpecUtil = require('../../spec-util');
-const Auth = require('../../../app/services')['Auth'];
+const Auth = require('../../../app/services/auth');
+const mailchimp = require('../../../app/services/mailchimp');
 const k = require('../../../config/keys.json');
 
 const m = require('mocha');
@@ -22,6 +23,11 @@ describe('POST /confirm_email', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
+
+        mailchimp.listsMembersCreate = function() {
+            return Promise.resolve({});
+        };
+
         return SpecUtil.seedAll();
     });
 

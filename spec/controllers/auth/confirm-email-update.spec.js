@@ -9,6 +9,7 @@ const SpecUtil = require('../../spec-util');
 const Auth = require('../../../app/services/auth');
 const k = require('../../../config/keys.json');
 const Utility = require('../../../app/services/utility');
+const mailchimp = require('../../../app/services/mailchimp');
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
@@ -24,6 +25,11 @@ describe('POST /confirm_email_update', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
+
+        mailchimp.listsMembersUpdate = function() {
+            return Promise.resolve({});
+        };
+
         return SpecUtil.seedAll();
     });
 
