@@ -1,6 +1,6 @@
 /**
  * upload-profile-image
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/09/11.
  */

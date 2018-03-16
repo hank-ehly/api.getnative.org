@@ -1,21 +1,21 @@
 {
-    "name": "api.getnativelearning.com",
+    "name": "api.getnative.org",
     "version": "0.1.0",
-    "description": "Source code for api.getnativelearning.com",
+    "description": "Source code for api.getnative.org",
     "main": "index.js",
     "scripts": {
         "test": "mocha --exit -R spec --recursive spec",
         "start": "pm2 start ecosystem.config.json --no-daemon -i max --only api",
         "sequelize": "sequelize",
         "mocha": "mocha",
-        "start:staging": "pm2 startOrRestart ecosystem.config.json -i max --only api.stg.getnativelearning.com",
-        "start:production": "pm2 startOrRestart ecosystem.config.json -i max --only api.getnativelearning.com"
+        "start:staging": "pm2 startOrRestart ecosystem.config.json -i max --only api.stg.getnative.org",
+        "start:production": "pm2 startOrRestart ecosystem.config.json -i max --only api.getnative.org"
     },
     "repository": {
         "type": "git",
-        "url": "git://github.com/hank-ehly/api.getnativelearning.com.git"
+        "url": "git://github.com/hank-ehly/api.getnative.org.git"
     },
-    "author": "Hank Ehly <admin@getnativelearning.com>",
+    "author": "Hank Ehly <admin@getnative.org>",
     "license": "UNLICENSED",
     "private": true,
     "dependencies": {

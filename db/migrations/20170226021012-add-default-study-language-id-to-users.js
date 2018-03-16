@@ -1,6 +1,6 @@
 /**
  * 20170226021012-add-default-study-language-id-to-users
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/02/26.
  */

@@ -1,6 +1,6 @@
 /**
  * 20170226004707-add-language-id-to-transcripts
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/02/26.
  */

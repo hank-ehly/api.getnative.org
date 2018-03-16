@@ -1,6 +1,6 @@
 /**
  * 20170226045320-genders
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/05/13.
  */

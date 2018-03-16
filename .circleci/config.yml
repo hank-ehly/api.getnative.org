@@ -13,7 +13,7 @@ jobs:
           - MYSQL_ROOT_HOST: "%"
           - MYSQL_DATABASE: getnative_test
 
-    working_directory: ~/api.getnativelearning.com
+    working_directory: ~/api.getnative.org
 
     branches:
       only:
@@ -25,12 +25,12 @@ jobs:
 
       - restore_cache:
           keys:
-              - api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
+              - api.getnative.org-{{ .Branch }}-{{ checksum "package.json" }}
 
       - run: npm install
 
       - save_cache:
-          key: api.getnativelearning.com-{{ .Branch }}-{{ checksum "package.json" }}
+          key: api.getnative.org-{{ .Branch }}-{{ checksum "package.json" }}
           paths:
             - "node_modules"
 

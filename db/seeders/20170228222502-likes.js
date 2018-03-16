@@ -1,6 +1,6 @@
 /**
  * 20170228222502-likes
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/03/01.
  */

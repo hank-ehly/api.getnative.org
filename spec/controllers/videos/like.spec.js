@@ -1,6 +1,6 @@
 /**
  * like.spec
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/03/24.
  */

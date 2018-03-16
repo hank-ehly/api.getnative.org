@@ -1,6 +1,6 @@
 /**
  * mailchimp
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2018/03/13.
  */

@@ -1,6 +1,6 @@
 /**
  * 20170224002010-create-credentials
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/05/13.
  */

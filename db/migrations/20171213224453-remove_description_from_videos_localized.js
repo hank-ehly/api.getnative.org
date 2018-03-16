@@ -1,6 +1,6 @@
 /**
  * 20171213224453-remove_description_from_videos_localized
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/12/14.
  */

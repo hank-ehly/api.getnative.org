@@ -1,6 +1,6 @@
 /**
  * 20170417114949-create-verification-tokens
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/04/17.
  */
