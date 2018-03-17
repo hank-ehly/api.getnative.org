@@ -19,7 +19,7 @@ if (!output) {
 try {
     clean();
 
-    exec(`ssh-keygen -t rsa -N "" -f ${keyname} -q -C jwt`);
+    exec(`ssh-keygen -t rsa -N "" -f ${keyname} -q`);
 
     const keys = {};
     keys.private = fs.readFileSync(keyname, 'UTF8').replace(/\n/g, '\n');
