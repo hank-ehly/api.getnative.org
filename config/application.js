@@ -79,7 +79,7 @@ function Config() {
     }
 
     function setupTempDir() {
-        nconf.set(k.TempDir, fs.mkdtempSync('/tmp/com.getnativelearning.'));
+        nconf.set(k.TempDir, fs.mkdtempSync('/tmp/org.getnative.'));
     }
 
     function __construct() {
