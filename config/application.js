@@ -1,6 +1,6 @@
 /**
  * application
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/05/22.
  */
@@ -47,9 +47,9 @@ function Config() {
             nconf.set(k.GoogleCloud.KeyFilename, path.resolve(__dirname, 'secrets', 'gcloud-credentials.json'));
         }
 
-        const jwtKeyPair = require('./secrets/jwt-keypair.json');
-        nconf.set(k.PrivateKey, jwtKeyPair.privateKey);
-        nconf.set(k.PublicKey, jwtKeyPair.publicKey);
+        const jwtKeys = require('./secrets/jwt-keypair.json');
+        nconf.set(k.PrivateKey, jwtKeys.private);
+        nconf.set(k.PublicKey, jwtKeys.public);
 
         try {
             const googleAPIKey = require('./secrets/google_api_keys.json')[nconf.get(k.ENVIRONMENT)];
@@ -59,10 +59,15 @@ function Config() {
         }
 
         try {
-            const mailChimpAPIKey = require('./secrets/mailchimp.json')[nconf.get(k.ENVIRONMENT)];
+            const mailchimpConfig = require('./secrets/mailchimp.json');
+            const mailChimpAPIKey = _.get(mailchimpConfig, [nconf.get(k.ENVIRONMENT), 'apiKey'].join('.'));
+            const mailChimpNewsletterList = _.get(mailchimpConfig, [nconf.get(k.ENVIRONMENT), 'lists', 'newsletter'].join('.'));
+
             nconf.set(k.MailChimp.APIKey, mailChimpAPIKey);
+            nconf.set(k.MailChimp.List.Newsletter, mailChimpNewsletterList);
         } catch (e) {
-            logger.info('Failed to load mailchimp api key.');
+            logger.info('Failed to load mailchimp api key and/or list ids.');
+            logger.info(e, {json: true});
         }
 
         try {

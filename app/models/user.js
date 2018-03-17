@@ -1,6 +1,6 @@
 /**
  * user
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/02/24.
  */
@@ -361,6 +361,10 @@ module.exports = function(sequelize, DataTypes) {
         `, {replacements: [this.id]});
 
         return _.first(_.first(result))['is_admin'] === 1;
+    };
+
+    User.prototype.mailChimpSubscriberHash = function() {
+        return Utility.md5(this.email.toLowerCase());
     };
 
     return User;

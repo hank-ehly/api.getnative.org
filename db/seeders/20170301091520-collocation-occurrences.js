@@ -1,6 +1,6 @@
 /**
  * 20170301091520-collocation-occurrences
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/03/01.
  */

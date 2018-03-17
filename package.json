@@ -1,21 +1,21 @@
 {
-    "name": "api.getnativelearning.com",
+    "name": "api.getnative.org",
     "version": "0.1.0",
-    "description": "Source code for api.getnativelearning.com",
+    "description": "Source code for api.getnative.org",
     "main": "index.js",
     "scripts": {
         "test": "mocha --exit -R spec --recursive spec",
         "start": "pm2 start ecosystem.config.json --no-daemon -i max --only api",
         "sequelize": "sequelize",
         "mocha": "mocha",
-        "start:staging": "pm2 startOrRestart ecosystem.config.json -i max --only api.stg.getnativelearning.com",
-        "start:production": "pm2 startOrRestart ecosystem.config.json -i max --only api.getnativelearning.com"
+        "start:staging": "pm2 startOrRestart ecosystem.config.json -i max --only api.stg.getnative.org",
+        "start:production": "pm2 startOrRestart ecosystem.config.json -i max --only api.getnative.org"
     },
     "repository": {
         "type": "git",
-        "url": "git://github.com/hank-ehly/api.getnativelearning.com.git"
+        "url": "git://github.com/hank-ehly/api.getnative.org.git"
     },
-    "author": "Hank Ehly <admin@getnativelearning.com>",
+    "author": "Hank Ehly <admin@getnative.org>",
     "license": "UNLICENSED",
     "private": true,
     "dependencies": {
@@ -33,6 +33,7 @@
         "joi": "^13.1.2",
         "jsonwebtoken": "^8.1.1",
         "lodash": "^4.17.5",
+        "mailchimp": "^1.2.0",
         "moment": "^2.20.1",
         "morgan": "^1.9.0",
         "mysql2": "^1.5.2",
@@ -43,6 +44,7 @@
         "passport-facebook": "^2.1.1",
         "passport-google-oauth20": "^1.0.0",
         "passport-twitter": "^1.0.4",
+        "request": "^2.85.0",
         "sequelize": "^4.33.4",
         "sodium": "^2.0.3",
         "winston": "^2.4.0"

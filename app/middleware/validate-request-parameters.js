@@ -1,6 +1,6 @@
 /**
  * validate-request-parameters
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/03/20.
  */

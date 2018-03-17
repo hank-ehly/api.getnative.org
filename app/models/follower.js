@@ -1,6 +1,6 @@
 /**
  * follower
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/02/24.
  */

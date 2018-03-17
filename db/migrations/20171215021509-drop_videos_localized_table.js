@@ -1,6 +1,6 @@
 /**
  * 20171215021509-drop_videos_localized_table
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/12/15.
  */

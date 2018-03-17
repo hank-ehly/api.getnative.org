@@ -1,6 +1,6 @@
 /**
  * 2017022604532-auth-adapter-types
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/05/14.
  */

@@ -1,14 +1,14 @@
 /**
  * auth
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/01/18.
  */
 
-const services          = require('../services');
-const GetNativeError    = services['GetNativeError'];
-const Utility           = services['Utility'];
-const Auth              = services['Auth'];
+const GetNativeError    = require('../services/get-native-error');
+const Utility           = require('../services/utility');
+const Auth              = require('../services/auth');
+const mailchimp         = require('../services/mailchimp');
 const config            = require('../../config/application').config;
 const k                 = require('../../config/keys.json');
 const db                = require('../models');
@@ -21,6 +21,7 @@ const mailer            = require('../../config/initializers/mailer');
 const i18n              = require('i18n');
 const path              = require('path');
 const _                 = require('lodash');
+const moment            = require('moment');
 
 module.exports.confirmRegistrationEmail = async (req, res, next) => {
     let verificationToken, user, jsonWebToken;
@@ -44,7 +45,14 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
 
     const t = await db.sequelize.transaction();
     try {
-        await User.update({email_verified: true, email_notifications_enabled: true}, {where: {id: verificationToken[k.Attr.UserId]}, transaction: t});
+        await User.update({
+            email_verified: true,
+            email_notifications_enabled: true
+        }, {
+            where: {id: verificationToken[k.Attr.UserId]},
+            transaction: t
+        });
+
         await verificationToken.update({is_verification_complete: true}, {transaction: t});
         await t.commit();
 
@@ -82,6 +90,13 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
             to:      user.get(k.Attr.Email),
             html:    emailTemplateVariables
         }, null);
+
+        await mailchimp.listsMembersCreate(config.get(k.MailChimp.List.Newsletter), {
+            email_address: user.get(k.Attr.Email),
+            email_type: 'html',
+            status: 'subscribed',
+            timestamp_signup: moment().format('YYYY-MM-DD HH:mm:ss')
+        });
     } catch (e) {
         await t.rollback();
 
@@ -470,6 +485,10 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
             to:      user.get(k.Attr.Email),
             html:    newAddressSuccessNotificationHtml
         }, null);
+
+        await mailchimp.listsMembersUpdate(config.get(k.MailChimp.List.Newsletter), user.mailChimpSubscriberHash(), {
+            email_address: user.get(k.Attr.Email)
+        });
     } catch (e) {
         return next(e);
     }

@@ -1,11 +1,11 @@
 /**
  * utility.spec
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/03/14.
  */
 
-const Utility = require('../../app/services')['Utility'];
+const Utility = require('../../app/services/utility');
 
 const m = require('mocha');
 const [describe, it] = [m.describe, m.it];
@@ -327,6 +327,24 @@ describe('Utility', function() {
 
         it('should return an empty array if the text contains no curly braces', function() {
             assert.equal(Utility.pluckCurlyBraceEnclosedContent('This text contains no curly braces').length, 0);
+        });
+    });
+
+    describe('md5', function() {
+        it('should throw a ReferenceError if no arguments are specified', function() {
+            assert.throws(function() {
+                Utility.md5();
+            }, ReferenceError);
+        });
+
+        it('should throw a TypeError if the first argument is not a string', function() {
+            assert.throws(function() {
+                Utility.md5(_.stubObject());
+            }, TypeError);
+        });
+
+        it('should return an md5 hash made from the first string argument', function() {
+            assert.equal(Utility.md5('test@example.com'), '55502f40dc8b7c769880b10874abc9d0');
         });
     });
 });

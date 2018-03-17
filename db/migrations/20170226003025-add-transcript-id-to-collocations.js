@@ -1,6 +1,6 @@
 /**
  * 20170226003025-add-transcript-id-to-collocation-occurrences
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/02/26.
  */

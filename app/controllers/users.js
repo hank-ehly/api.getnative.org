@@ -1,6 +1,6 @@
 /**
  * users
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/02/03.
  */
@@ -11,6 +11,7 @@ const Utility           = require('../services/utility');
 const config            = require('../../config/application').config;
 const Auth              = require('../services/auth');
 const k                 = require('../../config/keys.json');
+const mailchimp         = require('../services/mailchimp');
 const db                = require('../models');
 const User              = db[k.Model.User];
 const Credential        = db[k.Model.Credential];
@@ -104,7 +105,10 @@ module.exports.update = async (req, res, next) => {
 
     const changes = _.transform(req.body, (result, value, key) => {
         const acceptableKeys = [
-            k.Attr.EmailNotificationsEnabled, k.Attr.BrowserNotificationsEnabled, k.Attr.DefaultStudyLanguageCode, 'interface_language_code'
+            k.Attr.EmailNotificationsEnabled,
+            k.Attr.BrowserNotificationsEnabled,
+            k.Attr.DefaultStudyLanguageCode,
+            'interface_language_code'
         ];
 
         if (acceptableKeys.includes(key)) {
@@ -126,13 +130,23 @@ module.exports.update = async (req, res, next) => {
         delete changes.interface_language_code;
     }
 
+    const t = await db.sequelize.transaction();
+
     try {
-        [updateCount] = await User.update(changes, {
-            where: {
-                id: req.user[k.Attr.Id]
-            }
-        })
+        [updateCount] = await User.update(changes, {where: {id: req.user[k.Attr.Id]}, transaction: t});
+
+        const user = await User.findByPrimary(req.user[k.Attr.Id], {rejectOnEmpty: true});
+
+        if (_.has(changes, k.Attr.EmailNotificationsEnabled)) {
+            const enabled = changes[k.Attr.EmailNotificationsEnabled];
+            await mailchimp.listsMembersUpdate(config.get(k.MailChimp.List.Newsletter), user.mailChimpSubscriberHash(), {
+                status: enabled ? 'subscribed' : 'unsubscribed'
+            });
+        }
+
+        await t.commit();
     } catch (e) {
+        await t.rollback();
         return next(e);
     }
 

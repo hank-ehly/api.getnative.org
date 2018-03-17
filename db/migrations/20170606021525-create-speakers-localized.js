@@ -1,6 +1,6 @@
 /**
  * 20170606021525-create-speakers-localized
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/06/06.
  */

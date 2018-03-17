@@ -1,6 +1,6 @@
 /**
  * 20170301025508-add-user-id-to-study-sessions
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/03/01.
  */

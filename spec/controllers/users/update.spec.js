@@ -1,11 +1,12 @@
 /**
  * update.spec
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/04/04.
  */
 
 const SpecUtil = require('../../spec-util');
+const mailchimp = require('../../../app/services/mailchimp');
 const k = require('../../../config/keys.json');
 
 const m = require('mocha');
@@ -31,6 +32,11 @@ describe('PATCH /users', function() {
 
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
+
+        mailchimp.listsMembersUpdate = function() {
+            return Promise.resolve({});
+        };
+
         return SpecUtil.seedAll();
     });
 

@@ -1,6 +1,6 @@
 /**
  * 20170224002134-create-study-sessions
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/02/24.
  */

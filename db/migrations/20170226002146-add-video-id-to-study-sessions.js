@@ -1,6 +1,6 @@
 /**
  * 20170226002146-add-video-id-to-study-sessions
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/02/26.
  */

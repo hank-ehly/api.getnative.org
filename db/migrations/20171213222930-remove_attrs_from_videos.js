@@ -1,6 +1,6 @@
 /**
  * 20171213222930-remove_attrs_from_videos
- * api.getnativelearning.com
+ * api.getnative.org
  *
  * Created by henryehly on 2017/12/14.
  */
