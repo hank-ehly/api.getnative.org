@@ -19,6 +19,7 @@ const passport = require('passport');
 const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
+const ErrorReporting = require('@google-cloud/error-reporting');
 
 for (let provider of ['custom', 'facebook', 'twitter', 'google']) {
     passport.use(provider, require('../passport/' + provider));
@@ -55,6 +56,13 @@ module.exports = () => {
     app.use(error.logErrors);
     app.use(error.clientErrorHandler);
     app.use(error.fallbackErrorHandler);
+
+    const errors = ErrorReporting({
+        projectId: config.get(k.GoogleCloud.ProjectId),
+        keyFilename: config.get(k.GoogleCloud.KeyFilename),
+    });
+
+    app.use(errors.express);
 
     return new Promise(resolve => {
         const port = config.get(k.API.Port);

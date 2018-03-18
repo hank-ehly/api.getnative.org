@@ -19,6 +19,7 @@
     "license": "UNLICENSED",
     "private": true,
     "dependencies": {
+        "@google-cloud/error-reporting": "^0.2.3",
         "@google-cloud/storage": "^1.6.0",
         "body-parser": "^1.18.2",
         "cookie-parser": "^1.4.3",
