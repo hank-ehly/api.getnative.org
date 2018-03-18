@@ -104,6 +104,10 @@ Config.prototype.isTest = function() {
     return [k.Env.Test, k.Env.CircleCI].includes(this.get(k.ENVIRONMENT));
 };
 
+Config.prototype.isProduction = function() {
+    return this.get(k.ENVIRONMENT) === k.Env.Production;
+};
+
 const config = new Config();
 
 module.exports.config = config;
