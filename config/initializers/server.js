@@ -56,6 +56,17 @@ module.exports = () => {
     app.use(error.clientErrorHandler);
     app.use(error.fallbackErrorHandler);
 
+    if (config.isProduction()) {
+        const ErrorReporting = require('@google-cloud/error-reporting');
+
+        const errors = ErrorReporting({
+            projectId: config.get(k.GoogleCloud.ProjectId),
+            keyFilename: config.get(k.GoogleCloud.KeyFilename),
+        });
+
+        app.use(errors.express);
+    }
+
     return new Promise(resolve => {
         const port = config.get(k.API.Port);
         resolve(app.listen(port, () => logger.info(`Listening on port ${port}`)));
