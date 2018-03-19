@@ -7,6 +7,9 @@
 
 const k = require('../keys.json');
 const OAuthConfig = require('../secrets/oauth.json');
+const mailchimpConfig = require('../secrets/mailchimp.json').production;
+
+const path = require('path');
 
 const config = {};
 
@@ -19,7 +22,12 @@ config[k.Client.BaseURI] = 'https://getnative.org';
 config[k.EmailAddress.Contact] = 'contact@getnative.org';
 config[k.EmailAddress.NoReply] = 'noreply@getnative.org';
 
+config[k.GoogleCloud.APIKey] = require('../secrets/google_api_keys.json').production;
+config[k.GoogleCloud.KeyFilename] = path.resolve(__dirname, 'secrets', 'gcloud-credentials.json');
 config[k.GoogleCloud.StorageBucketName] = 'getnative.org';
+
+config[k.MailChimp.APIKey] = mailchimpConfig.apiKey;
+config[k.MailChimp.List.Newsletter] = mailchimpConfig.lists.newsletter;
 
 config[k.OAuth.Facebook.ClientID] = OAuthConfig.production.facebook.clientId;
 config[k.OAuth.Facebook.ClientSecret] = OAuthConfig.production.facebook.clientSecret;
@@ -32,5 +40,7 @@ config[k.OAuth.Google.ClientSecret] = OAuthConfig.production.google.clientSecret
 config[k.OAuth.Google.CallbackURL] = 'https://api.getnative.org/oauth/google/callback';
 
 config[k.SMTP.Port] = 25;
+
+config[k.SendGrid.APIKey] = require('../secrets/sendgrid.json').production;
 
 module.exports = config;

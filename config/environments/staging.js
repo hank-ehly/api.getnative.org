@@ -7,6 +7,9 @@
 
 const k = require('../keys.json');
 const OAuthConfig = require('../secrets/oauth.json');
+const mailchimpConfig = require('../secrets/mailchimp.json').staging;
+
+const path = require('path');
 
 const config = {};
 
@@ -20,7 +23,12 @@ config[k.Client.BaseURI] = 'https://stg.getnative.org';
 config[k.EmailAddress.Contact] = 'contact@getnative.org';
 config[k.EmailAddress.NoReply] = 'noreply@stg.getnative.org';
 
+config[k.GoogleCloud.APIKey] = require('../secrets/google_api_keys.json').staging;
+config[k.GoogleCloud.KeyFilename] = path.resolve(__dirname, 'secrets', 'gcloud-credentials.json');
 config[k.GoogleCloud.StorageBucketName] = 'stg.getnative.org';
+
+config[k.MailChimp.APIKey] = mailchimpConfig.apiKey;
+config[k.MailChimp.List.Newsletter] = mailchimpConfig.lists.newsletter;
 
 config[k.OAuth.Facebook.ClientID] = OAuthConfig.staging.facebook.clientId;
 config[k.OAuth.Facebook.ClientSecret] = OAuthConfig.staging.facebook.clientSecret;
