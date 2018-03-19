@@ -108,6 +108,7 @@
     },
     "MailChimp": {
         "APIKey": "kMailChimpAPIKey",
+        "User": "kMailChimpUser",
         "List": {
             "Newsletter": "kMailChimpListNewsletter"
         }

@@ -6,6 +6,7 @@
  */
 
 const k = require('../keys.json');
+const jwtKeys = require('../secrets/jwt-keypair.json');
 
 const defaults = {};
 
@@ -25,6 +26,9 @@ defaults[k.GoogleCloud.ProjectId] = 'get-native';
 defaults[k.GoogleCloud.StorageBucketName] = 'mock-bucket-name';
 
 defaults[k.ImageFileExtension] = 'jpg';
+
+defaults[k.PrivateKey] = jwtKeys.private;
+defaults[k.PublicKey] = jwtKeys.public;
 
 defaults[k.OAuth.Facebook.ClientID] = 'xxx';
 defaults[k.OAuth.Facebook.ClientSecret] = 'xxx';

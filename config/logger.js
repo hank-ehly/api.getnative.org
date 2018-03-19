@@ -7,11 +7,12 @@
 
 const winston = require('winston');
 const k = require('./keys.json');
+const moment = require('moment');
 
 const logger = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({
-            timestamp: () => new Date().toTimeString(),
+            timestamp: () => moment().format('YYYY-MM-DD HH:mm:ss ZZ'),
             formatter: (options) => {
                 return `[${options.timestamp()}][${options.level.toUpperCase()}] ${options.message}`;
             }
@@ -20,11 +21,11 @@ const logger = new (winston.Logger)({
 });
 
 function _getConsoleLevel() {
-    if (process.env.DEBUG) {
-        return 'debug';
+    if (process.env.NODE_ENV === 'production') {
+        return 'error';
     }
 
-    return ([k.Env.Test, k.Env.CircleCI].includes(process.env.NODE_ENV) ? 'error' : 'debug');
+    return 'debug';
 }
 
 logger.transports.console.level = _getConsoleLevel();
