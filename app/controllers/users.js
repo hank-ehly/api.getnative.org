@@ -139,8 +139,10 @@ module.exports.update = async (req, res, next) => {
 
         if (_.has(changes, k.Attr.EmailNotificationsEnabled)) {
             const enabled = changes[k.Attr.EmailNotificationsEnabled];
-            await mailchimp.listsMembersUpdate(config.get(k.MailChimp.List.Newsletter), user.mailChimpSubscriberHash(), {
-                status: enabled ? 'subscribed' : 'unsubscribed'
+            const status = enabled ? 'subscribed' : 'unsubscribed';
+            await mailchimp.listsMembersUpdateOrCreate(config.get(k.MailChimp.List.Newsletter), user.mailChimpSubscriberHash(), {
+                status: status,
+                status_if_new: status
             });
         }
 

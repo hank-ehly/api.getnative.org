@@ -9,6 +9,8 @@ const Utility = require('../services/utility');
 const Auth = require('../services/auth');
 const k = require('../../config/keys.json');
 const config = require('../../config/application').config;
+const mailchimp = require('../services/mailchimp');
+const logger = require('../../config/logger');
 
 const moment = require('moment');
 const i18n = require('i18n');
@@ -149,12 +151,27 @@ module.exports = function(sequelize, DataTypes) {
                 html: html
             }, null);
         } catch (e) {
-            // Request can succeed, but mail is not sent
-            console.log(e);
+            logger.error(e, {json: true});
         }
     });
 
     User.hook('afterDestroy', async (user, options) => {
+        try {
+            const listId = config.get(k.MailChimp.List.Newsletter);
+            const subscriberHash = user.mailChimpSubscriberHash();
+            const listMember = await mailchimp.listsMembersRead(listId, subscriberHash, {fields: 'id,email_address,status'});
+
+            if (listMember) {
+                logger.debug('Found list member:');
+                logger.debug(listMember, {json: true});
+
+                await mailchimp.listsMembersDelete(listId, subscriberHash);
+            }
+        } catch (e) {
+            logger.error(`Error occurred during mailchimp list member deletion for user id ${user.id}. See details below.`);
+            logger.error(e, {json: true});
+        }
+
         if (!options.req || !options.req.body || !options.req.body.reason || !options.req.app || !options.req.__) {
             return;
         }
@@ -188,8 +205,7 @@ module.exports = function(sequelize, DataTypes) {
                 html: html
             }, null);
         } catch (e) {
-            // Account deletion succeeded, but failed to send email
-            console.log(e);
+            logger.error(e, {json: true});
         }
     });
 

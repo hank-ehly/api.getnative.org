@@ -11,6 +11,7 @@ const Auth              = require('../services/auth');
 const mailchimp         = require('../services/mailchimp');
 const config            = require('../../config/application').config;
 const k                 = require('../../config/keys.json');
+const logger            = require('../../config/logger');
 const db                = require('../models');
 const VerificationToken = db[k.Model.VerificationToken];
 const User              = db[k.Model.User];
@@ -91,13 +92,15 @@ module.exports.confirmRegistrationEmail = async (req, res, next) => {
             html:    emailTemplateVariables
         }, null);
 
-        await mailchimp.listsMembersCreate(config.get(k.MailChimp.List.Newsletter), {
+        await mailchimp.listsMembersUpdateOrCreate(config.get(k.MailChimp.List.Newsletter), user.mailChimpSubscriberHash(), {
             email_address: user.get(k.Attr.Email),
             email_type: 'html',
-            status: 'subscribed',
+            status_if_new: 'subscribed',
             timestamp_signup: moment().format('YYYY-MM-DD HH:mm:ss')
         });
     } catch (e) {
+        logger.error(e, {json: true});
+
         await t.rollback();
 
         if (e instanceof GetNativeError && e.code === k.Error.TokenExpired) {
@@ -486,8 +489,9 @@ module.exports.confirmEmailUpdate = async (req, res, next) => {
             html:    newAddressSuccessNotificationHtml
         }, null);
 
-        await mailchimp.listsMembersUpdate(config.get(k.MailChimp.List.Newsletter), user.mailChimpSubscriberHash(), {
-            email_address: user.get(k.Attr.Email)
+        await mailchimp.listsMembersUpdateOrCreate(config.get(k.MailChimp.List.Newsletter), user.mailChimpSubscriberHash(), {
+            email_address: user.get(k.Attr.Email),
+            status_if_new: user.email_notifications_enabled ? 'subscribed' : 'unsubscribed'
         });
     } catch (e) {
         return next(e);

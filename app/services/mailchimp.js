@@ -8,7 +8,9 @@
 const k = require('../../config/keys.json');
 const config = require('../../config/application').config;
 const logger = require('../../config/logger');
+
 const request = require('request');
+const querystring = require('querystring');
 const _ = require('lodash');
 
 
@@ -35,23 +37,38 @@ MailChimpAPI.prototype.execute = function(action, method, whiteListParams, given
     }
 
     return new Promise((resolve, reject) => {
-        request({
+        const uri = [this.httpUri, action].join('/');
+
+        logger.debug(`${method} ${uri}`);
+
+        const requestConfig = {
             auth: {
                 user: this.user,
                 pass: this.apiKey
             },
-            uri: [this.httpUri, action].join('/'),
+            uri: uri,
             method: method,
             headers: {
                 'Accept-Encoding': ['gzip', 'deflate'].join(',')
             },
-            gzip: true,
-            body: JSON.stringify(params)
-        }, function(error, response, body) {
+            gzip: true
+        };
+
+        if (method === 'GET') {
+            requestConfig['qs'] = params;
+        } else {
+            requestConfig['body'] = JSON.stringify(params);
+        }
+
+        request(requestConfig, (error, response, body) => {
             let parsedResponse;
 
             if (error) {
                 return reject(new Error('Unable to connect to the MailChimp API endpoint because ' + error.message));
+            }
+
+            if (response.statusCode === 204) {
+                return resolve();
             }
 
             try {
@@ -88,6 +105,26 @@ MailChimpAPI.prototype.listsMembersCreate = function(listId, params) {
     return this.execute('lists/' + listId + '/members', 'POST', whiteList, params);
 };
 
+MailChimpAPI.prototype.listsMembersUpdateOrCreate = function(listId, subscriberHash, params) {
+    const whiteList = [
+        'email_address',
+        'status_if_new',
+        'email_type',
+        'status',
+        'merge_fields',
+        'interests',
+        'languages',
+        'vip',
+        'location',
+        'ip_signup',
+        'timestamp_signup',
+        'ip_opt',
+        'timestamp_opt'
+    ];
+
+    return this.execute('lists/' + listId + '/members/' + subscriberHash, 'PUT', whiteList, params);
+};
+
 MailChimpAPI.prototype.listsMembersUpdate = function(listId, subscriberHash, params) {
     const whiteList = [
         'email_address',
@@ -107,12 +144,22 @@ MailChimpAPI.prototype.listsMembersUpdate = function(listId, subscriberHash, par
     return this.execute('lists/' + listId + '/members/' + subscriberHash, 'PATCH', whiteList, params);
 };
 
-function createMailChimpError(errorResponse) {
-    const error = new Error(errorResponse.title || errorResponse.detail || '');
+MailChimpAPI.prototype.listsMembersDelete = function(listId, subscriberHash, params) {
+    return this.execute('lists/' + listId + '/members/' + subscriberHash, 'DELETE', [], params);
+};
 
-    if (errorResponse.status) {
-        error.code = errorResponse.status;
-    }
+MailChimpAPI.prototype.listsMembersRead = function(listId, subscriberHash, params) {
+    const whiteList = [
+        'fields', 'exclude_fields'
+    ];
+
+    return this.execute('lists/' + listId + '/members/' + subscriberHash, 'GET', whiteList, params);
+};
+
+function createMailChimpError(response) {
+    const error = new Error(`[${response.status}] ${response.title} - ${response.detail}`);
+
+    error.code = response.status;
 
     return error;
 }
