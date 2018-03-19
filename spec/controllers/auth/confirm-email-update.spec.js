@@ -26,7 +26,7 @@ describe('POST /confirm_email_update', function() {
     before(function() {
         this.timeout(SpecUtil.defaultTimeout);
 
-        mailchimp.listsMembersUpdate = function() {
+        mailchimp.listsMembersUpdateOrCreate = function() {
             return Promise.resolve({});
         };
 

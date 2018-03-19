@@ -10,6 +10,7 @@ const k = require('../../../config/keys.json');
 const Auth = require('../../../app/services/auth');
 const Utility = require('../../../app/services/utility');
 const config = require('../../../config/application').config;
+const mailchimp = require('../../../app/services/mailchimp');
 
 const m = require('mocha');
 const [describe, it, before, beforeEach, after, afterEach] = [m.describe, m.it, m.before, m.beforeEach, m.after, m.afterEach];
@@ -23,6 +24,15 @@ describe('DELETE /users', function() {
 
     before(async function() {
         this.timeout(SpecUtil.defaultTimeout);
+
+        mailchimp.listsMembersRead = function() {
+            return Promise.resolve({});
+        };
+
+        mailchimp.listsMembersDelete = function() {
+            return Promise.resolve({});
+        };
+
         await SpecUtil.seedAll();
     });
 
