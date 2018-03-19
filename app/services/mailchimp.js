@@ -12,10 +12,11 @@ const request = require('request');
 const _ = require('lodash');
 
 
-function MailChimpAPI(apiKey, options) {
+function MailChimpAPI(apiKey, user, options) {
     options = options || {};
 
     this.apiKey = apiKey;
+    this.user = user;
     let datacenter = apiKey.split('-');
     datacenter = datacenter[datacenter.length - 1];
     this.httpUri = 'https://' + datacenter + '.api.mailchimp.com' + '/3.0';
@@ -23,25 +24,29 @@ function MailChimpAPI(apiKey, options) {
 }
 
 MailChimpAPI.prototype.execute = function(action, method, whiteListParams, givenParams) {
-    let finalParams = {apikey: this.apiKey};
+    let params = {};
     let currentParam;
 
     for (let i = 0; i < whiteListParams.length; i++) {
         currentParam = whiteListParams[i];
         if (_.has(givenParams, currentParam)) {
-            finalParams[currentParam] = givenParams[currentParam];
+            params[currentParam] = givenParams[currentParam];
         }
     }
 
     return new Promise((resolve, reject) => {
         request({
+            auth: {
+                user: this.user,
+                pass: this.apiKey
+            },
             uri: [this.httpUri, action].join('/'),
             method: method,
             headers: {
                 'Accept-Encoding': ['gzip', 'deflate'].join(',')
             },
             gzip: true,
-            body: JSON.stringify(finalParams)
+            body: JSON.stringify(params)
         }, function(error, response, body) {
             let parsedResponse;
 
@@ -117,7 +122,7 @@ if (config.isTest()) {
     api = function() {
     }
 } else {
-    api = new MailChimpAPI(config.get(k.MailChimp.APIKey));
+    api = new MailChimpAPI(config.get(k.MailChimp.APIKey), config.get(k.MailChimp.User));
 }
 
 module.exports = api;

@@ -18,6 +18,7 @@ config[k.GoogleCloud.KeyFilename] = path.resolve(__dirname, 'secrets', 'gcloud-c
 config[k.GoogleCloud.StorageBucketName] = 'ungoogly-brand-9505';
 
 config[k.MailChimp.APIKey] = mailchimpConfig.apiKey;
+config[k.MailChimp.User] = mailchimpConfig.user;
 config[k.MailChimp.List.Newsletter] = mailchimpConfig.lists.newsletter;
 
 config[k.OAuth.Facebook.ClientID] = oauthSecrets.development.facebook.clientId;

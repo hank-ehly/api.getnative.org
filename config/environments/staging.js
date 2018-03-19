@@ -28,6 +28,7 @@ config[k.GoogleCloud.KeyFilename] = path.resolve(__dirname, 'secrets', 'gcloud-c
 config[k.GoogleCloud.StorageBucketName] = 'stg.getnative.org';
 
 config[k.MailChimp.APIKey] = mailchimpConfig.apiKey;
+config[k.MailChimp.User] = mailchimpConfig.user;
 config[k.MailChimp.List.Newsletter] = mailchimpConfig.lists.newsletter;
 
 config[k.OAuth.Facebook.ClientID] = OAuthConfig.staging.facebook.clientId;
