@@ -24,7 +24,7 @@ config[k.EmailAddress.NoReply] = 'noreply@getnative.org';
 
 config[k.GoogleCloud.APIKey] = require('../secrets/google_api_keys.json').production;
 config[k.GoogleCloud.KeyFilename] = path.resolve(__dirname, 'secrets', 'gcloud-credentials.json');
-config[k.GoogleCloud.StorageBucketName] = 'getnativelearning.com';
+config[k.GoogleCloud.StorageBucketName] = 'getnative.org';
 
 config[k.MailChimp.APIKey] = mailchimpConfig.apiKey;
 config[k.MailChimp.User] = mailchimpConfig.user;
