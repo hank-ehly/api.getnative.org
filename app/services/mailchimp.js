@@ -56,7 +56,7 @@ MailChimpAPI.prototype.execute = function(action, method, whiteListParams, given
             }
 
             if (response.statusCode !== 200 || parsedResponse.status === 'error') {
-                return reject(createMailChimpError(parsedResponse.error, parsedResponse.code));
+                return reject(createMailChimpError(parsedResponse));
             }
 
             resolve(parsedResponse);
@@ -102,11 +102,11 @@ MailChimpAPI.prototype.listsMembersUpdate = function(listId, subscriberHash, par
     return this.execute('lists/' + listId + '/members/' + subscriberHash, 'PATCH', whiteList, params);
 };
 
-function createMailChimpError(message, code) {
-    const error = new Error(message || (message = ''));
+function createMailChimpError(errorResponse) {
+    const error = new Error(errorResponse.title || errorResponse.detail || '');
 
-    if (code) {
-        error.code = code;
+    if (errorResponse.status) {
+        error.code = errorResponse.status;
     }
 
     return error;
@@ -114,7 +114,8 @@ function createMailChimpError(message, code) {
 
 let api;
 if (config.isTest()) {
-    api = function() {};
+    api = function() {
+    }
 } else {
     api = new MailChimpAPI(config.get(k.MailChimp.APIKey));
 }
