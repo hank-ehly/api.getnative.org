@@ -14,7 +14,7 @@ const path = require('path');
 const config = {};
 
 config[k.GoogleCloud.APIKey] = require('../secrets/google_api_keys.json').development;
-config[k.GoogleCloud.KeyFilename] = path.resolve(__dirname, 'secrets', 'gcloud-credentials.json');
+config[k.GoogleCloud.KeyFilename] = path.resolve(__dirname, '..', 'secrets', 'gcloud-credentials.json');
 config[k.GoogleCloud.StorageBucketName] = 'ungoogly-brand-9505';
 
 config[k.MailChimp.APIKey] = mailchimpConfig.apiKey;

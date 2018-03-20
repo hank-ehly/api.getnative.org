@@ -6,7 +6,9 @@
  */
 
 const Utility = require('../../app/services/utility');
+const k = require('../../config/keys.json');
 
+const nconf = require('nconf');
 const m = require('mocha');
 const [describe, it] = [m.describe, m.it];
 const assert = require('assert');
@@ -345,6 +347,31 @@ describe('Utility', function() {
 
         it('should return an md5 hash made from the first string argument', function() {
             assert.equal(Utility.md5('test@example.com'), '55502f40dc8b7c769880b10874abc9d0');
+        });
+    });
+
+    describe('gsResource', function() {
+        const bucketName = 'test-bucket';
+
+        beforeEach(function() {
+            nconf.set(k.GoogleCloud.StorageBucketName, bucketName);
+        });
+
+        it('should throw a TypeError if the first argument is not a string', function() {
+            assert.throws(function() {
+                Utility.gsResource(5);
+            }, TypeError);
+        });
+
+        it('should return the base bucket path if no first argument is specified', function() {
+            assert.equal(Utility.gsResource(), 'https://storage.googleapis.com/' + bucketName);
+        });
+
+        it('should return the base GCP bucket url with the provided path appended to the end', function() {
+            const path = 'users/foo/bar';
+            const expectedUrl = ['https://storage.googleapis.com', bucketName, path].join('/');
+
+            assert.equal(Utility.gsResource(path), expectedUrl);
         });
     });
 });

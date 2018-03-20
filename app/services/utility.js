@@ -7,6 +7,8 @@
 
 const Hashids = require('hashids');
 const moment = require('moment');
+const config = require('../../config/application').config;
+const k = require('../../config/keys.json');
 const _ = require('lodash');
 const crypto = require('crypto');
 
@@ -146,4 +148,18 @@ module.exports.md5 = function(str) {
     }
 
     return crypto.createHash('md5').update(str).digest('hex');
+};
+
+module.exports.gsResource = function(path = '') {
+    if (!_.isString(path)) {
+        throw TypeError('First argument must be a string');
+    }
+
+    let urlComponents = ['https://storage.googleapis.com', config.get(k.GoogleCloud.StorageBucketName)];
+
+    if (path.length) {
+        urlComponents.push(path);
+    }
+
+    return urlComponents.join('/');
 };
