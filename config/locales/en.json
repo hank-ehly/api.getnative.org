@@ -36,6 +36,7 @@
         "RequestParam": "Request param is invalid",
         "ResourceNotFound": "No resource was found for the given conditions",
         "TokenExpired": "Token has expired",
+        "UploadFailed": "An error occurred during upload. Please try again later. If the problem persists, please contact us at contact@getnative.org.",
         "UserNamePasswordIncorrect": "Username or password is incorrect",
         "UserAlreadyExists": "User already exists",
         "UserMissing": "No user with this email exists",

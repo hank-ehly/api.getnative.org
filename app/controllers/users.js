@@ -269,19 +269,19 @@ module.exports.delete = async (req, res, next) => {
 module.exports.profileImage = async function(req, res, next) {
     try {
         const userIdHash = `${Utility.getHashForId(_.toNumber(req.user[k.Attr.Id]))}+${moment().unix()}`;
+        const imageFileExt = config.get(k.ImageFileExtension);
+        const destination = ['users/', userIdHash, '.', imageFileExt].join('');
 
-        await Storage.upload(req.files.image.path, ['users/', userIdHash, '.', config.get(k.ImageFileExtension)].join(''));
-        const bucket = config.get(k.GoogleCloud.StorageBucketName);
-        const googleStorageBaseURI = 'https://storage.googleapis.com';
+        await Storage.upload(req.files.image.path, destination);
 
         const changes = [];
-        changes[k.Attr.PictureUrl] = `${googleStorageBaseURI}/${bucket}/users/${userIdHash}.${config.get(k.ImageFileExtension)}`;
+        changes[k.Attr.PictureUrl] = Utility.gsResource(destination);
         changes[k.Attr.IsSilhouettePicture] = false;
 
         await req.user.update(changes);
         await req.user.reload({attributes: [k.Attr.PictureUrl]});
     } catch (e) {
-        return next(e);
+        return next(new GetNativeError(k.Error.UploadFailed));
     }
 
     return res.status(200).send(_.pick(req.user.get({plain: true}), [k.Attr.PictureUrl]));

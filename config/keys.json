@@ -81,6 +81,7 @@
         "RequestParam": "RequestParam",
         "ResourceNotFound": "ResourceNotFound",
         "TokenExpired": "TokenExpired",
+        "UploadFailed": "UploadFailed",
         "UserMissing": "UserMissing",
         "UserAlreadyVerified": "UserAlreadyVerified",
         "UserDoesNotExist": "UserDoesNotExist",
