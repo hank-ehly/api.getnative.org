@@ -30,7 +30,7 @@ passport.deserializeUser((obj, cb) => cb(null, obj));
 module.exports = () => {
     const app = express();
 
-    if (config.get(k.NODE_ENV) === k.Env.Development) {
+    if ([k.Env.Development, k.Env.Staging].includes(config.get(k.NODE_ENV))) {
         app.use(morgan('dev'));
     }
 

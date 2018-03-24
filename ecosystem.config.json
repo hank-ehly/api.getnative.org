@@ -30,6 +30,7 @@
             "interpreter": "/usr/local/nodejs-binary/bin/node",
             "env": {
                 "NODE_ENV": "staging",
+                "DEBUG": true,
                 "GOOGLE_APPLICATION_CREDENTIALS": "config/secrets/gcloud-credentials.json",
                 "PORT": 3005
             }

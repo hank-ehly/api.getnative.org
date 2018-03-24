@@ -23,7 +23,7 @@ const logger = new (winston.Logger)({
 function _getConsoleLevel() {
     if (process.env.DEBUG) {
         return 'debug';
-    } else if (['production', 'test', 'circle_ci'].includes(process.env.NODE_ENV)) {
+    } else if ([k.Env.Production, k.Env.Test, k.Env.CircleCI].includes(process.env.NODE_ENV)) {
         return 'error';
     }
     return 'debug';
